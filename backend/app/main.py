@@ -1,6 +1,16 @@
-def main():
-    print("Hello from backend!")
+from fastapi import FastAPI
+from app.modules.auth.router import router as auth_router
 
 
-if __name__ == "__main__":
-    main()
+# ----- Initialize FastAPI Application -----
+app = FastAPI(title="MedCore API")
+
+
+# ----- Include Routers -----
+app.include_router(auth_router)
+
+
+# ----- Health Check Endpoint -----
+@app.get("/health")
+def health():
+    return {"status": "ok"}
