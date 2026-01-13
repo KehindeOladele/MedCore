@@ -5,4 +5,4 @@
 __pycache__/
 *.pyc
 .vscode/
-gen_tokens.py
+gen_token.py
