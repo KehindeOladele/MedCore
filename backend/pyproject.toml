@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.128.0",
+    "psycopg2>=2.9.11",
     "python-dotenv-vault>=0.7.0",
     "python-jose>=3.5.0",
     "supabase>=2.27.1",
