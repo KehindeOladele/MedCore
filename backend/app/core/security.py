@@ -46,7 +46,8 @@ def get_current_user(
     return {
         "id": user.id,
         "email": user.email,
-        "role": user.user_metadata.get("role", "patient"),
+        "role": "patient",
+        # "role": user.user_metadata.get("role", "patient"),
     }
 
 
