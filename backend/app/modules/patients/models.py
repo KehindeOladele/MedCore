@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from uuid import UUID
 from typing import Optional, Dict, Any
 from datetime import date
 
 
-# ----- Patient Schema -----
+# ----- Patient Model -----
 class Patient(BaseModel):
     id: UUID
     first_name: Optional[str] = None
@@ -13,11 +13,4 @@ class Patient(BaseModel):
     gender: Optional[str] = None
     blood_group: Optional[str] = None
     phone: Optional[str] = None
-    fhir_metadata: dict[str, Any] = {}
-
-
-# class Patient(BaseModel):
-#     id: UUID
-#     date_of_birth: Optional[date] = None
-#     gender: Optional[str] = None
-#     blood_group: Optional[str] = None
+    fhir_metadata: Dict[str, Any] = Field(default_factory=dict)
