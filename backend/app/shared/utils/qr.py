@@ -2,7 +2,7 @@ import json
 import qrcode
 from io import BytesIO
 
-
+# ----- QR Code Generation Utility -----
 def generate_qr(data: dict):
     payload = json.dumps(data, separators=(",", ":"))
     qr = qrcode.make(payload)
