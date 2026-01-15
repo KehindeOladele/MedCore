@@ -10,6 +10,7 @@ dependencies = [
     "psycopg2>=2.9.11",
     "python-dotenv-vault>=0.7.0",
     "python-jose>=3.5.0",
+    "qrcode[pil]>=8.2",
     "supabase>=2.27.1",
     "supabase-auth>=2.27.1",
     "uvicorn>=0.40.0",
