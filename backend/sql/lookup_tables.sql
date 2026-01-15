@@ -11,3 +11,4 @@ create index on public.terminology_codes (system);
 
 -- Create indexes for faster lookups (code)
 create index on public.terminology_codes (code);
+
