@@ -1,0 +1,10 @@
+from pydantic import BaseModel
+from uuid import UUID
+from typing import Literal, Dict, Any
+
+
+# ----- Medical Record Create Schema -----
+class MedicalRecordCreate(BaseModel):
+    patient_id: UUID
+    record_type: Literal["observation", "condition", "procedure"]
+    clinical_data: Dict[str, Any]  # FHIR resource JSON
