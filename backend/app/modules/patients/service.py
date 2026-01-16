@@ -8,12 +8,11 @@ def get_or_create_patient(user_id: str):
         .table("patients")
         .select("*")
         .eq("id", user_id)
-        .single()
         .execute()
     )
 
     if response.data:
-        return response.data
+        return response.data[0]
 
     insert = (
         supabase
@@ -24,11 +23,13 @@ def get_or_create_patient(user_id: str):
                 "resourceType": "Patient"
             }
         })
-        .single()
         .execute()
     )
 
-    return insert.data
+    if not insert.data:
+        raise Exception("Failed to create patient record")
+
+    return insert.data[0]
 
 
 # ----- Get Patient with Records -----
