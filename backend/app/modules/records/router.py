@@ -15,7 +15,7 @@ def create_medical_record(
     """
     Create a medical record (FHIR Observation / Condition)
     """
-    if current_user["role"] not in ["clinician", "doctor", "admin"]:
+    if current_user["role"] not in ["clinician", "doctor", "admin"]: 
         raise HTTPException(status_code=403, detail="Not authorized")
 
     record = create_record(payload, clinician_id=current_user["id"])

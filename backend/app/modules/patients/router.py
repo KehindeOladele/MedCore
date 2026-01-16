@@ -58,4 +58,4 @@ def create_medical_record(
     payload: MedicalRecordCreate,
     current_user=Depends(get_current_user)
 ):
-    return create_record(payload, current_user)
+    return create_record(payload, clinician_id=current_user["id"])
