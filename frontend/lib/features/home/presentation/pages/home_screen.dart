@@ -6,6 +6,9 @@ import '../widgets/reminder_card.dart';
 import '../widgets/prescription_card.dart';
 import '../widgets/activity_item.dart';
 import '../providers/home_controller.dart';
+import '../providers/home_data_provider.dart';
+
+import '../../../allergies/presentation/pages/allergies_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -14,6 +17,9 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the provider to rebuild when index changes
     final currentIndex = ref.watch(homeIndexProvider);
+    final vitalsAsync = ref.watch(vitalsProvider);
+    final remindersAsync = ref.watch(remindersProvider);
+    final activityAsync = ref.watch(recentActivityProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -61,46 +67,42 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  GridView.count(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.1,
-                    children: const [
-                      VitalsCard(
-                        title: "A+",
-                        subtitle: "Blood Group",
-                        icon: Icons.water_drop_outlined,
-                        iconColor: AppColors.primary,
-                        iconBackgroundColor: AppColors.primaryVariant,
-                      ),
-                      VitalsCard(
-                        title: "AA",
-                        subtitle: "Genotype",
-                        icon: Icons.fingerprint,
-                        iconColor: Colors.grey,
-                        iconBackgroundColor: Color(0xFFF5F5F5),
-                      ),
-                      VitalsCard(
-                        title: "Penicillin",
-                        subtitle: "Allergies",
-                        icon: Icons.warning_amber_rounded,
-                        iconColor: AppColors.redAccent,
-                        iconBackgroundColor: AppColors.redBackground,
-                        backgroundColor: AppColors.redBackground,
-                        showChevron: true,
-                      ),
-                      VitalsCard(
-                        title: "Set",
-                        subtitle: "Reminder",
-                        icon: Icons.medical_services_outlined,
-                        iconColor: Color(0xFF009688),
-                        iconBackgroundColor: Color(0xFFE0F2F1), // Teal variant
-                      ),
-                    ],
+                  vitalsAsync.when(
+                    data: (vitals) => GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.1,
+                      children: vitals.map((vital) {
+                        return VitalsCard(
+                          title: vital.title,
+                          subtitle: vital.subtitle,
+                          icon: vital.icon,
+                          iconColor: vital.iconColor,
+                          iconBackgroundColor: vital.iconBackgroundColor,
+                          backgroundColor:
+                              vital.backgroundColor ?? Colors.white,
+                          showChevron: vital.showChevron,
+                          onTap: () {
+                            if (vital.subtitle == "Allergies") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AllergiesScreen(),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text('Error: $err'),
                   ),
+
                   const SizedBox(height: 32),
 
                   // Reminders Section
@@ -126,28 +128,42 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  SizedBox(
-                    height: 100, // Fixed height for horizontal list
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        const ReminderCard(),
-                        const SizedBox(width: 16),
-                        // Placeholder for second reminder
-                        Container(
-                          width: 100,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.medication,
-                            color: AppColors.orangeAccent,
-                          ),
-                        ),
-                      ],
+                  remindersAsync.when(
+                    data: (reminders) => SizedBox(
+                      height: 100, // Fixed height for horizontal list
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount:
+                            reminders.length +
+                            1, // +1 for the placeholder/add button
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 16),
+                        itemBuilder: (context, index) {
+                          if (index < reminders.length) {
+                            // Assuming ReminderCard takes data, but currently it's static.
+                            // For now we just show the static card for each item to prove connection.
+                            return const ReminderCard();
+                          } else {
+                            // The placeholder/add button
+                            return Container(
+                              width: 100,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.medication,
+                                color: AppColors.orangeAccent,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text('Error: $err'),
                   ),
                   const SizedBox(height: 32),
 
@@ -185,30 +201,24 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const ActivityItem(
-                    title: "General Checkup",
-                    subtitle: "General Hospital • Dr. Isreal",
-                    date: "Oct 24",
-                    icon: Icons.monitor_heart,
-                    iconColor: AppColors.primary,
-                    iconBackgroundColor: AppColors.primaryVariant,
-                  ),
-                  const ActivityItem(
-                    title: "Blood Test Results",
-                    subtitle: "Lab Corp • Complete Panel",
-                    date: "Oct 20",
-                    icon: Icons
-                        .water_drop, // Using water drop as kidneys replacement for now
-                    iconColor: Color(0xFF009688), // Tealish
-                    iconBackgroundColor: Color(0xFFE0F2F1),
-                  ),
-                  const ActivityItem(
-                    title: "Flu Vaccination",
-                    subtitle: "Garki Clinic",
-                    date: "Sep 15",
-                    icon: Icons.vaccines,
-                    iconColor: AppColors.blueAccent,
-                    iconBackgroundColor: AppColors.blueBackground,
+                  activityAsync.when(
+                    data: (activities) => Column(
+                      children: activities
+                          .map(
+                            (activity) => ActivityItem(
+                              title: activity.title,
+                              subtitle: activity.subtitle,
+                              date: activity.date,
+                              icon: activity.icon,
+                              iconColor: activity.iconColor,
+                              iconBackgroundColor: activity.iconBackgroundColor,
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text('Error: $err'),
                   ),
                   const SizedBox(height: 32),
                 ],
