@@ -13,7 +13,7 @@ class AppTheme {
         primary: AppColors.primary,
         surface: AppColors.surface,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme().apply(
+      textTheme: GoogleFonts.interTextTheme().apply(
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
       ),
