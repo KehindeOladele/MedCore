@@ -45,6 +45,18 @@ for update
 using (auth.uid() = id);
 
 
+-- Create policy for Patients to read own record
+create policy "Patients can read own record"
+on public.patients
+for select
+using (auth.uid() = id);
+
+
+-- -- Create policy for Patients to insert own record
+-- create policy "Patients can insert own record"
+-- on public.patients
+-- for insert
+-- with check (auth.uid() = id);
 
 
 
