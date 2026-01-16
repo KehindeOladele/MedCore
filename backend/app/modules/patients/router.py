@@ -4,9 +4,11 @@ from fastapi.responses import StreamingResponse
 from app.core.security import get_current_user
 from app.modules.patients.service import (
     get_or_create_patient,
-    get_patient_with_records
+    get_patient_with_records,
+    create_record
 )
 from app.modules.patients.models import Patient
+from app.modules.records.models import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
 
@@ -48,3 +50,12 @@ def patient_qr(
 
     buffer = generate_qr(bundle)
     return StreamingResponse(buffer, media_type="image/png")
+
+
+# ----- Create Medical Record for Patient -----
+@router.post("", status_code=201)
+def create_medical_record(
+    payload: MedicalRecordCreate,
+    current_user=Depends(get_current_user)
+):
+    return create_record(payload, current_user)
