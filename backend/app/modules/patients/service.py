@@ -52,3 +52,18 @@ def get_patient_with_records(patient_id: str):
     ).data
 
     return patient, records
+
+
+# ----- Create Medical Record -----
+def create_record(data, current_user):
+    return (
+        supabase
+        .table("medical_records")
+        .insert({
+            "patient_id": data.patient_id,
+            "clinician_id": current_user["id"],  # TEMP
+            "record_type": data.record_type,
+            "clinical_data": data.clinical_data
+        })
+        .execute()
+    )
