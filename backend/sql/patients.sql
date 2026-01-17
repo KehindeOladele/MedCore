@@ -52,7 +52,7 @@ for select
 using (auth.uid() = id);
 
 
--- Create policy for Patients to insert own record (TEMP) in to the medical records table
+-- Create policy for Patients to insert own record (TEMP) in to the medical rec table
 create policy "Patients can create own records (TEMP)"
 on public.medical_records
 for insert
