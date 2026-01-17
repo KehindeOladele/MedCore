@@ -8,7 +8,7 @@ from app.modules.records.router import router as records_router
 app = FastAPI(title="MedCore API")
 
 
-# ----- Include Routers -----
+# ===== Include Routers =====
 
 # ----- Auth Router -----
 app.include_router(auth_router)
