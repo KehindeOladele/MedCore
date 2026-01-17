@@ -51,11 +51,3 @@ def patient_qr(
     buffer = generate_qr(bundle)
     return StreamingResponse(buffer, media_type="image/png")
 
-
-# ----- Create Medical Record for Patient -----
-@router.post("", status_code=201)
-def create_medical_record(
-    payload: MedicalRecordCreate,
-    current_user=Depends(get_current_user)
-):
-    return create_record(payload, clinician_id=current_user["id"])
