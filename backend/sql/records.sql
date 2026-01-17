@@ -13,8 +13,10 @@ create table if not exists public.medical_records (
     created_at timestamp with time zone default timezone('utc', now())
 );
 
+
 -- Enable RLS
 alter table public.medical_records enable row level security;
+
 
 -- Patient can read own records
 create policy "Patients read own records"
@@ -22,8 +24,26 @@ on public.medical_records
 for select
 using (auth.uid() = patient_id);
 
+
 -- Clinicians can insert
 create policy "Clinicians insert records"
 on public.medical_records
 for insert
 with check (auth.uid() = clinician_id);
+
+
+-- Enable RLS
+-- alter table public.medical_records enable row level security;
+
+-- Patients can read their own records
+-- create policy "Patients can read own medical records"
+-- on public.medical_records
+-- for select
+-- using (auth.uid() = patient_id);
+
+-- -- Clinicians can create records
+-- create policy "Clinicians can create medical records"
+-- on public.medical_records
+-- for insert
+-- with check (auth.uid() = clinician_id);
+
