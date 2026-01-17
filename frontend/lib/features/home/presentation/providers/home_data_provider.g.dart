@@ -170,3 +170,44 @@ final class RecentActivityProvider
 }
 
 String _$recentActivityHash() => r'b2ec4c47ebe6c9e18db773d99970c6b457ea2b3c';
+
+@ProviderFor(prescriptions)
+final prescriptionsProvider = PrescriptionsProvider._();
+
+final class PrescriptionsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<PrescriptionModel>>,
+          List<PrescriptionModel>,
+          FutureOr<List<PrescriptionModel>>
+        >
+    with
+        $FutureModifier<List<PrescriptionModel>>,
+        $FutureProvider<List<PrescriptionModel>> {
+  PrescriptionsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'prescriptionsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$prescriptionsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<PrescriptionModel>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<PrescriptionModel>> create(Ref ref) {
+    return prescriptions(ref);
+  }
+}
+
+String _$prescriptionsHash() => r'8717693a2aa71726bea60236ce6abb27e4554a99';

@@ -10,6 +10,8 @@ import '../providers/home_data_provider.dart';
 
 import '../../../allergies/presentation/pages/allergies_screen.dart';
 import '../../../reminders/presentation/pages/add_reminder_screen.dart';
+import '../../../profile/presentation/pages/profile_screen.dart';
+import '../../../history/presentation/pages/medical_history_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -21,34 +23,37 @@ class HomeScreen extends ConsumerWidget {
     final vitalsAsync = ref.watch(vitalsProvider);
     final remindersAsync = ref.watch(remindersProvider);
     final activityAsync = ref.watch(recentActivityProvider);
+    final prescriptionsAsync = ref.watch(prescriptionsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: NetworkImage(
-                'https://i.pravatar.cc/150?img=1',
-              ), // Placeholder
-            ),
-            const SizedBox(width: 12),
-            Text(
-              "Hello, Micah",
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: currentIndex == 0
+          ? AppBar(
+              title: Row(
+                children: [
+                  const CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      'https://i.pravatar.cc/150?img=1',
+                    ), // Placeholder
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Hello, Micah",
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined),
+                  onPressed: () {},
+                ),
+                const SizedBox(width: 8),
+              ],
+            )
+          : null,
       body: IndexedStack(
         index: currentIndex,
         children: [
@@ -100,6 +105,13 @@ class HomeScreen extends ConsumerWidget {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       const AddReminderScreen(),
+                                ),
+                              );
+                            } else if (vital.subtitle == "Blood Group") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ProfileScreen(),
                                 ),
                               );
                             }
@@ -181,7 +193,24 @@ class HomeScreen extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const PrescriptionCard(),
+                  const SizedBox(height: 8),
+                  prescriptionsAsync.when(
+                    data: (prescriptions) => ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: prescriptions.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        return PrescriptionCard(
+                          prescription: prescriptions[index],
+                        );
+                      },
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Text('Error: $err'),
+                  ),
                   const SizedBox(height: 32),
 
                   // Recent Activity Section
@@ -217,11 +246,11 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
           // Index 1: History
-          const Center(child: Text("History")),
+          const MedicalHistoryScreen(),
           // Index 2: Add Record
-          const Center(child: Text("Add Record")),
+          const AddReminderScreen(isTab: true),
           // Index 3: Profile
-          const Center(child: Text("Profile")),
+          const ProfileScreen(isTab: true),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

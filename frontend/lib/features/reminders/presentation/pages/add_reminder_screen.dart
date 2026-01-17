@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../widgets/reminder_type_selector.dart';
+import '../../../home/presentation/providers/home_controller.dart';
 
 class AddReminderScreen extends ConsumerStatefulWidget {
-  const AddReminderScreen({super.key});
+  final bool isTab;
+  const AddReminderScreen({super.key, this.isTab = false});
 
   @override
   ConsumerState<AddReminderScreen> createState() => _AddReminderScreenState();
@@ -25,10 +27,12 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
           'Add Reminder',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: widget.isTab
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -233,7 +237,12 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (widget.isTab) {
+                    ref.read(homeIndexProvider.notifier).setIndex(0);
+                  } else {
+                    Navigator.pop(context);
+                  }
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Reminder Saved!')),
                   );

@@ -66,7 +66,11 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/icons/
+    - assets/icons/lab_test.svg
+    - assets/icons/imaging.svg
+    - assets/icons/prescription.svg
+    - assets/icons/report.svg
+    - assets/icons/blood.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

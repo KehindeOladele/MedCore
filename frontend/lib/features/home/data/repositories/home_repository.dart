@@ -3,8 +3,38 @@ import '../../../../core/theme/app_colors.dart';
 import '../models/vital_model.dart';
 import '../models/activity_model.dart';
 import '../models/reminder_model.dart';
+import '../models/prescription_model.dart';
 
 class HomeRepository {
+  Future<List<PrescriptionModel>> getPrescriptions() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return const [
+      PrescriptionModel(
+        title: "Amoxicillin",
+        subtitle: "Antibiotic",
+        dosage: "500mg",
+        schedule: "3 times daily (Every 8 hours)",
+        icon: Icons.medication,
+        iconColor: Color(0xFF009688), // Green
+        iconBackgroundColor: Color(0xFFE0F2F1), // Light Green
+        badgeColor: Color(0xFFF5F5F5),
+        backgroundColor: Color(0xFFF0FDFA),
+      ),
+      PrescriptionModel(
+        title: "Lisinopril",
+        subtitle: "Blood Pressure",
+        dosage: "10mg",
+        schedule: "Once daily with breakfast",
+        icon: Icons.medication_liquid, // Pill icon replacement
+        iconColor: Color(0xFF009688), // Green
+        iconBackgroundColor:
+            Colors.transparent, // White/Transparent as per design
+        badgeColor: Color(0xFFF5F5F5),
+        backgroundColor: Color(0xFFF0FDFA),
+      ),
+    ];
+  }
+
   Future<List<VitalModel>> getVitals() async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 200));
