@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../features/upload/presentation/pages/upload_result_screen.dart';
 
 class NewUploadScreen extends StatelessWidget {
   const NewUploadScreen({super.key});
@@ -52,24 +53,36 @@ class NewUploadScreen extends StatelessWidget {
                   0.75, // Adjust aspect ratio for card height to prevent overflow
               children: [
                 _buildUploadCategory(
+                  context,
                   iconPath: 'assets/icons/lab_test.svg',
                   color: const Color(0xFFE0F2F1), // Light Mint
                   title: "Lab Test",
                   description: "Blood work, urine\nanalysis, pathology",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UploadResultScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _buildUploadCategory(
+                  context,
                   iconPath: 'assets/icons/imaging.svg',
                   color: const Color(0xFFE3F2FD), // Light Blue
                   title: "Imaging",
                   description: "X-rays, MRI scans, CT\nscans, Ultrasounds",
                 ),
                 _buildUploadCategory(
+                  context,
                   iconPath: 'assets/icons/prescription.svg',
                   color: const Color(0xFFE0F7FA), // Light Cyan
                   title: "Prescription",
                   description: "Medication lists, Rx\nslips, renewals",
                 ),
                 _buildUploadCategory(
+                  context,
                   iconPath: 'assets/icons/report.svg',
                   color: const Color(0xFFF3E5F5), // Light Purple
                   title: "Report/Note",
@@ -169,49 +182,54 @@ class NewUploadScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUploadCategory({
+  Widget _buildUploadCategory(
+    BuildContext context, {
     required String iconPath,
     required Color color,
     required String title,
     required String description,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            child: SvgPicture.asset(iconPath, width: 24, height: 24),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: TextStyle(
-              color: Colors.grey[500],
-              fontSize: 12,
-              height: 1.4,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              child: SvgPicture.asset(iconPath, width: 24, height: 24),
+            ),
+            const Spacer(),
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: TextStyle(
+                color: Colors.grey[500],
+                fontSize: 12,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

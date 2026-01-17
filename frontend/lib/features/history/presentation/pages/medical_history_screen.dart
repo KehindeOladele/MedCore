@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/medical_history_model.dart';
 import 'medical_records_screen.dart';
+import '../../../../features/upload/presentation/pages/new_upload_screen.dart';
 
 class MedicalHistoryScreen extends StatelessWidget {
   const MedicalHistoryScreen({super.key});
@@ -58,13 +59,23 @@ class MedicalHistoryScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF009688),
-                          shape: BoxShape.circle,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const NewUploadScreen(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF009688),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add, color: Colors.white),
                         ),
-                        child: const Icon(Icons.add, color: Colors.white),
                       ),
                     ],
                   ),

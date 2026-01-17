@@ -71,6 +71,7 @@ flutter:
     - assets/icons/prescription.svg
     - assets/icons/report.svg
     - assets/icons/blood.svg
+    - assets/icons/Vector.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
