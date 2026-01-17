@@ -9,6 +9,7 @@ import '../providers/home_controller.dart';
 import '../providers/home_data_provider.dart';
 
 import '../../../allergies/presentation/pages/allergies_screen.dart';
+import '../../../reminders/presentation/pages/add_reminder_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -93,8 +94,17 @@ class HomeScreen extends ConsumerWidget {
                                   builder: (context) => const AllergiesScreen(),
                                 ),
                               );
+                            } else if (vital.subtitle == "Reminder") {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const AddReminderScreen(),
+                                ),
+                              );
                             }
                           },
+                          titleColor: vital.titleColor,
                         );
                       }).toList(),
                     ),
@@ -130,34 +140,15 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   remindersAsync.when(
                     data: (reminders) => SizedBox(
-                      height: 100, // Fixed height for horizontal list
+                      height: 140,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount:
-                            reminders.length +
-                            1, // +1 for the placeholder/add button
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: reminders.length,
                         separatorBuilder: (context, index) =>
                             const SizedBox(width: 16),
                         itemBuilder: (context, index) {
-                          if (index < reminders.length) {
-                            // Assuming ReminderCard takes data, but currently it's static.
-                            // For now we just show the static card for each item to prove connection.
-                            return const ReminderCard();
-                          } else {
-                            // The placeholder/add button
-                            return Container(
-                              width: 100,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: AppColors.surface,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(
-                                Icons.medication,
-                                color: AppColors.orangeAccent,
-                              ),
-                            );
-                          }
+                          return ReminderCard(reminder: reminders[index]);
                         },
                       ),
                     ),

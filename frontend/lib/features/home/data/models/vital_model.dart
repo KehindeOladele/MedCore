@@ -17,5 +17,8 @@ class VitalModel {
     required this.iconBackgroundColor,
     this.backgroundColor,
     this.showChevron = false,
+    this.titleColor,
   });
+
+  final Color? titleColor;
 }

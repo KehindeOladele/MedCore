@@ -29,16 +29,19 @@ class HomeRepository {
         subtitle: "Allergies",
         icon: Icons.warning_amber_rounded,
         iconColor: AppColors.redAccent,
-        iconBackgroundColor: AppColors.redBackground,
+        iconBackgroundColor: Colors.white, // White circle on red card
         backgroundColor: AppColors.redBackground,
         showChevron: true,
+        titleColor: AppColors.redAccent,
       ),
       VitalModel(
         title: "Set",
         subtitle: "Reminder",
         icon: Icons.medical_services_outlined,
         iconColor: Color(0xFF009688),
-        iconBackgroundColor: Color(0xFFE0F2F1),
+        iconBackgroundColor: Colors.white, // White circle on green card
+        backgroundColor: Color(0xFFE0F2F1),
+        titleColor: Color(0xFF009688),
       ),
     ];
   }
@@ -46,9 +49,28 @@ class HomeRepository {
   Future<List<ReminderModel>> getReminders() async {
     await Future.delayed(const Duration(milliseconds: 200));
     return [
-      const ReminderModel(),
-      // Adding a dummy second one to match UI placeholder if needed,
-      // but UI handles the second item as a specific 'Add' button or placeholder
+      ReminderModel(
+        title: "Cardiology Checkup",
+        subtitle: "Dr. Ozioma • 10:00 AM",
+        tagText: "Tomorrow",
+        tagColor: AppColors.primary,
+        icon: Icons.monitor_heart,
+        imageUrl: 'https://i.pravatar.cc/150?img=5',
+      ),
+      ReminderModel(
+        title: "Take Vitamins",
+        subtitle: "With Lunch • 12:30 PM",
+        tagText: "Daily",
+        tagColor: Colors.orange,
+        icon: Icons.medication,
+      ),
+      ReminderModel(
+        title: "Lab Results",
+        subtitle: "Blood test view",
+        tagText: "New",
+        tagColor: Colors.purple,
+        icon: Icons.science,
+      ),
     ];
   }
 
