@@ -4,8 +4,7 @@ from fastapi.responses import StreamingResponse
 from app.core.security import get_current_user
 from app.modules.patients.service import (
     get_or_create_patient,
-    get_patient_with_records,
-    create_record
+    get_patient_with_records
 )
 from app.modules.patients.models import Patient
 from app.modules.records.models import MedicalRecordCreate
