@@ -5,6 +5,10 @@ from datetime import datetime
 def create_record(data, clinician_id: str):
     """
     Store a medical record with FHIR-compliant JSONB data
+    record_type determines clinical intent:
+    - observation
+    - condition
+    - medication
     """
     response = (
         supabase
