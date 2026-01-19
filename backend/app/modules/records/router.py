@@ -3,6 +3,8 @@ from app.core.security import get_current_user
 from app.modules.records.service import create_record
 from app.modules.records.models import MedicalRecordCreate
 from app.core.security import require_permission
+from app.modules.records.models import MedicationRequestCreate
+from app.modules.records.service import create_medication_request
 
 
 router = APIRouter(prefix="/records", tags=["Medical Records"])
@@ -46,3 +48,18 @@ def create_medication(
 
     return create_record(payload, clinician_id=current_user["id"])
 
+
+
+# ----- Create Medication Request Record Endpoint-----
+@router.post("/medications", status_code=201)
+def create_medication(
+    payload: MedicationRequestCreate,
+    current_user=Depends(get_current_user)
+):
+    if current_user["role"] not in ["doctor", "clinician", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return create_medication_request(
+        payload,
+        clinician_id=current_user["id"]
+    )
