@@ -1,5 +1,5 @@
 from app.core.supabase_client import supabase
-from datetime import datetime
+from datetime import datetime,date
 
 # ---- Create Medical Record -----
 def create_record(data, clinician_id: str):
