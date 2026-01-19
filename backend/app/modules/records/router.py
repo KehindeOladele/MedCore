@@ -38,31 +38,13 @@ def create_observation_api(
     return create_observation(payload, current_user["id"])
 
 
-# ----- Create Condition Record Endpoint-----
-@router.post("/conditions", status_code=201)
-def create_condition_api(
-    payload: ConditionCreate,
-    current_user=Depends(get_current_user)
-):
-    if current_user["role"] not in ["clinician", "doctor", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    return create_condition(payload, current_user["id"])
-
-
-# ----- Create Observation Record with RBAC Endpoint-----
-@router.post("/observations", status_code=201)
-def create_observation(
-    payload: ObservationCreate,
-    current_user=Depends(require_permission("create_observation"))
-):
-    return create_observation_record(payload, current_user["id"])
-
-
 # ----- Create Condition Record with RBAC Endpoint-----
 @router.post("/medications", status_code=201)
 def create_medication(
-    payload: MedicationCreate,
+    payload: MedicalRecordCreate,
     current_user=Depends(require_permission("create_medication"))
 ):
-    return create_medication_record(payload, current_user["id"])
+    if payload.record_type != "medication":
+        raise HTTPException(400, "record_type must be 'medication'")
+
+    return create_record(payload, clinician_id=current_user["id"])
