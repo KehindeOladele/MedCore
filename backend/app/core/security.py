@@ -77,3 +77,30 @@ def require_permission(permission: str):
             raise HTTPException(status_code=403, detail="Not authorized")
         return current_user
     return checker
+
+
+# ---- Get User Permissions -----
+def get_user_permissions(user_id: str) -> set[str]:
+    response = (
+        supabase
+        .rpc("get_user_permissions", {"uid": user_id})
+        .execute()
+    )
+
+    return {p["permission"] for p in response.data}
+
+
+# ----- Permission Guard Dependency -----
+def require_permission(permission: str):
+    def guard(current_user=Depends(get_current_user)):
+        perms = get_user_permissions(current_user["id"])
+
+        if permission not in perms:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Missing permission: {permission}"
+            )
+
+        return current_user
+
+    return guard
