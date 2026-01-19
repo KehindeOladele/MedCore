@@ -8,3 +8,13 @@ class MedicalRecordCreate(BaseModel):
     patient_id: UUID
     record_type: Literal["observation", "condition", "procedure"]
     clinical_data: Dict[str, Any]  # FHIR resource JSON
+
+
+    
+class MedicationRequestCreate(BaseModel):
+    patient_id: UUID
+
+    # RxNorm fields
+    code: str
+    display: str
+    dosage_text: str | None = None
