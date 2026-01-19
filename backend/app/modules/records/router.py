@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user
 from app.modules.records.service import create_record
 from app.modules.records.models import MedicalRecordCreate
-from app.modules.records.models import ObservationCreate, ConditionCreate
 from app.core.security import require_permission
 
 
