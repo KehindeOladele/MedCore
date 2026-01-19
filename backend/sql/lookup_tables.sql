@@ -12,3 +12,9 @@ create index on public.terminology_codes (system);
 -- Create indexes for faster lookups (code)
 create index on public.terminology_codes (code);
 
+
+-- Row Level Security Policy: Read-only access to terminology codes
+create policy "Read-only terminology"
+on public.terminology_codes
+for select
+using (true);
