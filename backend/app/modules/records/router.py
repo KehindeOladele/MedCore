@@ -3,8 +3,7 @@ from app.core.security import get_current_user
 from app.modules.records.service import create_record
 from app.modules.records.models import MedicalRecordCreate
 from app.core.security import require_permission
-from app.modules.records.models import MedicationRequestCreate
-from app.modules.records.service import create_medication_request
+from datetime import date
 
 
 router = APIRouter(prefix="/records", tags=["Medical Records"])
@@ -40,26 +39,36 @@ def create_condition(
 # ----- Create Condition Record with RBAC Endpoint-----
 @router.post("/medications", status_code=201)
 def create_medication(
-    payload: MedicalRecordCreate,
+    payload: dict,
     current_user=Depends(require_permission("create_medication"))
 ):
-    if payload.record_type != "medication":
-        raise HTTPException(400, "record_type must be 'medication'")
+    """
+    Accepts RxNorm input and wraps it into a FHIR MedicationRequest
+    """
 
-    return create_record(payload, clinician_id=current_user["id"])
+    fhir_medication = {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+            "coding": [
+                {
+                    "system": RXNORM_SYSTEM,
+                    "code": payload["code"],
+                    "display": payload["display"]
+                }
+            ]
+        },
+        "subject": {
+            "reference": f"Patient/{payload['patient_id']}"
+        },
+        "authoredOn": date.today().isoformat()
+    }
 
-
-
-# ----- Create Medication Request Record Endpoint-----
-@router.post("/medications", status_code=201)
-def create_medication(
-    payload: MedicationRequestCreate,
-    current_user=Depends(get_current_user)
-):
-    if current_user["role"] not in ["doctor", "clinician", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    return create_medication_request(
-        payload,
-        clinician_id=current_user["id"]
+    record = MedicalRecordCreate(
+        patient_id=payload["patient_id"],
+        record_type="medication",
+        clinical_data=fhir_medication
     )
+
+    return create_record(record, clinician_id=current_user["id"])
