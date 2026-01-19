@@ -1,19 +1,37 @@
+# app/core/rbac.py
+# ----- Role-Based Access Control (RBAC) -----
 ROLE_PERMISSIONS = {
-    "patient": [],
-    "nurse": ["create_observation"],
-    "clinician": ["create_observation"],
-    "laboratory scientist": ["create_observation"],
+    "patient": [
+        "read_own_records"
+    ],
+
+    "nurse": [
+        "create_observation",
+        "read_patient_records"
+    ],
+
+    "clinician": [
+        "create_observation",
+        "read_patient_records"
+    ],
+
     "doctor": [
         "create_observation",
         "create_condition",
-        "create_medication"
+        "create_medication",
+        "read_patient_records"
     ],
+
+    "lab-tech": [
+        "create_observation"
+    ],
+
     "admin": ["*"]
 }
 
 
-# ----- RBAC Utility Functions -----
-def has_permission(user_role: str, permission: str) -> bool:
-    if user_role == "admin":
+# ----- Check if a role has a specific permission -----
+def has_permission(role: str, permission: str) -> bool:
+    if role == "admin":
         return True
-    return permission in ROLE_PERMISSIONS.get(user_role, [])
+    return permission in ROLE_PERMISSIONS.get(role, [])
