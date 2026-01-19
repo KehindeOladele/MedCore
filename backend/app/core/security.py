@@ -42,7 +42,7 @@ def get_current_user(
             detail="Authentication failed",
         )
 
-    # ----- Return User Information -----
+    # ----- Return User Information  from supabase instance-----
     return {
         "id": user.id,
         "email": user.email,

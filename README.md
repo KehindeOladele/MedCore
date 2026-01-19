@@ -10,8 +10,6 @@ A detailed API Contract and Data Requirement specification has been prepared to 
 
 👉 **[READ THE BACKEND API SPECS HERE](BACKEND_API_SPECS.md)**
 
-Please adhere strictly to these contracts to ensure seamless integration with the mobile application.
-
 ## Features
 
 - **Home Dashboard**: Aggregated view of Vitals, Reminders, and Active Prescriptions.
