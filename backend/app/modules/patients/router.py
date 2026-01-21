@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from app.modules.patients.service import build_patient_timeline
 
 from app.core.security import get_current_user
 from app.modules.patients.service import (
@@ -62,3 +63,12 @@ def patient_summary(
     current_user=Depends(require_permission("read_patient_summary"))
 ):
     return get_patient_summary(str(patient_id))
+
+
+# ----- Get Patient Timeline -----
+@router.get("/{patient_id}/timeline")
+def get_patient_timeline(
+    patient_id: UUID,
+    current_user=Depends(require_permission("view_patient"))
+):
+    return build_patient_timeline(patient_id)
