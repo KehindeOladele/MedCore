@@ -55,12 +55,16 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
         }
 
     # ---- Extract conditions ----
-    condition_list = []
+    condition_set = set()
+
     for c in conditions:
         cd = c["clinical_data"]
-        condition_list.append(
-            cd.get("code", {}).get("text")
-        )
+        name = cd.get("code", {}).get("text")
+        if name:
+            condition_set.add(name)
+
+    condition_list = list(condition_set)
+
 
     # ---- Extract medications ----
     medication_list = []
