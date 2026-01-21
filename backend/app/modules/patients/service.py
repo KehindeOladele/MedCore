@@ -1,5 +1,5 @@
 from app.core.supabase_client import supabase
-from app.shared.utils.timeline_events_trans_helper import transform_record_to_event
+from app.shared.utils.timeline_event_trans_helper import transform_record_to_event
 from uuid import UUID
 from typing import List, Dict, Any
 
