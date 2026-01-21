@@ -1,4 +1,5 @@
 from app.core.supabase_client import supabase
+from app.modules.shared.utils.timeline_events_trans_helper import transform_record_to_event
 from uuid import UUID
 from typing import List, Dict, Any
 
@@ -145,3 +146,25 @@ def get_patient_with_records(patient_id: str):
 
     return patient, records
 
+
+# ----- Transform Record to Timeline Event -----
+def build_patient_timeline(patient_id: UUID):
+    response = (
+        supabase
+        .table("medical_records")
+        .select("*")
+        .eq("patient_id", str(patient_id))
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    records = response.data or []
+
+    timeline = []
+    for r in records:
+        timeline.append(transform_record_to_event(r))
+
+    return {
+        "patient_id": str(patient_id),
+        "events": timeline
+    }
