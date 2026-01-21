@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user
 from app.modules.records.service import create_record
-from app.modules.records.models import MedicalRecordCreate
+from app.modules.records.models import MedicalRecordCreate, MedicationInput
+from app.modules.terminology.constants import CODE_SYSTEMS
 from app.core.security import require_permission
 from datetime import date
 
@@ -39,7 +40,7 @@ def create_condition(
 # ----- Create Condition Record with RBAC Endpoint-----
 @router.post("/medications", status_code=201)
 def create_medication(
-    payload: dict,
+    payload: MedicationInput,
     current_user=Depends(require_permission("create_medication"))
 ):
     """
@@ -53,20 +54,27 @@ def create_medication(
         "medicationCodeableConcept": {
             "coding": [
                 {
-                    "system": RXNORM_SYSTEM,
-                    "code": payload["code"],
-                    "display": payload["display"]
+                    "system": CODE_SYSTEMS["RXNORM"],
+                    "code": payload.code,
+                    "display": payload.display
                 }
             ]
         },
         "subject": {
-            "reference": f"Patient/{payload['patient_id']}"
+            "reference": f"Patient/{payload.patient_id}"
         },
         "authoredOn": date.today().isoformat()
     }
 
+    if payload.dosage_text:
+        fhir_medication["dosageInstruction"] = [
+            {
+                "text": payload.dosage_text
+            }
+        ]
+
     record = MedicalRecordCreate(
-        patient_id=payload["patient_id"],
+        patient_id=payload.patient_id,
         record_type="medication",
         clinical_data=fhir_medication
     )
