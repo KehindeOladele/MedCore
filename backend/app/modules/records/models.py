@@ -13,3 +13,11 @@ class MedicalRecordCreate(BaseModel):
         "medication"
     ]
     clinical_data: Dict[str, Any]
+
+
+# ----- Medication Input Schema -----
+class MedicationInput(BaseModel):
+    patient_id: UUID
+    code: str
+    display: str
+    dosage_text: str | None = None
