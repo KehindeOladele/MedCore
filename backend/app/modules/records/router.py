@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user
 from app.modules.records.service import create_record
-from app.modules.records.models import MedicalRecordCreate, MedicationInput
+from app.modules.records.models import (
+    MedicalRecordCreate, 
+    MedicationInput, 
+    resolve_condition_record
+    )
 from app.modules.terminology.constants import CODE_SYSTEMS
 from app.core.security import require_permission
 from datetime import date
@@ -80,3 +84,12 @@ def create_medication(
     )
 
     return create_record(record, clinician_id=current_user["id"])
+
+
+# ----- Resolve Condition Record Endpoint-----
+@router.patch("/conditions/{record_id}/resolve")
+def resolve_condition(
+    record_id: str,
+    current_user=Depends(require_permission("resolve_condition"))
+):
+    return resolve_condition_record(record_id, current_user["id"])
