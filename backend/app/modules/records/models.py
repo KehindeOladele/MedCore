@@ -19,6 +19,6 @@ class MedicalRecordCreate(BaseModel):
 class MedicationInput(BaseModel):
     patient_id: UUID
     record_type: str
-    code: str | None = None
-    display: str | None = None
-    clinical_data: dict
+    code: str 
+    display: str
+    dosage_text: str | None = None
