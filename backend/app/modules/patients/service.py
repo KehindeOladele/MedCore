@@ -67,11 +67,18 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
     for c in conditions:
         cd = c["clinical_data"]
-        status = (
-        cd.get("clinicalStatus", {})
-            .get("coding", [{}])[0]
-            .get("code")
-        )
+        clinical_status = cd.get("clinicalStatus")
+
+        if isinstance(clinical_status, dict):
+            status = (
+                clinical_status
+                .get("coding", [{}])[0]
+                .get("code")
+            )
+        elif isinstance(clinical_status, str):
+            status = clinical_status
+        else:
+            status = None
 
         if status == "active":
             name = cd.get("code", {}).get("text")
