@@ -10,22 +10,35 @@ def parse_condition_event(record) -> dict:
     """
     data = record["clinical_data"]
 
-    coding = (
-        data.get("code", {})
-            .get("coding", [{}])[0]
-    )
+    # ---- Code (SNOMED) ----
+    code_block = data.get("code", {})
+    coding = code_block.get("coding", [{}])[0] if isinstance(code_block, dict) else {}
 
-    status_coding = (
-        data.get("clinicalStatus", {})
+    # ---- Clinical Status (FHIR-safe) ----
+    clinical_status = data.get("clinicalStatus")
+
+    if isinstance(clinical_status, dict):
+        status = (
+            clinical_status
             .get("coding", [{}])[0]
-    )
+            .get("code")
+        )
+    elif isinstance(clinical_status, str):
+        status = clinical_status
+    else:
+        status = None
 
     return {
+        "id": record.get("id"),
         "type": "condition",
         "date": data.get("onsetDateTime") or record["created_at"],
         "end_date": data.get("abatementDateTime"),
-        "title": coding.get("display") or data.get("code", {}).get("text"),
-        "status": status_coding.get("code"),
+        "title": (
+            coding.get("display")
+            or code_block.get("text")
+            or "Condition"
+        ),
+        "status": status,
         "code": {
             "system": "SNOMED",
             "code": coding.get("code"),
