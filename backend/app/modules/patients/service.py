@@ -188,6 +188,27 @@ def parse_condition_event(record) -> dict:
     }
 
 
+# ----- Parse Observation Event -----
+def parse_observation_event(record: dict) -> dict:
+    """
+    Function parse_observation_event,
+    enhance timeline events for observations.
+
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
+
+    return {
+        "type": "observation",
+        "date": record["created_at"],
+        "title": data.get("code", {}).get("text"),
+        "value": data.get("valueQuantity", {}).get("value"),
+        "unit": data.get("valueQuantity", {}).get("unit")
+    }
+
+
+
 # ----- Transform Record to Timeline Event -----
 def build_patient_timeline(patient_id: UUID):
     """
