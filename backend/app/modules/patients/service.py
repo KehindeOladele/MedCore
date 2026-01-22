@@ -237,6 +237,29 @@ def parse_medication_event(record: dict) -> dict:
     }
 
 
+# ----- Transform Record to Event -----
+def transform_record_to_event(record: dict) -> dict | None:
+    """
+    Transform a medical record into a timeline event based on its type.
+
+    input: record (dict) - medical record
+    return: dict | None - timeline event or None if type is unrecognized
+    """
+    record_type = record.get("record_type")
+
+    if record_type == "condition":
+        return parse_condition_event(record)
+
+    if record_type == "observation":
+        return parse_observation_event(record)
+
+    if record_type == "medication":
+        return parse_medication_event(record)
+
+    return None
+
+
+
 # ----- Transform Record to Timeline Event -----
 def build_patient_timeline(patient_id: UUID):
     """
