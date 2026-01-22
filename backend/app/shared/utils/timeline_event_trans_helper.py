@@ -1,29 +1,104 @@
-def transform_record_to_event(record: dict):
-    clinical = record["clinical_data"]
-    record_type = record["record_type"]
+# ----- Parse Condition Event -----
+def parse_condition_event(record) -> dict:
+    """
+    function parse_condition_event, 
+    enhance timeline events for conditions 
+    (status, onset date, SNOMED code).
+    
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
 
-    if record_type == "observation":
-        title = clinical.get("code", {}).get("text", "Observation")
-        value = clinical.get("valueQuantity", {})
-        description = f"{value.get('value')} {value.get('unit')}"
+    coding = (
+        data.get("code", {})
+            .get("coding", [{}])[0]
+    )
 
-    elif record_type == "condition":
-        title = clinical.get("code", {}).get("text", "Condition")
-        description = clinical.get("clinicalStatus", {}).get("text", "")
-
-    elif record_type == "medication":
-        title = clinical["medicationCodeableConcept"]["coding"][0]["display"]
-        description = clinical.get("status", "active")
-
-    else:
-        title = record_type
-        description = ""
+    status_coding = (
+        data.get("clinicalStatus", {})
+            .get("coding", [{}])[0]
+    )
 
     return {
-        "id": record["id"],
-        "type": record_type,
-        "title": title,
-        "description": description,
-        "timestamp": record["created_at"],
-        "source": "clinician"
+        "type": "condition",
+        "date": data.get("onsetDateTime") or record["created_at"],
+        "end_date": data.get("abatementDateTime"),
+        "title": coding.get("display") or data.get("code", {}).get("text"),
+        "status": status_coding.get("code"),
+        "code": {
+            "system": "SNOMED",
+            "code": coding.get("code"),
+            "display": coding.get("display")
+        }
     }
+
+
+# ----- Parse Observation Event -----
+def parse_observation_event(record: dict) -> dict:
+    """
+    Function parse_observation_event,
+    enhance timeline events for observations.
+
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
+
+    return {
+        "type": "observation",
+        "date": record["created_at"],
+        "title": data.get("code", {}).get("text"),
+        "value": data.get("valueQuantity", {}).get("value"),
+        "unit": data.get("valueQuantity", {}).get("unit")
+    }
+
+
+# ------ Parse Medication Event -----
+def parse_medication_event(record: dict) -> dict:
+    """
+    Function parse_medication_event,
+    enhance timeline events for medications.
+
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
+
+    coding = (
+        data.get("medicationCodeableConcept", {})
+            .get("coding", [{}])[0]
+    )
+
+    return {
+        "type": "medication",
+        "date": data.get("authoredOn") or record["created_at"],
+        "title": coding.get("display"),
+        "code": {
+            "system": "RxNorm",
+            "code": coding.get("code"),
+            "display": coding.get("display")
+        }
+    }
+
+
+# ----- Transform Record to Event -----
+def transform_record_to_event(record: dict) -> dict | None:
+    """
+    Transform a medical record into a timeline event based on its type.
+
+    input: record (dict) - medical record
+    return: dict | None - timeline event or None if type is unrecognized
+    """ 
+    record_type = record.get("record_type")
+
+    if record_type == "condition":
+        return parse_condition_event(record)
+
+    if record_type == "observation":
+        return parse_observation_event(record)
+
+    if record_type == "medication":
+        return parse_medication_event(record)
+
+    return None
