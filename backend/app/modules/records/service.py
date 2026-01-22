@@ -23,3 +23,44 @@ def create_record(data, clinician_id: str):
     )
 
     return response.data[0]
+
+
+# ----- Resolve Condition Record -----
+def resolve_condition_record(record_id: str, clinician_id: str):
+    """
+    Update a condition record to mark it as resolved
+    
+    input: record_id (str): ID of the condition record to resolve
+        clinician_id (str): ID of the clinician resolving the condition
+    output: updated record data
+    """
+    record = (
+        supabase
+        .table("medical_records")
+        .select("*")
+        .eq("id", record_id)
+        .single()
+        .execute()
+    ).data
+
+    if not record:
+        raise ValueError("Condition not found")
+
+    data = record["clinical_data"]
+
+    data["clinicalStatus"]["coding"][0]["code"] = "resolved"
+    data["clinicalStatus"]["coding"][0]["display"] = "Resolved"
+    data["abatementDateTime"] = datetime.utcnow().isoformat()
+
+    update = (
+        supabase
+        .table("medical_records")
+        .update({
+            "clinical_data": data,
+            "updated_by": clinician_id
+        })
+        .eq("id", record_id)
+        .execute()
+    )
+
+    return update.data[0]
