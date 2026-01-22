@@ -209,6 +209,34 @@ def parse_observation_event(record: dict) -> dict:
 
 
 
+# ------ Parse Medication Event -----
+def parse_medication_event(record: dict) -> dict:
+    """
+    Function parse_medication_event,
+    enhance timeline events for medications.
+
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
+
+    coding = (
+        data.get("medicationCodeableConcept", {})
+            .get("coding", [{}])[0]
+    )
+
+    return {
+        "type": "medication",
+        "date": data.get("authoredOn") or record["created_at"],
+        "title": coding.get("display"),
+        "code": {
+            "system": "RxNorm",
+            "code": coding.get("code"),
+            "display": coding.get("display")
+        }
+    }
+
+
 # ----- Transform Record to Timeline Event -----
 def build_patient_timeline(patient_id: UUID):
     """
