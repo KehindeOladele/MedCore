@@ -67,9 +67,16 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
     for c in conditions:
         cd = c["clinical_data"]
-        name = cd.get("code", {}).get("text")
-        if name:
-            condition_set.add(name)
+        status = (
+        cd.get("clinicalStatus", {})
+            .get("coding", [{}])[0]
+            .get("code")
+        )
+
+        if status == "active":
+            name = cd.get("code", {}).get("text")
+            if name:
+                condition_set.add(name)
 
     condition_list = list(condition_set)
 
@@ -154,112 +161,6 @@ def get_patient_with_records(patient_id: str):
     return patient, records
 
 
-
-# ----- Parse Condition Event -----
-def parse_condition_event(record) -> dict:
-    """
-    function parse_condition_event, 
-    enhance timeline events for conditions 
-    (status, onset date, SNOMED code).
-    
-    input: record (dict) - medical record
-    return: dict - enhanced timeline event
-    """
-    data = record["clinical_data"]
-
-    coding = (
-        data.get("code", {})
-            .get("coding", [{}])[0]
-    )
-
-    return {
-        "type": "condition",
-        "date": (
-            data.get("onsetDateTime")
-            or record["created_at"]
-        ),
-        "title": coding.get("display") or data.get("code", {}).get("text"),
-        "status": data.get("clinicalStatus"),
-        "code": {
-            "system": "SNOMED",
-            "code": coding.get("code"),
-            "display": coding.get("display")
-        }
-    }
-
-
-# ----- Parse Observation Event -----
-def parse_observation_event(record: dict) -> dict:
-    """
-    Function parse_observation_event,
-    enhance timeline events for observations.
-
-    input: record (dict) - medical record
-    return: dict - enhanced timeline event
-    """
-    data = record["clinical_data"]
-
-    return {
-        "type": "observation",
-        "date": record["created_at"],
-        "title": data.get("code", {}).get("text"),
-        "value": data.get("valueQuantity", {}).get("value"),
-        "unit": data.get("valueQuantity", {}).get("unit")
-    }
-
-
-
-# ------ Parse Medication Event -----
-def parse_medication_event(record: dict) -> dict:
-    """
-    Function parse_medication_event,
-    enhance timeline events for medications.
-
-    input: record (dict) - medical record
-    return: dict - enhanced timeline event
-    """
-    data = record["clinical_data"]
-
-    coding = (
-        data.get("medicationCodeableConcept", {})
-            .get("coding", [{}])[0]
-    )
-
-    return {
-        "type": "medication",
-        "date": data.get("authoredOn") or record["created_at"],
-        "title": coding.get("display"),
-        "code": {
-            "system": "RxNorm",
-            "code": coding.get("code"),
-            "display": coding.get("display")
-        }
-    }
-
-
-# ----- Transform Record to Event -----
-def transform_record_to_event(record: dict) -> dict | None:
-    """
-    Transform a medical record into a timeline event based on its type.
-
-    input: record (dict) - medical record
-    return: dict | None - timeline event or None if type is unrecognized
-    """
-    record_type = record.get("record_type")
-
-    if record_type == "condition":
-        return parse_condition_event(record)
-
-    if record_type == "observation":
-        return parse_observation_event(record)
-
-    if record_type == "medication":
-        return parse_medication_event(record)
-
-    return None
-
-
-
 # ----- Transform Record to Timeline Event -----
 def build_patient_timeline(patient_id: UUID):
     """
@@ -290,4 +191,29 @@ def build_patient_timeline(patient_id: UUID):
     return {
         "patient_id": str(patient_id),
         "events": events
+    }
+
+
+# ----- Build Condition Resource -----
+def build_condition_resource(payload: dict):
+    """
+    Build a FHIR Condition resource from a payload.
+    Normalizes clinicalStatus and maps code.
+    
+    input: payload (dict) - condition data
+    return: dict - FHIR Condition resource
+    """
+    return {
+        "resourceType": "Condition",
+        "clinicalStatus": {
+            "coding": [
+                {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                    "code": payload.get("status", "active"),
+                    "display": payload.get("status", "active").title()
+                }
+            ]
+        },
+        "code": payload["code"],
+        "onsetDateTime": payload.get("onsetDateTime")
     }
