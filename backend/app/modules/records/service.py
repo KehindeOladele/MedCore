@@ -28,7 +28,7 @@ def create_record(data, clinician_id: str):
 # ----- Resolve Condition Record -----
 def resolve_condition_record(record_id: str, clinician_id: str):
     """
-    Update a condition record to mark it as resolved
+    Update a condition record to mark it as resolved clinical status and date.
     
     input: record_id (str): ID of the condition record to resolve
         clinician_id (str): ID of the clinician resolving the condition
