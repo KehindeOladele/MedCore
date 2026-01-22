@@ -5,6 +5,13 @@ from typing import List, Dict, Any
 
 
 def get_patient_summary(patient_id: str) -> Dict[str, Any]:
+    """
+    Generate a summary of the patient's health data including 
+    vitals, conditions, and medications.  
+
+    input: patient_id (str) - unique identifier for the patient
+    return: dict - summary of patient's health data
+    """
     # ---- Fetch patient ----
     patient_resp = (
         supabase
@@ -167,4 +174,37 @@ def build_patient_timeline(patient_id: UUID):
     return {
         "patient_id": str(patient_id),
         "events": timeline
+    }
+
+
+# ----- Parse Condition Event -----
+def parse_condition_event(record) -> dict:
+    """
+    function parse_condition_event, 
+    enhance timeline events for conditions 
+    (status, onset date, SNOMED code).
+    
+    input: record (dict) - medical record
+    return: dict - enhanced timeline event
+    """
+    data = record["clinical_data"]
+
+    coding = (
+        data.get("code", {})
+            .get("coding", [{}])[0]
+    )
+
+    return {
+        "type": "condition",
+        "date": (
+            data.get("onsetDateTime")
+            or record["created_at"]
+        ),
+        "title": coding.get("display") or data.get("code", {}).get("text"),
+        "status": data.get("clinicalStatus"),
+        "code": {
+            "system": "SNOMED",
+            "code": coding.get("code"),
+            "display": coding.get("display")
+        }
     }
