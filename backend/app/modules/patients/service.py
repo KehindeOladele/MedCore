@@ -154,28 +154,6 @@ def get_patient_with_records(patient_id: str):
     return patient, records
 
 
-# ----- Transform Record to Timeline Event -----
-def build_patient_timeline(patient_id: UUID):
-    response = (
-        supabase
-        .table("medical_records")
-        .select("*")
-        .eq("patient_id", str(patient_id))
-        .order("created_at", desc=True)
-        .execute()
-    )
-
-    records = response.data or []
-
-    timeline = []
-    for r in records:
-        timeline.append(transform_record_to_event(r))
-
-    return {
-        "patient_id": str(patient_id),
-        "events": timeline
-    }
-
 
 # ----- Parse Condition Event -----
 def parse_condition_event(record) -> dict:
@@ -207,4 +185,37 @@ def parse_condition_event(record) -> dict:
             "code": coding.get("code"),
             "display": coding.get("display")
         }
+    }
+
+
+# ----- Transform Record to Timeline Event -----
+def build_patient_timeline(patient_id: UUID):
+    """
+    Build a chronological timeline of a patient's medical events.
+    
+    input: patient_id (UUID) - unique identifier for the patient
+    return: dict - timeline of medical events
+    """
+    response = (
+        supabase
+        .table("medical_records")
+        .select("*")
+        .eq("patient_id", str(patient_id))
+        .order("created_at", desc=True)
+        .execute()
+    )
+
+    records = response.data or []
+
+    events = [
+        transform_record_to_event(record)
+        for record in records
+        if transform_record_to_event(record) is not None
+    ]
+
+    events.sort(key=lambda e: e["date"], reverse=True)
+
+    return {
+        "patient_id": str(patient_id),
+        "events": events
     }
