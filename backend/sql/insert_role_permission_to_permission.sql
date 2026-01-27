@@ -5,7 +5,11 @@ values (
     'Resolve an active patient condition'
 );
 
+<<<<<<< HEAD
 
+=======
+-- insert new permissions for observations, conditions, patient QR codes, and FHIR bundles
+>>>>>>> sql
 insert into permissions (id, name, description)
 values
     (gen_random_uuid(), 'create_observation', 'Create observation records'),
