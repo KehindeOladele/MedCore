@@ -70,15 +70,6 @@ def require_role(required_role: str):
     return checker
 
 
-# ----- Permission-Based Access Control -----
-def require_permission(permission: str):
-    def checker(current_user=Depends(get_current_user)):
-        if not has_permission(current_user["role"], permission):
-            raise HTTPException(status_code=403, detail="Not authorized")
-        return current_user
-    return checker
-
-
 # ---- Get User Permissions -----
 def get_user_permissions(user_id: str) -> set[str]:
     response = (
