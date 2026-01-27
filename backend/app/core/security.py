@@ -82,16 +82,34 @@ def get_user_permissions(user_id: str) -> set[str]:
 
 
 # ----- Permission Guard Dependency -----
-def require_permission(permission: str):
-    def guard(current_user=Depends(get_current_user)):
-        perms = get_user_permissions(current_user["id"])
+def require_permission(permission_name: str):
+    def checker(current_user=Depends(get_current_user)):
 
-        if permission not in perms:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Missing permission: {permission}"
+        user_id = current_user["id"]
+
+        result = (
+            supabase
+            .table("user_roles")
+            .select(
+                "roles!inner(id, name, role_permissions!inner(permissions!inner(name)))"
             )
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not result.data:
+            raise HTTPException(403, "Not authorized")
+
+        permissions = {
+            perm["name"]
+            for role in result.data
+            for rp in role["roles"]["role_permissions"]
+            for perm in [rp["permissions"]]
+        }
+
+        if permission_name not in permissions:
+            raise HTTPException(403, "Not authorized")
 
         return current_user
 
-    return guard
+    return checker
