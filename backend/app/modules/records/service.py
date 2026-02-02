@@ -1,6 +1,21 @@
 from app.core.supabase_client import supabase
 from datetime import datetime,date
 
+
+# ----- Normalize Condition on Create -----
+def normalize_condition_on_create(data: dict) -> dict:
+    if "clinicalStatus" not in data or not isinstance(data["clinicalStatus"], dict):
+        data["clinicalStatus"] = {
+            "coding": [{
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active",
+                "display": "Active"
+            }]
+        }
+
+    return data
+
+
 # ---- Create Medical Record -----
 def create_record(data, clinician_id: str):
     """
@@ -10,6 +25,11 @@ def create_record(data, clinician_id: str):
     - condition
     - medication
     """
+    clinical_data = data.clinical_data or {}
+
+    if data.record_type == "condition":
+        clinical_data = normalize_condition_on_create(clinical_data)
+
     response = (
         supabase
         .table("medical_records")
@@ -17,7 +37,7 @@ def create_record(data, clinician_id: str):
             "patient_id": str(data.patient_id),
             "clinician_id": clinician_id,
             "record_type": data.record_type,
-            "clinical_data": data.clinical_data
+            "clinical_data": clinical_data
         })
         .execute()
     )
