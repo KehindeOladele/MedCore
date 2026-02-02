@@ -65,7 +65,7 @@ def resolve_condition_record(record_id: str, clinician_id: str):
         data["clinicalStatus"]["coding"][0]["display"] = "Resolved"
 
     # ---- FHIR abatement ----
-    data["abatementDateTime"] = datetime.utcnow().isoformat()
+    data["abatementDateTime"] = datetime.now().isoformat()
 
     update = (
         supabase
