@@ -40,7 +40,7 @@ def resolve_condition_record(record_id: str, clinician_id: str):
         .select("*")
         .eq("id", record_id)
         .eq("record_type", "condition")
-        .single()
+        .eq("clinician_id", clinician_id)
         .execute()
     ).data
 
