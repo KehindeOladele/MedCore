@@ -43,13 +43,22 @@ def get_current_user(
             detail="Authentication failed",
         )
     
-    print("USER METADATA:", user.user_metadata)
+    # ----- Extract Role from User Metadata -----
+    role = user.user_metadata.get("role")
+
+    if not role:
+        raise HTTPException(
+            status_code=403,
+            detail="User role not configured"
+        )
+    
+    print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
 
     # ----- Return User Information  from supabase instance -----
     return {
         "id": user.id,
         "email": user.email,
-        "role": user.user_metadata.get("role"),
+        "role": role,
     }
   
 
