@@ -81,11 +81,11 @@ def resolve_condition_record(record_id: str, clinician_id: str):
     ).data
 
     # ---- Guard: no row found ----
-    if not record.data:
+    if not record:
         raise HTTPException(status_code=404, detail="Condition not found")
 
     # Extract the single record
-    record = record.data[0]
+    record = record[0]
 
     data = record["clinical_data"] or {}
 
