@@ -33,8 +33,9 @@ def patient_fhir(
     current_user=Depends(get_current_user)
 ):
     # Access control
-    if current_user["role"] == "patient" and current_user["id"] != patient_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    if current_user["role"] not in ["doctor", "admin"]:
+        if current_user["id"] != patient_id:
+            raise HTTPException(status_code=403, detail="Access denied")
 
     patient, records = get_patient_with_records(patient_id)
     return build_patient_bundle(patient, records)
