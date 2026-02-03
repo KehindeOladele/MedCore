@@ -42,14 +42,16 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
         )
+    
+    print("USER METADATA:", user.user_metadata)
 
-    # ----- Return User Information  from supabase instance-----
+    # ----- Return User Information  from supabase instance -----
     return {
         "id": user.id,
         "email": user.email,
-        "role": user.user_metadata.get("role", "patient"),
+        "role": user.user_metadata.get("role"),
     }
-
+  
 
 # ----- Role-Based Access Control -----
 def require_role(required_role: str):
