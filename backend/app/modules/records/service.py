@@ -1,5 +1,21 @@
 from app.core.supabase_client import supabase
 from datetime import datetime,date
+from fastapi import HTTPException
+
+
+# ----- Normalize Condition on Create -----
+def normalize_condition_on_create(data: dict) -> dict:
+    if "clinicalStatus" not in data or not isinstance(data["clinicalStatus"], dict):
+        data["clinicalStatus"] = {
+            "coding": [{
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "active",
+                "display": "Active"
+            }]
+        }
+
+    return data
+
 
 
 # ----- Normalize Condition on Create -----
@@ -64,8 +80,12 @@ def resolve_condition_record(record_id: str, clinician_id: str):
         .execute()
     ).data
 
-    if not record:
-        raise ValueError("Condition not found")
+    # ---- Guard: no row found ----
+    if not record.data:
+        raise HTTPException(status_code=404, detail="Condition not found")
+
+    # Extract the single record
+    record = record.data[0]
 
     data = record["clinical_data"] or {}
 
