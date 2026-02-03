@@ -103,6 +103,7 @@ def resolve_condition_record(record_id: str, clinician_id: str):
     else:
         data["clinicalStatus"]["coding"][0]["code"] = "resolved"
         data["clinicalStatus"]["coding"][0]["display"] = "Resolved"
+        data["clinicalStatus"]["text"] = "resolved"
 
     # ---- FHIR abatement ----
     data["abatementDateTime"] = datetime.now().isoformat()
