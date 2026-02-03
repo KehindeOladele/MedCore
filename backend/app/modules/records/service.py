@@ -97,7 +97,8 @@ def resolve_condition_record(record_id: str, clinician_id: str):
         .table("medical_records")
         .update({
             "clinical_data": data,
-            "updated_by": clinician_id
+            "updated_by": clinician_id,
+            "updated_at": datetime.now().isoformat()
         })
         .eq("id", record_id)
         .execute()
