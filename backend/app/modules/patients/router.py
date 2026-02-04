@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from app.modules.patients.service import build_patient_timeline
 
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_patient_access
 from app.modules.patients.service import (
     get_or_create_patient,
     get_patient_with_records
@@ -23,6 +23,8 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 # ----- Get My Patient Record -----
 @router.get("/me", response_model=Patient)
 def get_my_patient_record(current_user=Depends(get_current_user)):
+    # Access control
+    require_patient_access(current_user["id"], current_user)
     return get_or_create_patient(current_user["id"])
 
 
@@ -33,12 +35,13 @@ def patient_fhir(
     current_user=Depends(get_current_user)
 ):
     # Access control
-    if current_user["role"] not in ["doctor", "admin"]:
-        if current_user["id"] != patient_id:
-            raise HTTPException(status_code=403, detail="Access denied")
+    require_patient_access(patient_id, current_user)
 
+    # Get patient and records
     patient, records = get_patient_with_records(patient_id)
+
     return build_patient_bundle(patient, records)
+
 
 
 # ----- Get Patient QR Code -----
@@ -47,8 +50,8 @@ def patient_qr(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    if current_user["role"] == "patient" and current_user["id"] != patient_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Access control
+    require_patient_access(patient_id, current_user)
 
     patient, records = get_patient_with_records(patient_id)
     bundle = build_patient_bundle(patient, records)
