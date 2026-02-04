@@ -3,7 +3,7 @@ from app.core.security import get_current_user
 from app.modules.records.service import create_record
 from app.modules.records.models import MedicalRecordCreate, MedicationInput
 from app.modules.terminology.constants import CODE_SYSTEMS
-from app.core.security import require_permission
+from app.core.security import require_permission, require_patient_access
 from datetime import date
 
 
@@ -29,8 +29,8 @@ def create_condition(
     payload: MedicalRecordCreate,
     current_user=Depends(require_permission("create_condition"))
 ):
-    if payload.record_type != "condition":
-        raise HTTPException(400, "record_type must be 'condition'")
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
     return create_record(payload, clinician_id=current_user["id"])
 
