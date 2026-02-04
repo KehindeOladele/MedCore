@@ -44,9 +44,12 @@ def create_medication(
     current_user=Depends(require_permission("create_medication"))
 ):
     """
-    Accepts RxNorm input and wraps it into a FHIR MedicationRequest
+    Create a medication record. Accepts RxNorm input and wraps it into a FHIR MedicationRequest
     """
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
+    # Construct FHIR MedicationRequest resource
     fhir_medication = {
         "resourceType": "MedicationRequest",
         "status": "active",
@@ -66,6 +69,7 @@ def create_medication(
         "authoredOn": date.today().isoformat()
     }
 
+    # Optional dosage instruction
     if payload.dosage_text:
         fhir_medication["dosageInstruction"] = [
             {
@@ -73,6 +77,7 @@ def create_medication(
             }
         ]
 
+    # Wrap into MedicalRecordCreate schema
     record = MedicalRecordCreate(
         patient_id=payload.patient_id,
         record_type="medication",
