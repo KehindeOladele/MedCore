@@ -9,7 +9,7 @@ from app.modules.records.models import (
     MedicationInput
     )
 from app.modules.terminology.constants import CODE_SYSTEMS
-from app.core.security import require_permission
+from app.core.security import require_permission, require_patient_access
 from datetime import date
 
 
@@ -22,8 +22,8 @@ def create_observation(
     payload: MedicalRecordCreate,
     current_user=Depends(require_permission("create_observation"))
 ):
-    if payload.record_type != "observation":
-        raise HTTPException(400, "record_type must be 'observation'")
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
     return create_record(payload, clinician_id=current_user["id"])
 
@@ -35,24 +35,27 @@ def create_condition(
     payload: MedicalRecordCreate,
     current_user=Depends(require_permission("create_condition"))
 ):
-    if payload.record_type != "condition":
-        raise HTTPException(400, "record_type must be 'condition'")
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
     return create_record(payload, clinician_id=current_user["id"])
 
 
 
 
-# ----- Create Condition Record with RBAC Endpoint-----
+# ----- Create Medication Record Endpoint-----
 @router.post("/medications", status_code=201)
 def create_medication(
     payload: MedicationInput,
     current_user=Depends(require_permission("create_medication"))
 ):
     """
-    Accepts RxNorm input and wraps it into a FHIR MedicationRequest
+    Create a medication record. Accepts RxNorm input and wraps it into a FHIR MedicationRequest
     """
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
+    # Construct FHIR MedicationRequest resource
     fhir_medication = {
         "resourceType": "MedicationRequest",
         "status": "active",
@@ -72,6 +75,7 @@ def create_medication(
         "authoredOn": date.today().isoformat()
     }
 
+    # Optional dosage instruction
     if payload.dosage_text:
         fhir_medication["dosageInstruction"] = [
             {
@@ -79,6 +83,7 @@ def create_medication(
             }
         ]
 
+    # Wrap into MedicalRecordCreate schema
     record = MedicalRecordCreate(
         patient_id=payload.patient_id,
         record_type="medication",
