@@ -16,8 +16,8 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """
-    Validate Supabase JWT. Return the current user (id, email, role). Reusable across all modules.
-    Uses Supabase as source of truth. No JWT secret needed. ackend-enforced access
+    Validate Supabase JWT. Return the current user (id, email) and role (patient, doctor, clinician). 
+    Reusable across all modules. Uses Supabase Tables as source of truth.
     
     inpt: HTTPAuthorizationCredentials from FastAPI's HTTPBearer
     Returns: dict with user info (id, email, role)
@@ -44,13 +44,25 @@ def get_current_user(
         )
     
     # ----- Extract Role from User Metadata -----
-    role = user.user_metadata.get("role")
+    # firstly, try to get role from user_roles table
+    role_query = (
+    supabase
+    .table("user_roles")
+    .select("roles(name)")
+    .eq("user_id", user.id)
+    .single()
+    .execute()
+    )
 
-    if not role:
+    # secondly, if no role found in user_roles table, check user metadata
+    if not role_query.data:
         raise HTTPException(
             status_code=403,
             detail="User role not configured"
         )
+    
+    # finally, assign role
+    role = role_query.data["roles"]["name"]
     
     print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
 
