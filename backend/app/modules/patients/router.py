@@ -23,6 +23,8 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 # ----- Get My Patient Record -----
 @router.get("/me", response_model=Patient)
 def get_my_patient_record(current_user=Depends(get_current_user)):
+    # Access control
+    require_patient_access(current_user["id"], current_user)
     return get_or_create_patient(current_user["id"])
 
 
