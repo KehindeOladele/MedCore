@@ -37,7 +37,7 @@ def patient_fhir(
 
     # Get patient and records
     patient, records = get_patient_with_records(patient_id)
-    
+
     return build_patient_bundle(patient, records)
 
 
@@ -48,8 +48,8 @@ def patient_qr(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    if current_user["role"] == "patient" and current_user["id"] != patient_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+    # Access control
+    require_patient_access(patient_id, current_user)
 
     patient, records = get_patient_with_records(patient_id)
     bundle = build_patient_bundle(patient, records)
