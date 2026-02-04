@@ -136,3 +136,36 @@ def require_permission(permission_name: str):
         return current_user
 
     return checker
+
+
+# ----- Patient Access Dependency -----
+def require_patient_access(patient_id: str, current_user: dict):
+    """
+    Enforce patient access rules:
+    - Patient can access self
+    - Clinician must be assigned via care_teams
+    """
+    # Patient accessing own record
+    if current_user["role"] == "patient":
+        if current_user["id"] != patient_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return
+
+    # Clinician access
+    if current_user["role"] in ["doctor", "nurse"]:
+        assignment = (
+            supabase
+            .table("care_teams")
+            .select("id")
+            .eq("patient_id", patient_id)
+            .eq("clinician_id", current_user["id"])
+            .execute()
+        )
+
+        if not assignment.data:
+            raise HTTPException(status_code=403, detail="Patient not assigned")
+
+        return
+
+    # Default deny
+    raise HTTPException(status_code=403, detail="Access denied")
