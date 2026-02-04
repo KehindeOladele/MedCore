@@ -64,7 +64,7 @@ def get_current_user(
     # finally, assign role
     role = role_query.data["roles"]["name"]
     
-    print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
+    # print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
 
     # ----- Return User Information  from supabase instance -----
     return {
