@@ -3,7 +3,7 @@ from app.shared.utils.timeline_event_trans_helper import transform_record_to_eve
 from uuid import UUID
 from typing import List, Dict, Any
 
-
+# ----- Get Patient Summary -----
 def get_patient_summary(patient_id: str) -> Dict[str, Any]:
     """
     Generate a summary of the patient's health data including 
