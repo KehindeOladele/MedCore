@@ -16,8 +16,8 @@ def create_observation(
     payload: MedicalRecordCreate,
     current_user=Depends(require_permission("create_observation"))
 ):
-    if payload.record_type != "observation":
-        raise HTTPException(400, "record_type must be 'observation'")
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(payload.patient_id, current_user)
 
     return create_record(payload, clinician_id=current_user["id"])
 
@@ -37,7 +37,7 @@ def create_condition(
 
 
 
-# ----- Create Condition Record with RBAC Endpoint-----
+# ----- Create Medication Record Endpoint-----
 @router.post("/medications", status_code=201)
 def create_medication(
     payload: MedicationInput,
