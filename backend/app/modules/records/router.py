@@ -6,6 +6,8 @@ from app.modules.terminology.constants import CODE_SYSTEMS
 from app.core.security import require_permission, require_patient_access
 from datetime import date
 
+from service import resolve_condition_record
+
 
 router = APIRouter(prefix="/records", tags=["Medical Records"])
 
@@ -85,3 +87,13 @@ def create_medication(
     )
 
     return create_record(record, clinician_id=current_user["id"])
+
+
+
+# ----- Resolve Condition Record Endpoint-----
+@router.patch("/conditions/{record_id}/resolve")
+def resolve_condition(
+    record_id: str,
+    current_user=Depends(require_permission("resolve_condition"))
+):      
+    return resolve_condition_record(record_id, current_user["id"])
