@@ -6,6 +6,9 @@ __pycache__/
 *.pyc
 .vscode/
 gen_token.py
+# Windows system files
+desktop.ini
+Thumbs.db
 desktop.ini
 desktop* 
 ../desktop.ini
