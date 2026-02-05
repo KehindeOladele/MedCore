@@ -7,3 +7,4 @@ __pycache__/
 .vscode/
 gen_token.py
 desktop.ini
+desktop*
