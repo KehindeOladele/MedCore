@@ -37,7 +37,7 @@ def patient_fhir(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    # Access control
+    # Patient level access control
     require_patient_access(patient_id, current_user)
 
     # Get patient and records
@@ -53,7 +53,7 @@ def patient_qr(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    # Access control
+    # Patient level access control
     require_patient_access(patient_id, current_user)
 
     patient, records = get_patient_with_records(patient_id)
@@ -69,6 +69,8 @@ def patient_summary(
     patient_id: UUID,
     current_user=Depends(require_permission("read_patient_summary"))
 ):
+    # Patient level access control
+    require_patient_access(str(patient_id), current_user)
     return get_patient_summary(str(patient_id))
 
 
