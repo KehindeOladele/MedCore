@@ -23,8 +23,11 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 # ----- Get My Patient Record -----
 @router.get("/me", response_model=Patient)
 def get_my_patient_record(current_user=Depends(get_current_user)):
-    # Access control
-    require_patient_access(current_user["id"], current_user)
+    
+    # Only patients can access this endpoint
+    if current_user["role"] != "patient":
+        raise HTTPException(403, "Only patients can access this endpoint")
+
     return get_or_create_patient(current_user["id"])
 
 
@@ -34,7 +37,7 @@ def patient_fhir(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    # Access control
+    # Patient level access control
     require_patient_access(patient_id, current_user)
 
     # Get patient and records
@@ -50,7 +53,7 @@ def patient_qr(
     patient_id: str,
     current_user=Depends(get_current_user)
 ):
-    # Access control
+    # Patient level access control
     require_patient_access(patient_id, current_user)
 
     patient, records = get_patient_with_records(patient_id)
@@ -66,6 +69,8 @@ def patient_summary(
     patient_id: UUID,
     current_user=Depends(require_permission("read_patient_summary"))
 ):
+    # Patient level access control
+    require_patient_access(str(patient_id), current_user)
     return get_patient_summary(str(patient_id))
 
 
@@ -75,4 +80,6 @@ def get_patient_timeline(
     patient_id: UUID,
     current_user=Depends(require_permission("view_patient"))
 ):
+    #  Patient level access control
+    require_patient_access(str(patient_id), current_user)
     return build_patient_timeline(patient_id)
