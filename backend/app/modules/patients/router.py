@@ -80,4 +80,6 @@ def get_patient_timeline(
     patient_id: UUID,
     current_user=Depends(require_permission("view_patient"))
 ):
+    #  Patient level access control
+    require_patient_access(str(patient_id), current_user)
     return build_patient_timeline(patient_id)
