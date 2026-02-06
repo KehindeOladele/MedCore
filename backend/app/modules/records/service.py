@@ -78,7 +78,6 @@ def resolve_condition_record(record_id: str, current_user: dict):
         .select("id, patient_id, clinician_id, clinical_data")
         .eq("id", record_id)
         .eq("record_type", "condition")
-        .single()
         .execute()
     ).data
 
