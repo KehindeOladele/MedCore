@@ -9,7 +9,10 @@ from app.modules.records.models import (
     MedicationInput
     )
 from app.modules.terminology.constants import CODE_SYSTEMS
-from app.core.security import require_permission, require_patient_access
+from app.core.security import (
+    require_permission, 
+    require_patient_access
+    )
 from datetime import date
 
 
