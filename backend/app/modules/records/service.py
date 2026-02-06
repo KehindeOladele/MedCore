@@ -18,21 +18,6 @@ def normalize_condition_on_create(data: dict) -> dict:
     return data
 
 
-
-# ----- Normalize Condition on Create -----
-def normalize_condition_on_create(data: dict) -> dict:
-    if "clinicalStatus" not in data or not isinstance(data["clinicalStatus"], dict):
-        data["clinicalStatus"] = {
-            "coding": [{
-                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                "code": "active",
-                "display": "Active"
-            }]
-        }
-
-    return data
-
-
 # ---- Create Medical Record -----
 def create_record(data, clinician_id: str):
     """
