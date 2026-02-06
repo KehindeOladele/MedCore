@@ -1,4 +1,5 @@
 from app.core.supabase_client import supabase
+from app.core.security import require_patient_access
 from datetime import datetime,date
 from fastapi import HTTPException
 
@@ -62,65 +63,53 @@ def create_record(data, clinician_id: str):
 
 
 # ----- Resolve Condition Record -----
-def resolve_condition_record(record_id: str, clinician_id: str):
+def resolve_condition_record(record_id: str, current_user: dict):
     """
     Update a condition record to mark it as resolved clinical status and date.
     
     input: record_id (str): ID of the condition record to resolve
-        clinician_id (str): ID of the clinician resolving the condition
+        current_user (dict): The current user context (contains clinician_id and patient_id)
     output: updated record data
     """
+    # Fetch the existing condition record
     record = (
         supabase
         .table("medical_records")
-        .select("*")
+        .select("id, patient_id, clinician_id, clinical_data")
         .eq("id", record_id)
         .eq("record_type", "condition")
-        .eq("clinician_id", clinician_id)
+        .single()
         .execute()
     ).data
 
-    # ---- Guard: no row found ----
+    # Check if record exists
     if not record:
         raise HTTPException(status_code=404, detail="Condition not found")
 
-    # Extract the single record
-    record = record[0]
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(record["patient_id"], current_user)
 
+    # Update the clinical data to mark the condition as resolved
     data = record["clinical_data"] or {}
 
-    # ---- Ensure clinicalStatus exists ----
-    if "clinicalStatus" not in data or not isinstance(data["clinicalStatus"], dict):
-        data["clinicalStatus"] = {}
+    # --- FHIR updates ---
+    data.setdefault("clinicalStatus", {}).setdefault("coding", [])
+    data["clinicalStatus"]["coding"] = [{
+        "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+        "code": "resolved",
+        "display": "Resolved"
+    }]
 
-    # ---- Ensure coding exists ----
-    if "coding" not in data["clinicalStatus"] or not isinstance(data["clinicalStatus"]["coding"], list):
-        data["clinicalStatus"]["coding"] = [{
-            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-            "code": "resolved",
-            "display": "Resolved"
-        }]
-    else:
-        data["clinicalStatus"]["coding"][0]["code"] = "resolved"
-        data["clinicalStatus"]["coding"][0]["display"] = "Resolved"
-        data["clinicalStatus"]["text"] = "resolved"
+    # Add abatementDateTime to indicate when the condition was resolved
+    data["abatementDateTime"] = datetime.utcnow().isoformat()
 
-    # ---- FHIR abatement ----
-    data["abatementDateTime"] = datetime.now().isoformat()
-
+    # Update the record in the database
     update = (
         supabase
         .table("medical_records")
-        .update({
-            "clinical_data": data,
-            "updated_by": clinician_id,
-            "updated_at": datetime.now().isoformat()
-        })
+        .update({"clinical_data": data})
         .eq("id", record_id)
         .execute()
     )
-
-    if not update.data:
-        raise ValueError("Failed to resolve condition")
 
     return update.data[0]
