@@ -7,14 +7,14 @@
 
 --  Table to manage the many-to-many relationship between clinicians and patients, along with their roles and activity status.
 create table clinicians_patients (
-    clinician_id uuid references users(id) on delete cascade,
+    clinician_id uuid references auth.users(id) on delete cascade,
     patient_id uuid references patients(id) on delete cascade,
 
     role text check (role in ('primary', 'consulting', 'emergency')) not null,
     active boolean default true,
 
     assigned_at timestamptz default now(),
-    assigned_by uuid references users(id),
+    assigned_by uuid references auth.users(id),
 
     primary key (clinician_id, patient_id)
 );
