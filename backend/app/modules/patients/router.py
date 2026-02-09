@@ -5,7 +5,8 @@ from app.modules.patients.service import build_patient_timeline
 from app.core.security import get_current_user, require_patient_access
 from app.modules.patients.service import (
     get_or_create_patient,
-    get_patient_with_records
+    get_patient_with_records,
+    assign_clinician_to_patient
 )
 from app.modules.patients.models import Patient
 from app.modules.records.models import MedicalRecordCreate
@@ -46,7 +47,6 @@ def patient_fhir(
     return build_patient_bundle(patient, records)
 
 
-
 # ----- Get Patient QR Code -----
 @router.get("/{patient_id}/qr")
 def patient_qr(
@@ -83,3 +83,19 @@ def get_patient_timeline(
     #  Patient level access control
     require_patient_access(str(patient_id), current_user)
     return build_patient_timeline(patient_id)
+
+
+# ---- Assign Clinician to Patient -----
+@router.post("/patients/{patient_id}/assign")
+def assign_patient(
+    patient_id: str,
+    clinician_id: str,
+    role: str = "primary",
+    current_user=Depends(require_permission("assign_patient"))
+):
+    return assign_clinician_to_patient(
+        clinician_id=clinician_id,
+        patient_id=patient_id,
+        role=role,
+        assigned_by=current_user["id"]
+    )

@@ -224,3 +224,24 @@ def build_condition_resource(payload: dict):
         "code": payload["code"],
         "onsetDateTime": payload.get("onsetDateTime")
     }
+
+
+# ---- Assign Clinician to Patient ----
+def assign_clinician_to_patient(
+    clinician_id: str,
+    patient_id: str,
+    role: str,
+    assigned_by: str
+):
+    return (
+        supabase
+        .table("clinicians_patients")
+        .upsert({
+            "clinician_id": clinician_id,
+            "patient_id": patient_id,
+            "role": role,
+            "active": True,
+            "assigned_by": assigned_by
+        })
+        .execute()
+    ).data[0]
