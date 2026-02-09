@@ -151,18 +151,20 @@ def require_patient_access(patient_id: str, current_user: dict):
             raise HTTPException(status_code=403, detail="Access denied")
         return
 
-    # Clinician access
-    if current_user["role"] in ["doctor", "nurse"]:
-        assignment = (
-            supabase
-            .table("care_teams")
-            .select("id")
-            .eq("patient_id", patient_id)
-            .eq("clinician_id", current_user["id"])
-            .execute()
-        )
 
-        if not assignment.data:
+    # Clinicians must be assigned
+    if current_user["role"] in ("doctor", "nurse"):
+        link = (
+            supabase
+            .table("clinicians_patients")
+            .select("role, active")
+            .eq("clinician_id", current_user["id"])
+            .eq("patient_id", patient_id)
+            .eq("active", True)
+            .execute()
+        ).data
+
+        if not link:
             raise HTTPException(status_code=403, detail="Patient not assigned")
 
         return
