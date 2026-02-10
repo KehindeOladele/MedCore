@@ -154,7 +154,6 @@ def require_patient_access(patient_id: str, current_user: dict) -> None:
             raise HTTPException(status_code=403, detail="Access denied")
         return
 
- 
     # Clinicians must be assigned
     assign = (
         supabase
