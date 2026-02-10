@@ -14,7 +14,7 @@ security = HTTPBearer()
 # ----- Get Current User -----
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-):
+) -> dict:
     """
     Validate Supabase JWT. Return the current user (id, email) and role (patient, doctor, clinician). 
     Reusable across all modules. Uses Supabase Tables as source of truth.
@@ -75,7 +75,7 @@ def get_current_user(
   
 
 # ----- Role-Based Access Control -----
-def require_role(required_role: str):
+def require_role(required_role: str) -> callable:
     """
     Check if the current user has the required role.
 
@@ -139,35 +139,33 @@ def require_permission(permission_name: str):
 
 
 # ----- Patient Access Dependency -----
-def require_patient_access(patient_id: str, current_user: dict):
+def require_patient_access(patient_id: str, current_user: dict) -> None:
     """
     Enforce patient access rules:
     - Patient can access self
     - Clinician must be assigned via care_teams
     """
+    role = current_user["role"]
+    user_id = current_user["id"]
+
     # Patient accessing own record
-    if current_user["role"] == "patient":
-        if current_user["id"] != patient_id:
+    if role == "patient":
+        if str(user_id) != str(patient_id):
             raise HTTPException(status_code=403, detail="Access denied")
         return
 
-
+ 
     # Clinicians must be assigned
-    if current_user["role"] in ("doctor", "nurse"):
-        link = (
-            supabase
-            .table("clinicians_patients")
-            .select("role, active")
-            .eq("clinician_id", current_user["id"])
-            .eq("patient_id", patient_id)
-            .eq("active", True)
-            .execute()
-        ).data
+    assign = (
+        supabase
+        .table("clinicians_patients")
+        .select("id")
+        .eq("clinician_id", user_id)
+        .eq("patient_id", patient_id)
+        .eq("active", True)
+        .execute()
+        .data
+    )
 
-        if not link:
-            raise HTTPException(status_code=403, detail="Patient not assigned")
-
-        return
-
-    # Default deny
-    raise HTTPException(status_code=403, detail="Access denied")
+    if not assign:
+        raise HTTPException(status_code=403, detail="Patient not assigned")
