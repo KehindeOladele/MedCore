@@ -12,6 +12,7 @@ import '../../../allergies/presentation/pages/allergies_screen.dart';
 import '../../../reminders/presentation/pages/add_reminder_screen.dart';
 import '../../../profile/presentation/pages/profile_screen.dart';
 import '../../../history/presentation/pages/medical_history_screen.dart';
+import '../../../upload/presentation/pages/new_upload_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -248,7 +249,7 @@ class HomeScreen extends ConsumerWidget {
           // Index 1: History
           const MedicalHistoryScreen(),
           // Index 2: Add Record
-          const AddReminderScreen(isTab: true),
+          const NewUploadScreen(isTab: true),
           // Index 3: Profile
           const ProfileScreen(isTab: true),
         ],
