@@ -247,7 +247,7 @@ def assign_clinician_to_patient(
     ).data[0]
 
 
-# ---- Get My Patients ----
+# ---- Get My Patients for Clinician ----
 def get_my_patients(clinician_id: str):
     assignments = (
         supabase
