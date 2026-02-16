@@ -238,3 +238,30 @@ def assign_clinician_to_patient(
         })
         .execute()
     ).data[0]
+
+
+# ---- Get My Patients for Clinician ----
+def get_my_patients(clinician_id: str):
+    assignments = (
+        supabase
+        .table("clinicians_patients")
+        .select("patient_id")
+        .eq("clinician_id", clinician_id)
+        .eq("active", True)
+        .execute()
+        .data
+    )
+
+    patient_ids = [a["patient_id"] for a in assignments]
+
+    if not patient_ids:
+        return []
+
+    return (
+        supabase
+        .table("patients")
+        .select("*")
+        .in_("id", patient_ids)
+        .execute()
+        .data
+    )
