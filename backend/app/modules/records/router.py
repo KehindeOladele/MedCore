@@ -13,7 +13,7 @@ from app.core.security import (
     require_permission, 
     require_patient_access
     )
-from app.core.supabase import supabase
+from app.core.supabase_client import supabase
 from datetime import date
 
 
