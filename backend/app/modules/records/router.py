@@ -13,6 +13,7 @@ from app.core.security import (
     require_permission, 
     require_patient_access
     )
+from app.core.supabase import supabase
 from datetime import date
 
 
@@ -102,4 +103,22 @@ def resolve_condition(
     record_id: str,
     current_user=Depends(require_permission("resolve_condition"))
 ):
+    # fetch the record to get patient_id for access control
+    record= (
+        supabase
+        .table("medical_records")
+        .select("id, patient_id")
+        .eq("id", record_id)
+        .single()
+        .execute()
+        .data
+    )
+
+    # Check if record exists
+    if not record:
+        raise HTTPException(status_code=404, detail="Condition record not found")
+    
+    # Access Control: Ensure clinician has access to the patient
+    require_patient_access(record["patient_id"], current_user)
+
     return resolve_condition_record(record_id, current_user["id"])
