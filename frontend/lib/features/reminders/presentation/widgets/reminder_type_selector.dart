@@ -12,7 +12,7 @@ class _ReminderTypeSelectorState extends State<ReminderTypeSelector> {
 
   final List<Map<String, dynamic>> _types = [
     {'label': 'Meds', 'icon': Icons.medication_outlined},
-    {'label': 'Visit', 'icon': Icons.calendar_today_outlined},
+    {'label': 'Check Ups', 'icon': Icons.calendar_today_outlined},
     {'label': 'Test', 'icon': Icons.health_and_safety_outlined},
     {'label': 'Other', 'icon': Icons.note_alt_outlined},
   ];

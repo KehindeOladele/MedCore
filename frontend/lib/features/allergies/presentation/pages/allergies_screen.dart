@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/allergy_provider.dart';
 import '../widgets/allergy_item.dart';
+import 'add_allergy_screen.dart';
 
 class AllergiesScreen extends ConsumerWidget {
   const AllergiesScreen({super.key});
@@ -33,7 +34,11 @@ class AllergiesScreen extends ConsumerWidget {
                 padding: EdgeInsets.zero,
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: () {
-                  // TODO: Add allergy functionality
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddAllergyScreen(),
+                    ),
+                  );
                 },
               ),
             ),
