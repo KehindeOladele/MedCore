@@ -4,6 +4,7 @@ from app.core.supabase_client import supabase
 from jose import jwt  
 from jose.exceptions import JWTError
 from app.core.config import settings
+from app.core.rbac import has_permission
 
 
 # ----- Security Dependencies -----
@@ -15,8 +16,8 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
     """
-    Validate Supabase JWT. Return the current user (id, email, role). Reusable across all modules.
-    Uses Supabase as source of truth. No JWT secret needed. ackend-enforced access
+    Validate Supabase JWT. Return the current user (id, email) and role (patient, doctor, clinician). 
+    Reusable across all modules. Uses Supabase Tables as source of truth.
     
     inpt: HTTPAuthorizationCredentials from FastAPI's HTTPBearer
     Returns: dict with user info (id, email, role)
@@ -41,14 +42,37 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
         )
+    
+    # ----- Extract Role from User Metadata -----
+    # firstly, try to get role from user_roles table
+    role_query = (
+    supabase
+    .table("user_roles")
+    .select("roles(name)")
+    .eq("user_id", user.id)
+    .single()
+    .execute()
+    )
 
-    # ----- Return User Information  from supabase instance-----
+    # secondly, if no role found in user_roles table, check user metadata
+    if not role_query.data:
+        raise HTTPException(
+            status_code=403,
+            detail="User role not configured"
+        )
+    
+    # finally, assign role
+    role = role_query.data["roles"]["name"]
+    
+    # print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
+
+    # ----- Return User Information  from supabase instance -----
     return {
         "id": user.id,
         "email": user.email,
-        "role": user.user_metadata.get("role", "patient"),
+        "role": role,
     }
-
+  
 
 # ----- Role-Based Access Control -----
 def require_role(required_role: str):
@@ -67,3 +91,81 @@ def require_role(required_role: str):
         return user
 
     return checker
+
+
+# ---- Get User Permissions -----
+def get_user_permissions(user_id: str) -> set[str]:
+    response = (
+        supabase
+        .rpc("get_user_permissions", {"uid": user_id})
+        .execute()
+    )
+
+    return {p["permission"] for p in response.data}
+
+
+# ----- Permission Guard Dependency -----
+def require_permission(permission_name: str):
+    def checker(current_user=Depends(get_current_user)):
+
+        user_id = current_user["id"]
+
+        result = (
+            supabase
+            .table("user_roles")
+            .select(
+                "roles!inner(id, name, role_permissions!inner(permissions!inner(name)))"
+            )
+            .eq("user_id", user_id)
+            .execute()
+        )
+
+        if not result.data:
+            raise HTTPException(403, "Not authorized")
+
+        permissions = {
+            perm["name"]
+            for role in result.data
+            for rp in role["roles"]["role_permissions"]
+            for perm in [rp["permissions"]]
+        }
+
+        if permission_name not in permissions:
+            raise HTTPException(403, "Not authorized")
+
+        return current_user
+
+    return checker
+
+
+# ----- Patient Access Dependency -----
+def require_patient_access(patient_id: str, current_user: dict):
+    """
+    Enforce patient access rules:
+    - Patient can access self
+    - Clinician must be assigned via care_teams
+    """
+    # Patient accessing own record
+    if current_user["role"] == "patient":
+        if current_user["id"] != patient_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        return
+
+    # Clinician access
+    if current_user["role"] in ["doctor", "nurse"]:
+        assignment = (
+            supabase
+            .table("care_teams")
+            .select("id")
+            .eq("patient_id", patient_id)
+            .eq("clinician_id", current_user["id"])
+            .execute()
+        )
+
+        if not assignment.data:
+            raise HTTPException(status_code=403, detail="Patient not assigned")
+
+        return
+
+    # Default deny
+    raise HTTPException(status_code=403, detail="Access denied")

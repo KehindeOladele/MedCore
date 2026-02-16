@@ -1,49 +1,97 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user
-from app.modules.records.service import create_record
-from app.modules.records.models import MedicalRecordCreate
-from app.modules.records.models import ObservationCreate, ConditionCreate
-from app.modules.records.service import create_observation, create_condition
+from app.modules.records.service import (
+    create_record,
+    resolve_condition_record
+    )
+from app.modules.records.models import (
+    MedicalRecordCreate, 
+    MedicationInput
+    )
+from app.modules.terminology.constants import CODE_SYSTEMS
+from app.core.security import require_permission
+from datetime import date
 
 
 router = APIRouter(prefix="/records", tags=["Medical Records"])
 
 
-# ----- Create Medical Record Endpoint -----
-@router.post("/", status_code=201)
-def create_medical_record(
-    payload: MedicalRecordCreate,
-    current_user=Depends(get_current_user)
-):
-    """
-    Create a medical record (FHIR Observation / Condition)
-    """
-    if current_user["role"] not in ["clinician", "doctor", "admin"]: 
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    record = create_record(payload, clinician_id=current_user["id"])
-    return {"status": "created", "record": record}
-
-
 # ----- Create Observation Record Endpoint-----
 @router.post("/observations", status_code=201)
-def create_observation_api(
-    payload: ObservationCreate,
-    current_user=Depends(get_current_user)
+def create_observation(
+    payload: MedicalRecordCreate,
+    current_user=Depends(require_permission("create_observation"))
 ):
-    if current_user["role"] not in ["clinician", "doctor", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    if payload.record_type != "observation":
+        raise HTTPException(400, "record_type must be 'observation'")
 
-    return create_observation(payload, current_user["id"])
+    return create_record(payload, clinician_id=current_user["id"])
+
 
 
 # ----- Create Condition Record Endpoint-----
 @router.post("/conditions", status_code=201)
-def create_condition_api(
-    payload: ConditionCreate,
-    current_user=Depends(get_current_user)
+def create_condition(
+    payload: MedicalRecordCreate,
+    current_user=Depends(require_permission("create_condition"))
 ):
-    if current_user["role"] not in ["clinician", "doctor", "admin"]:
-        raise HTTPException(status_code=403, detail="Not authorized")
+    if payload.record_type != "condition":
+        raise HTTPException(400, "record_type must be 'condition'")
 
-    return create_condition(payload, current_user["id"])
+    return create_record(payload, clinician_id=current_user["id"])
+
+
+
+
+# ----- Create Condition Record with RBAC Endpoint-----
+@router.post("/medications", status_code=201)
+def create_medication(
+    payload: MedicationInput,
+    current_user=Depends(require_permission("create_medication"))
+):
+    """
+    Accepts RxNorm input and wraps it into a FHIR MedicationRequest
+    """
+
+    fhir_medication = {
+        "resourceType": "MedicationRequest",
+        "status": "active",
+        "intent": "order",
+        "medicationCodeableConcept": {
+            "coding": [
+                {
+                    "system": CODE_SYSTEMS["RXNORM"],
+                    "code": payload.code,
+                    "display": payload.display
+                }
+            ]
+        },
+        "subject": {
+            "reference": f"Patient/{payload.patient_id}"
+        },
+        "authoredOn": date.today().isoformat()
+    }
+
+    if payload.dosage_text:
+        fhir_medication["dosageInstruction"] = [
+            {
+                "text": payload.dosage_text
+            }
+        ]
+
+    record = MedicalRecordCreate(
+        patient_id=payload.patient_id,
+        record_type="medication",
+        clinical_data=fhir_medication
+    )
+
+    return create_record(record, clinician_id=current_user["id"])
+
+
+# ----- Resolve Condition Record Endpoint-----
+@router.patch("/conditions/{record_id}/resolve")
+def resolve_condition(
+    record_id: str,
+    current_user=Depends(require_permission("resolve_condition"))
+):
+    return resolve_condition_record(record_id, current_user["id"])

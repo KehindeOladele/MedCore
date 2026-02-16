@@ -1,8 +1,8 @@
+## **backend/**
+
 ---
 
-## **backend/app/**
-
-### 1️⃣ **main.py**
+### **main.py**
 
 * **Purpose:** The entry point of the FastAPI application.
 * Initializes the FastAPI app, includes routers from all modules, and starts the server.
@@ -36,6 +36,7 @@
 * **router.py:** Defines API endpoints like `/auth/signin`, `/auth/me`.
 * **service.py:** Business logic for authentication, creating user sessions, syncing profiles, token validation.
 * **schemas.py:** Pydantic models for request/response validation (e.g., LoginRequest, UserResponse).
+* **rbac.py:** _role base clinical access (RBAC)_ defines the roles of the different medical experts and who is allowed to do what.
 
 ### **patients/** – patient-related data
 

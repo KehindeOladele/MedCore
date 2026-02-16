@@ -10,7 +10,11 @@ create table if not exists public.medical_records (
     -- FHIR-compliant resource
     clinical_data jsonb not null,
 
-    created_at timestamp with time zone default timezone('utc', now())
+    created_at timestamp with time zone default timezone('utc', now()),
+
+    updated_by uuid references auth.users(id),
+
+    updated_at timestamp with time zone default timezone('utc', now()),
 );
 
 
