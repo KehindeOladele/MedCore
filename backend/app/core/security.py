@@ -145,26 +145,25 @@ def require_patient_access(patient_id: str, current_user: dict) -> None:
     - Patient can access self
     - Clinician must be assigned via care_teams
     """
-    role= current_user["role"]
+    role = current_user["role"]
     user_id = current_user["id"]
 
     # Patient accessing own record
     if role == "patient":
-        if user_id != str(patient_id):
+        if str(user_id) != str(patient_id):
             raise HTTPException(status_code=403, detail="Access denied")
         return
 
-
     # Clinicians must be assigned
     assign = (
-    supabase
-    .table("clinicians_patients")
-    .select("role, active")
-    .eq("clinician_id", current_user["id"])
-    .eq("patient_id", patient_id)
-    .eq("active", True)
-    .execute()
-    .data
+        supabase
+        .table("clinicians_patients")
+        .select("clinician_id")
+        .eq("clinician_id", user_id)
+        .eq("patient_id", patient_id)
+        .eq("active", True)
+        .execute()
+        .data
     )
 
     if not assign:
