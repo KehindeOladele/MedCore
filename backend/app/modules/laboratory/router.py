@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.modules.patient.service import get_current_user
+from app.core.security import get_current_user
 from .service import build_lab_detail
 
 
