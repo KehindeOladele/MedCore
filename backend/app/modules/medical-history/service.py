@@ -1,5 +1,7 @@
+from app.modules.medical_records import fetch_medical_records
 
 
+# ----- Get patient history -----
 def get_patient_history(patient_id: str):
     records = fetch_medical_records(patient_id)
 
