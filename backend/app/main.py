@@ -8,7 +8,7 @@ from app.modules.laboratory.router import router as laboratory_router
 
 
 # ===== Initialize FastAPI Application =====
-app = FastAPI(title="MedCore API")
+app = FastAPI(title="MedCore API", version="1.0.0", description="API for Electronic Medical History System")
 
 
 # ===== Include Routers =====
