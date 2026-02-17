@@ -1,7 +1,26 @@
 from app.modules.patient.service import require_patient_access
+from app.core.supabase_client import supabase
+
+
+# ----- Fetch Lab Record from Database -----
+def fetch_lab_record(lab_id: str) -> dict:
+    response = (
+        supabase
+        .table("lab_records")
+        .select("*")
+        .eq("id", lab_id)
+        .single()
+        .execute()
+    )
+
+    if not response.data:
+        return None
+
+    return response.data
+
 
 # ----- Build Lab Detail Response -----
-def build_lab_detail(lab_id: str, current_user: dict):
+def build_lab_detail(lab_id: str, current_user: dict) -> dict:
 
     lab = fetch_lab_record(lab_id)
 
