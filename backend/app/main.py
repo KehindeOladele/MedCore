@@ -3,7 +3,7 @@ from app.modules.auth.router import router as auth_router
 from app.modules.patients.router import router as patients_router
 from app.modules.records.router import router as records_router
 from app.modules.dashboard.router import router as dashboard_router
-from app.modules.medicacl_history.router import router as medical_history_router
+from app.modules.medical-history.router import router as medical_history_router
 from app.modules.reminders.router import router as reminders_router
 from app.modules.laboratory.router import router as laboratory_router
 from app.modules.prescriptions.router import router as prescriptions_router
