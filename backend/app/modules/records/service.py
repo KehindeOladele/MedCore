@@ -97,3 +97,16 @@ def resolve_condition_record(record_id: str, current_user: dict):
     )
 
     return update.data[0]
+
+
+# ---- Fetch Medical Records for a Patient -----
+def fetch_medical_records(patient_id: str):
+    response = (
+        supabase
+        .table("medical_records")
+        .select("*")
+        .eq("patient_id", patient_id)
+        .execute()
+    )
+
+    return response.data or []
