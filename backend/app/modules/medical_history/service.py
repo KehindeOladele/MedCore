@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-from app.modules.medical_records import fetch_medical_records
-=======
 from app.modules.records.service import fetch_medical_records
->>>>>>> medical-history
 
 
 # ----- Get patient history -----
