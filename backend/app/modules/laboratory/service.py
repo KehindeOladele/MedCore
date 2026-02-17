@@ -1,4 +1,4 @@
-from app.modules.patient.service import require_patient_access
+from app.core.security import require_patient_access
 from app.core.supabase_client import supabase
 
 
