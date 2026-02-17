@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from .service import get_patient_history
-from ..auth import get_current_user
+from app.core.security import get_current_user
 
 router = APIRouter()
 
