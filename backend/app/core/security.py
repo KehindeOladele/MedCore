@@ -158,7 +158,7 @@ def require_patient_access(patient_id: str, current_user: dict) -> None:
     assign = (
         supabase
         .table("clinicians_patients")
-        .select("id")
+        .select("clinician_id")
         .eq("clinician_id", user_id)
         .eq("patient_id", patient_id)
         .eq("active", True)
