@@ -48,7 +48,7 @@ def create_record(data, clinician_id: str):
 
 
 # ----- Resolve Condition Record -----
-def resolve_condition_record(record_id: str, current_user: dict):
+def resolve_condition_record(record_id: str, current_user: dict) -> dict:
     """
     Update a condition record to mark it as resolved clinical status and date.
     
@@ -60,7 +60,7 @@ def resolve_condition_record(record_id: str, current_user: dict):
     record = (
         supabase
         .table("medical_records")
-        .select("id, patient_id, clinician_id, clinical_data")
+        .select("id, patient_id, clinical_data")
         .eq("id", record_id)
         .eq("record_type", "condition")
         .execute()
@@ -89,7 +89,7 @@ def resolve_condition_record(record_id: str, current_user: dict):
     }]
 
     # Add abatementDateTime to indicate when the condition was resolved
-    data["abatementDateTime"] = datetime.utcnow().isoformat()
+    data["abatementDateTime"] = datetime.now().isoformat()
 
     # Update the record in the database
     update = (
@@ -99,6 +99,10 @@ def resolve_condition_record(record_id: str, current_user: dict):
         .eq("id", record_id)
         .execute()
     )
+
+    # Check if update was successful
+    if not update.data:
+        raise HTTPException(status_code=500, detail="Failed to update condition")
 
     return update.data[0]
 
