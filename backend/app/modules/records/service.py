@@ -69,6 +69,10 @@ def resolve_condition_record(record_id: str, current_user: dict):
     # Check if record exists
     if not record:
         raise HTTPException(status_code=404, detail="Condition not found")
+    
+    # If multiple records are returned (shouldn't happen with unique ID), take the first one    
+    if isinstance(record, list):
+        record = record[0]
 
     # Access Control: Ensure clinician has access to the patient
     require_patient_access(record["patient_id"], current_user)
