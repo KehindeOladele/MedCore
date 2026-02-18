@@ -31,7 +31,7 @@ class AllergyRepository {
         symptoms: 'Seasonal Rhinitis',
         severity: AllergySeverity.moderate,
         isCritical: false,
-        icon: Icons.coronavirus,
+        icon: Icons.filter_vintage,
       ),
       AllergyModel(
         id: '4',

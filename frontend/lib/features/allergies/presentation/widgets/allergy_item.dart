@@ -10,26 +10,26 @@ class AllergyItem extends StatelessWidget {
   Color _getSeverityColor(AllergySeverity severity) {
     switch (severity) {
       case AllergySeverity.anaphylactic:
-        return const Color(0xFFFF5252); // Red
+        return const Color(0xFFD32F2F); // Red 700
       case AllergySeverity.severe:
-        return const Color(0xFFFF9800); // Orange
+        return const Color(0xFFE65100); // Orange 900
       case AllergySeverity.moderate:
-        return const Color(0xFFFFC107); // Amber/Yellow
+        return const Color(0xFFF9A825); // Yellow 800
       case AllergySeverity.mild:
-        return const Color(0xFF2196F3); // Blue
+        return const Color(0xFF1565C0); // Blue 800
     }
   }
 
   Color _getBadgeBackgroundColor(AllergySeverity severity) {
     switch (severity) {
       case AllergySeverity.anaphylactic:
-        return const Color(0xFFFFEBEE);
+        return const Color(0xFFFFEBEE); // Red 50
       case AllergySeverity.severe:
-        return const Color(0xFFFFF3E0);
+        return const Color(0xFFFFF3E0); // Orange 50
       case AllergySeverity.moderate:
-        return const Color(0xFFFFF8E1);
+        return const Color(0xFFFFFDE7); // Yellow 50
       case AllergySeverity.mild:
-        return const Color(0xFFE3F2FD);
+        return const Color(0xFFE3F2FD); // Blue 50
     }
   }
 
@@ -128,7 +128,9 @@ class AllergyItem extends StatelessWidget {
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: _getSeverityColor(allergy.severity),
+                                    color: _getSeverityColor(
+                                      allergy.severity,
+                                    ).withOpacity(0.2),
                                     width: 1,
                                   ),
                                 ),

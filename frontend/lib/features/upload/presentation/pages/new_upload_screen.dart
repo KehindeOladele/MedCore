@@ -53,7 +53,8 @@ class NewUploadScreen extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.95, // Increased height slightly as requested
+              childAspectRatio:
+                  0.82, // Reduced to make cards taller for text space
               children: [
                 _buildUploadCategory(
                   context,
@@ -228,7 +229,7 @@ class NewUploadScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              child: SvgPicture.asset(iconPath, width: 48, height: 48),
+              child: SvgPicture.asset(iconPath, width: 30, height: 30),
             ),
             const Spacer(),
             Text(
@@ -243,6 +244,8 @@ class NewUploadScreen extends StatelessWidget {
                 fontSize: 12,
                 height: 1.4,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

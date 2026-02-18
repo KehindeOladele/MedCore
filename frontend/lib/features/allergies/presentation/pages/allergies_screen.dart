@@ -151,7 +151,7 @@ class AllergiesScreen extends ConsumerWidget {
                           children: [
                             Icon(
                               Icons.warning_amber_rounded,
-                              color: AppColors.redAccent,
+                              color: Color(0xFFD32F2F), // Red 700
                               size: 20,
                             ),
                             const SizedBox(width: 8),

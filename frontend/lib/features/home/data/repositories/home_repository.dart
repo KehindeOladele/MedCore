@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../models/vital_model.dart';
 import '../models/activity_model.dart';
@@ -7,37 +8,61 @@ import '../models/prescription_model.dart';
 
 class HomeRepository {
   Future<List<PrescriptionModel>> getPrescriptions() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return const [
-      PrescriptionModel(
-        title: "Amoxicillin",
-        subtitle: "Antibiotic",
-        dosage: "500mg",
-        schedule: "3 times daily (Every 8 hours)",
-        icon: Icons.medication,
-        iconColor: Color(0xFF009688), // Green
-        iconBackgroundColor: Color(0xFFE0F2F1), // Light Green
-        badgeColor: Color(0xFFF5F5F5),
-        backgroundColor: Color(0xFFF0FDFA),
-      ),
-      PrescriptionModel(
-        title: "Lisinopril",
-        subtitle: "Blood Pressure",
-        dosage: "10mg",
-        schedule: "Once daily with breakfast",
-        icon: Icons.medication_liquid, // Pill icon replacement
-        iconColor: Color(0xFF009688), // Green
-        iconBackgroundColor:
-            Colors.transparent, // White/Transparent as per design
-        badgeColor: Color(0xFFF5F5F5),
-        backgroundColor: Color(0xFFF0FDFA),
-      ),
-    ];
+    final box = Hive.box<PrescriptionModel>('prescriptions');
+    return box.values.toList();
   }
 
-  Future<List<VitalModel>> getVitals() async {
+  Future<void> addPrescription(PrescriptionModel prescription) async {
+    final box = Hive.box<PrescriptionModel>('prescriptions');
+    await box.add(prescription);
+  }
+
+  Future<List<VitalModel>> getVitals({bool isFemale = false}) async {
     // Simulate API delay
     await Future.delayed(const Duration(milliseconds: 200));
+
+    if (isFemale) {
+      return const [
+        VitalModel(
+          title: "O+",
+          subtitle: "Blood Group",
+          icon: Icons.water_drop_outlined,
+          iconColor: AppColors.primary,
+          iconBackgroundColor: AppColors.primaryVariant,
+          secondaryTitle: "AA",
+          secondarySubtitle: "Genotype",
+        ),
+        VitalModel(
+          title: "Flow",
+          subtitle: "Flow",
+          icon: Icons.water_drop,
+          iconColor: Colors.red,
+          iconBackgroundColor: Colors.red,
+          isFlow: true,
+          flowDay: 20,
+          flowTotalDays: 28,
+        ),
+        VitalModel(
+          title: "Penicillin",
+          subtitle: "Allergies",
+          icon: Icons.warning_amber_rounded,
+          iconColor: AppColors.redAccent,
+          iconBackgroundColor: Colors.white,
+          backgroundColor: AppColors.redBackground,
+          showChevron: true,
+          titleColor: AppColors.redAccent,
+        ),
+        VitalModel(
+          title: "Set",
+          subtitle: "Reminder",
+          icon: Icons.medical_services_outlined,
+          iconColor: Color(0xFF009688),
+          iconBackgroundColor: Colors.white,
+          backgroundColor: Color(0xFFE0F2F1),
+          titleColor: Color(0xFF009688),
+        ),
+      ];
+    }
 
     return const [
       VitalModel(
@@ -59,7 +84,7 @@ class HomeRepository {
         subtitle: "Allergies",
         icon: Icons.warning_amber_rounded,
         iconColor: AppColors.redAccent,
-        iconBackgroundColor: Colors.white, // White circle on red card
+        iconBackgroundColor: Colors.white,
         backgroundColor: AppColors.redBackground,
         showChevron: true,
         titleColor: AppColors.redAccent,
@@ -69,7 +94,7 @@ class HomeRepository {
         subtitle: "Reminder",
         icon: Icons.medical_services_outlined,
         iconColor: Color(0xFF009688),
-        iconBackgroundColor: Colors.white, // White circle on green card
+        iconBackgroundColor: Colors.white,
         backgroundColor: Color(0xFFE0F2F1),
         titleColor: Color(0xFF009688),
       ),
@@ -77,31 +102,13 @@ class HomeRepository {
   }
 
   Future<List<ReminderModel>> getReminders() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return [
-      ReminderModel(
-        title: "Cardiology Checkup",
-        subtitle: "Dr. Ozioma • 10:00 AM",
-        tagText: "Tomorrow",
-        tagColor: AppColors.primary,
-        icon: Icons.monitor_heart,
-        imageUrl: 'https://i.pravatar.cc/150?img=5',
-      ),
-      ReminderModel(
-        title: "Take Vitamins",
-        subtitle: "With Lunch • 12:30 PM",
-        tagText: "Daily",
-        tagColor: Colors.orange,
-        icon: Icons.medication,
-      ),
-      ReminderModel(
-        title: "Lab Results",
-        subtitle: "Blood test view",
-        tagText: "New",
-        tagColor: Colors.purple,
-        icon: Icons.science,
-      ),
-    ];
+    final box = Hive.box<ReminderModel>('reminders');
+    return box.values.toList();
+  }
+
+  Future<void> addReminder(ReminderModel reminder) async {
+    final box = Hive.box<ReminderModel>('reminders');
+    await box.add(reminder);
   }
 
   Future<List<ActivityModel>> getRecentActivity() async {

@@ -5,13 +5,17 @@ import '../widgets/vitals_card.dart';
 import '../widgets/reminder_card.dart';
 import '../widgets/prescription_card.dart';
 import '../widgets/activity_item.dart';
+import '../widgets/flow_vital_card.dart';
+
 import '../providers/home_controller.dart';
 import '../providers/home_data_provider.dart';
 
 import '../../../allergies/presentation/pages/allergies_screen.dart';
 import '../../../reminders/presentation/pages/add_reminder_screen.dart';
+import '../../../reminders/presentation/pages/reminders_screen.dart';
 import '../../../profile/presentation/pages/profile_screen.dart';
 import '../../../history/presentation/pages/medical_history_screen.dart';
+import '../../../history/presentation/pages/medical_records_screen.dart';
 import '../../../upload/presentation/pages/new_upload_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -48,6 +52,15 @@ class HomeScreen extends ConsumerWidget {
               ),
               actions: [
                 IconButton(
+                  icon: Icon(
+                    Icons.switch_account_outlined,
+                    color: AppColors.primary,
+                  ),
+                  onPressed: () {
+                    ref.read(genderProvider.notifier).toggleGender();
+                  },
+                ),
+                IconButton(
                   icon: const Icon(Icons.notifications_outlined),
                   onPressed: () {},
                 ),
@@ -83,6 +96,9 @@ class HomeScreen extends ConsumerWidget {
                       mainAxisSpacing: 16,
                       childAspectRatio: 1.1,
                       children: vitals.map((vital) {
+                        if (vital.isFlow) {
+                          return FlowVitalCard(vital: vital);
+                        }
                         return VitalsCard(
                           title: vital.title,
                           subtitle: vital.subtitle,
@@ -118,6 +134,8 @@ class HomeScreen extends ConsumerWidget {
                             }
                           },
                           titleColor: vital.titleColor,
+                          secondaryTitle: vital.secondaryTitle,
+                          secondarySubtitle: vital.secondarySubtitle,
                         );
                       }).toList(),
                     ),
@@ -139,7 +157,14 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RemindersScreen(),
+                            ),
+                          );
+                        },
                         child: Text(
                           "See All",
                           style: TextStyle(
@@ -152,19 +177,46 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   remindersAsync.when(
-                    data: (reminders) => SizedBox(
-                      height: 140,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        itemCount: reminders.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(width: 16),
-                        itemBuilder: (context, index) {
-                          return ReminderCard(reminder: reminders[index]);
-                        },
-                      ),
-                    ),
+                    data: (reminders) {
+                      if (reminders.isEmpty) {
+                        return Container(
+                          height: 140,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.notifications_off_outlined,
+                                color: Colors.grey,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "No reminders set",
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      return SizedBox(
+                        height: 140,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: reminders.length,
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(width: 16),
+                          itemBuilder: (context, index) {
+                            return ReminderCard(reminder: reminders[index]);
+                          },
+                        ),
+                      );
+                    },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (err, stack) => Text('Error: $err'),
@@ -182,7 +234,16 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MedicalRecordsScreen(
+                                initialTab: "Prescriptions",
+                              ),
+                            ),
+                          );
+                        },
                         child: Text(
                           "Manage",
                           style: TextStyle(
@@ -196,18 +257,48 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   const SizedBox(height: 8),
                   prescriptionsAsync.when(
-                    data: (prescriptions) => ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: prescriptions.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        return PrescriptionCard(
-                          prescription: prescriptions[index],
+                    data: (prescriptions) {
+                      if (prescriptions.isEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.all(32),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.medication_outlined,
+                                color: Colors.grey,
+                                size: 48,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "No prescription yet",
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         );
-                      },
-                    ),
+                      }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: prescriptions.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          return PrescriptionCard(
+                            prescription: prescriptions[index],
+                          );
+                        },
+                      );
+                    },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (err, stack) => Text('Error: $err'),

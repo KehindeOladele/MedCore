@@ -1,7 +1,27 @@
 import 'package:flutter/material.dart';
+import 'ai_scan_result_screen.dart';
+
+import 'package:image_picker/image_picker.dart';
 
 class AiCategorizationScreen extends StatelessWidget {
   const AiCategorizationScreen({super.key});
+
+  Future<void> _pickFromGallery(BuildContext context) async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AiScanResultScreen(initialImage: image),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error picking from gallery: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,18 +51,18 @@ class AiCategorizationScreen extends StatelessWidget {
             const SizedBox(height: 20),
             // Header Icon
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: const Color(0xFFE0F2F1), // Very light teal
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.description_outlined,
-                size: 80,
+                Icons.copy_all_rounded,
+                size: 60,
                 color: Color(0xFF10B981), // Emerald Green
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             // Title
             const Text(
               "AI Document Categorization",
@@ -64,7 +84,7 @@ class AiCategorizationScreen extends StatelessWidget {
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
 
             // Steps
             _buildStepCard(
@@ -93,7 +113,7 @@ class AiCategorizationScreen extends StatelessWidget {
               description:
                   "Quickly verify the extracted data and save to your records.",
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
 
             // Buttons
             SizedBox(
@@ -101,7 +121,13 @@ class AiCategorizationScreen extends StatelessWidget {
               height: 56,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: Implement scan logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const AiScanResultScreen(autoLaunchCamera: true),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981), // Emerald Green
@@ -111,7 +137,7 @@ class AiCategorizationScreen extends StatelessWidget {
                   ),
                   elevation: 2,
                 ),
-                icon: const Icon(Icons.crop_free),
+                icon: const Icon(Icons.document_scanner_outlined),
                 label: const Text(
                   "Scan Document with AI",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -123,9 +149,7 @@ class AiCategorizationScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Implement upload from device logic
-                },
+                onPressed: () => _pickFromGallery(context),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black,
                   side: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -134,7 +158,7 @@ class AiCategorizationScreen extends StatelessWidget {
                   ),
                   backgroundColor: Colors.white,
                 ),
-                icon: const Icon(Icons.upload_file),
+                icon: const Icon(Icons.assignment_outlined),
                 label: const Text(
                   "Upload from Device",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

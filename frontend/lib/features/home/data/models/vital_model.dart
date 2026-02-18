@@ -9,6 +9,10 @@ class VitalModel {
   final Color? backgroundColor;
   final bool showChevron;
 
+  final bool isFlow;
+  final int? flowDay;
+  final int? flowTotalDays;
+
   const VitalModel({
     required this.title,
     required this.subtitle,
@@ -18,7 +22,14 @@ class VitalModel {
     this.backgroundColor,
     this.showChevron = false,
     this.titleColor,
+    this.isFlow = false,
+    this.flowDay,
+    this.flowTotalDays,
+    this.secondaryTitle,
+    this.secondarySubtitle,
   });
 
   final Color? titleColor;
+  final String? secondaryTitle;
+  final String? secondarySubtitle;
 }

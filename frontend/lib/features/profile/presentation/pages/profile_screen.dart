@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../home/presentation/widgets/vitals_card.dart';
+import '../../../home/presentation/providers/home_controller.dart';
+import 'menstrual_cycle_screen.dart';
+import 'log_period_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+import '../providers/menstrual_cycle_provider.dart';
+
+class ProfileScreen extends ConsumerWidget {
   final bool isTab;
   const ProfileScreen({super.key, this.isTab = false});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFemale = ref.watch(genderProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -56,8 +63,12 @@ class ProfileScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.primary, width: 2),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/150?img=1'),
+                      image: DecorationImage(
+                        image: NetworkImage(
+                          isFemale
+                              ? 'https://i.pravatar.cc/150?img=1'
+                              : 'https://i.pravatar.cc/150?img=11',
+                        ),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -100,47 +111,48 @@ class ProfileScreen extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.1,
+              childAspectRatio: 1.5, // Adjusted aspect ratio for smaller cards
               children: [
-                VitalsCard(
-                  title: "A+",
+                _buildVitalCard(
+                  title: isFemale ? "O+" : "A+",
                   subtitle: "Blood Group",
                   icon: Icons.water_drop_outlined,
                   iconColor: AppColors.primary,
-                  iconBackgroundColor: AppColors.primaryVariant,
                   backgroundColor: Colors.white,
                 ),
-                VitalsCard(
+                _buildVitalCard(
                   title: "AA",
                   subtitle: "Genotype",
-                  icon: Icons.fingerprint, // Replaced science icon
-                  iconColor: Colors.grey,
-                  iconBackgroundColor: Color(0xFFF5F5F5),
-                  backgroundColor: Colors.white,
-                ),
-                VitalsCard(
-                  title: "68 kg",
-                  subtitle: "Weight",
-                  icon: Icons.scale, // Placeholder for weight
-                  iconColor: AppColors.primary, // Using primary color
-                  iconBackgroundColor: AppColors.primaryVariant,
-                  backgroundColor: Colors.white,
-                ),
-                VitalsCard(
-                  title: "170 cm",
-                  subtitle: "Height",
-                  icon: Icons.height, // Placeholder for height
+                  icon: Icons.science_outlined,
                   iconColor: AppColors.primary,
-                  iconBackgroundColor: AppColors.primaryVariant,
+                  backgroundColor: Colors.white,
+                ),
+                _buildVitalCard(
+                  title: isFemale ? "68 kg" : "75 kg",
+                  subtitle: "Weight",
+                  icon: Icons.monitor_weight_outlined,
+                  iconColor: AppColors.primary,
+                  backgroundColor: Colors.white,
+                ),
+                _buildVitalCard(
+                  title: isFemale ? "170 cm" : "180 cm",
+                  subtitle: "Height",
+                  icon: Icons.height,
+                  iconColor: AppColors.primary,
                   backgroundColor: Colors.white,
                 ),
               ],
             ),
             const SizedBox(height: 32),
 
+            // Menstrual Cycle Section (Conditional)
+            if (isFemale) ...[
+              _buildMenstrualCycleSection(context, ref),
+              const SizedBox(height: 32),
+            ],
+            const SizedBox(height: 32),
+
             // Personal Details
-            _buildSectionHeader("Personal Details", Icons.person_outline),
-            const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -152,7 +164,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   _buildDetailRow("Date of Birth", "30 May, 2000"),
                   const Divider(height: 24, thickness: 0.5),
-                  _buildDetailRow("Gender", "Female"),
+                  _buildDetailRow("Gender", isFemale ? "Female" : "Male"),
                   const Divider(height: 24, thickness: 0.5),
                   _buildDetailRow("Address", "42 Ozubulu Street"),
                 ],
@@ -180,17 +192,19 @@ class ProfileScreen extends StatelessWidget {
                       color: Colors.grey[500],
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _buildChip(
                         "Peanuts (High Risk)",
                         AppColors.redBackground,
                         AppColors.redAccent,
                       ),
-                      const SizedBox(width: 8),
                       _buildChip(
                         "Penicillin",
                         const Color(0xFFFFF3E0),
@@ -198,28 +212,30 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
                     "CHRONIC CONDITIONS",
                     style: TextStyle(
                       color: Colors.grey[500],
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
                       _buildChip(
                         "Asthma",
-                        const Color(0xFFE0F2F1),
-                        const Color(0xFF009688),
+                        AppColors.primaryVariant,
+                        AppColors.primary,
                       ),
-                      const SizedBox(width: 8),
                       _buildChip(
                         "Hypertension",
-                        const Color(0xFFE0F2F1),
-                        const Color(0xFF009688),
+                        AppColors.primaryVariant,
+                        AppColors.primary,
                       ),
                     ],
                   ),
@@ -285,10 +301,10 @@ class ProfileScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFE0F2F1),
+                      color: AppColors.primaryVariant,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.phone, color: Color(0xFF009688)),
+                    child: const Icon(Icons.phone, color: AppColors.primary),
                   ),
                 ],
               ),
@@ -300,14 +316,96 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildVitalCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required Color backgroundColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                subtitle, // "Blood Group" etc
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Icon(icon, color: iconColor.withOpacity(0.5), size: 18),
+            ],
+          ),
+          Text(
+            title, // "O+" etc
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1C1E),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCycleInfo(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Colors.grey,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1C1E),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary),
+        Icon(icon, color: Colors.grey[700], size: 20), // Updated to grey
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: Color(0xFF1A1C1E),
+          ),
         ),
       ],
     );
@@ -328,7 +426,7 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildChip(String label, Color backgroundColor, Color textColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(20),
@@ -341,6 +439,232 @@ class ProfileScreen extends StatelessWidget {
           fontSize: 13,
         ),
       ),
+    );
+  }
+
+  Widget _buildMenstrualCycleSection(BuildContext context, WidgetRef ref) {
+    final cycleAsync = ref.watch(menstrualCycleProvider);
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.water_drop, color: Colors.red),
+                const SizedBox(width: 8),
+                Text(
+                  "Menstrual Cycle",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1A1C1E),
+                  ),
+                ),
+              ],
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const LogPeriodScreen(),
+                  ),
+                );
+              },
+              child: const Text(
+                "Edit",
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        cycleAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => const Text("Failed to load cycle data"),
+          data: (cycle) {
+            if (cycle == null) {
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LogPeriodScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  ),
+                  child: Column(
+                    children: const [
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 40,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(height: 12),
+                      Text(
+                        "Log your period to see cycle predictions",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final diff = DateTime.now().difference(cycle.lastPeriodDate).inDays;
+            var currentDay = diff + 1;
+            if (currentDay < 1) currentDay = 1;
+
+            // Simple Phase Logic Reuse
+            String phase = "Luteal Phase";
+            double progress = currentDay / cycle.cycleLength;
+            if (progress > 1.0) progress = 1.0;
+
+            final ovulationDay = cycle.cycleLength - 14;
+
+            if (currentDay <= cycle.periodLength) {
+              phase = "Menstruation";
+            } else if (currentDay < ovulationDay - 5) {
+              phase = "Follicular Phase";
+            } else if (currentDay <= ovulationDay) {
+              phase = "Ovulation";
+            } else {
+              phase = "Luteal Phase";
+            }
+
+            final nextPeriodDays = cycle.cycleLength - currentDay;
+            final daysText = nextPeriodDays < 0
+                ? "Overdue"
+                : "$nextPeriodDays Days";
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MenstrualCycleScreen(),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Circular Indicator
+                    SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(
+                            width: 95,
+                            height: 95,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 8,
+                              backgroundColor: Colors.grey[200],
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Day",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Text(
+                                "$currentDay",
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                phase,
+                                style: const TextStyle(
+                                  fontSize: 8,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _buildCycleInfo("NEXT\nPERIOD", daysText),
+                              _buildCycleInfo(
+                                "CYCLE\nLENGTH",
+                                "${cycle.cycleLength} Days",
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(Icons.add, size: 16),
+                              label: const Text("Log Symptoms"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

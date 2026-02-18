@@ -78,7 +78,7 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
               controller: _dateController,
               hintText: "DD/MM/YYYY",
               suffixIcon: Icons.calendar_today_outlined,
-              iconColor: const Color(0xFF00C853), // Green calendar icon
+              iconColor: const Color(0xFF7C4DFF), // Purple calendar icon
             ),
             const SizedBox(height: 20),
 
@@ -89,7 +89,7 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
               controller: _facilityController,
               hintText: "e.g., Garki General Hospital",
               suffixIcon: Icons.location_on_outlined,
-              iconColor: const Color(0xFF00C853), // Green location icon
+              iconColor: const Color(0xFF2962FF), // Blue location icon
             ),
             const SizedBox(height: 20),
 
@@ -146,8 +146,8 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
                 _buildAttachmentOption(
                   icon: Icons.upload_file,
                   label: "Upload",
-                  circleColor: const Color(0xFFE8F5E9),
-                  iconColor: const Color(0xFF00C853),
+                  circleColor: const Color(0xFFE8F5E9), // Light green
+                  iconColor: const Color(0xFF00C853), // Green
                 ),
                 _buildAttachmentOption(
                   icon: Icons.camera_alt_outlined,
@@ -178,7 +178,7 @@ class _UploadResultScreenState extends State<UploadResultScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF009688), // Teal color
+                  backgroundColor: AppColors.primary, // Green color
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
