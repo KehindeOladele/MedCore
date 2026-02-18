@@ -62,7 +62,7 @@ def patient_qr(
     patient, records = get_patient_with_records(patient_id)
     bundle = build_patient_bundle(patient, records)
 
-    buffer = generate_qr(bundle)
+    buffer = generate_qr(patient_id)
     return StreamingResponse(buffer, media_type="image/png")
 
 
