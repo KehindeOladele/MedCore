@@ -1,8 +1,4 @@
-<<<<<<< HEAD
--- Table for storing patient reminders
-=======
 -- Create the reminders table to store patient reminders and notifications.
->>>>>>> sql
 create table if not exists public.reminders (
     id uuid primary key default gen_random_uuid(),
 
