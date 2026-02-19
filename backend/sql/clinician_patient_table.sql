@@ -9,13 +9,13 @@
 create table clinicians_patients (
     clinician_id uuid references auth.users(id) on delete cascade,
     patient_id uuid references patients(id) on delete cascade,
-
     role text check (role in ('primary', 'consulting', 'emergency')) not null,
     active boolean default true,
-
+    organization_id uuid references organizations(id),
     assigned_at timestamptz default now(),
+    start_date timestamp default now(),
+    end_date timestamp;
     assigned_by uuid references auth.users(id),
-
     primary key (clinician_id, patient_id)
 );
 
