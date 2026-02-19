@@ -3,20 +3,29 @@
 create table if not exists public.patients (
     id uuid primary key references auth.users(id) on delete cascade,
 
-    -- Core relational fields
-    first_name text,
-    last_name text,
-    date_of_birth date,
-    gender text,
+    first_name text not null,
+    last_name text not null,
+    middle_name text,
+
+    date_of_birth date not null,
+    gender text check (gender in ('male','female','other','unknown')),
+
     blood_group text,
+    marital_status text,
 
-    -- Contact info (basic)
     phone text,
+    email text,
+    address text,
 
-    -- FHIR extensibility
-    fhir_metadata jsonb default '{}'::jsonb,
+    emergency_contact_name text,
+    emergency_contact_phone text,
 
-    created_at timestamp with time zone default timezone('utc', now())
+    organization_id uuid references organizations(id),
+
+    active boolean default true,
+    created_at timestamp default now(),
+
+    fhir_metadata jsonb default '{}'
 );
 
 
