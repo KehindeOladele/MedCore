@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 -- Create laboratory file storage for Patients
+=======
+-- Create lab_results table to store lab test results, 
+-- including file storage for results and associated metadata.
+>>>>>>> sql
 create table if not exists public.lab_results (
     id uuid primary key default gen_random_uuid(),
 

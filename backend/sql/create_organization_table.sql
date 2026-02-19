@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 -- Create a table for healthcare organizations such as hospitals, clinics, and labs.
+=======
+-- Create Organizations Table
+>>>>>>> sql
 create table if not exists public.organizations (
     id uuid primary key default gen_random_uuid(),
 
