@@ -305,3 +305,19 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
             "phone": patient.get("emergency_contact_phone")
         }
     }
+
+
+# ---- Update Patient Info ----
+def update_patient_info(patient_id: str, payload: dict) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .update(payload)
+        .eq("id", patient_id)
+        .execute()
+    )
+
+    if not response.data:
+        raise Exception("Failed to update patient")
+
+    return response.data[0]
