@@ -43,3 +43,46 @@ def get_my_organization(current_user=Depends(get_current_user)):
     )
 
     return org.data
+
+
+
+# ---- Upload Organization Logo Endpoint -----
+@router.post("/upload-logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user)
+):
+
+    # Get org id
+    admin_record = (
+        supabase
+        .table("admins")
+        .select("organization_id")
+        .eq("id", current_user["id"])
+        .single()
+        .execute()
+    )
+
+    org_id = admin_record.data["organization_id"]
+
+    file_ext = file.filename.split(".")[-1]
+    file_path = f"{org_id}.{file_ext}"
+
+    file_bytes = await file.read()
+
+    supabase.storage.from_("organization-logos").upload(
+        path=file_path,
+        file=file_bytes,
+        file_options={"content-type": file.content_type}
+    )
+
+    public_url = supabase.storage.from_("organization-logos").get_public_url(file_path)
+
+    supabase.table("organizations").update({
+        "logo_url": public_url
+    }).eq("id", org_id).execute()
+
+    return {
+        "message": "Logo uploaded successfully",
+        "logo_url": public_url
+    }
