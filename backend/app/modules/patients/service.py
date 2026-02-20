@@ -272,3 +272,65 @@ def get_my_patients(clinician_id: str):
         .execute()
         .data
     )
+
+
+# ---- Get Patient Profile ----
+def get_patient_profile(patient_id: str) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .select("*")
+        .eq("id", patient_id)
+        .single()
+        .execute()
+    )
+
+    if not response.data:
+        raise ValueError("Patient not found")
+
+    patient = response.data
+
+    return {
+        "id": patient["id"],
+        "full_name": f"{patient.get('first_name','')} {patient.get('last_name','')}",
+        "first_name": patient.get("first_name"),
+        "last_name": patient.get("last_name"),
+        "blood_group": patient.get("blood_group"),
+        "gender": patient.get("gender"),
+        "date_of_birth": patient.get("date_of_birth"),
+        "phone": patient.get("phone"),
+        "profile_image_url": patient.get("profile_image_url"),
+        "emergency_contact": {
+            "name": patient.get("emergency_contact_name"),
+            "phone": patient.get("emergency_contact_phone")
+        }
+    }
+
+
+# ---- Update Patient Info ----
+def update_patient_info(patient_id: str, payload: dict) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .update(payload)
+        .eq("id", patient_id)
+        .execute()
+    )
+
+    if not response.data:
+        raise Exception("Failed to update patient")
+
+    return response.data[0]
+
+
+# ---- Update Patient Profile Image ----
+def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .update({"profile_image_url": image_url})
+        .eq("id", patient_id)
+        .execute()
+    )
+
+    return response.data[0]
