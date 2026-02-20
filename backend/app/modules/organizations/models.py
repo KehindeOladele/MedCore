@@ -7,7 +7,6 @@ from uuid import UUID
 class OrganizationBase(BaseModel):
     name: str
     type: Optional[str]
-    level: Optional[str]
     email: Optional[EmailStr]
     phone: Optional[str]
     address: Optional[str]
