@@ -87,7 +87,7 @@ final class VitalsProvider
   }
 }
 
-String _$vitalsHash() => r'7ced7b87894ffa20317066d5a300dee78ce33d55';
+String _$vitalsHash() => r'5f153466d0003b6dbeb143167cc3f422322830ef';
 
 @ProviderFor(reminders)
 final remindersProvider = RemindersProvider._();

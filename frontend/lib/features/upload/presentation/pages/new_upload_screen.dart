@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../features/upload/presentation/pages/upload_result_screen.dart';
-import 'ai_categorization_screen.dart';
 
 class NewUploadScreen extends StatelessWidget {
-  final bool isTab;
-  const NewUploadScreen({super.key, this.isTab = false});
+  const NewUploadScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +16,10 @@ class NewUploadScreen extends StatelessWidget {
         ),
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: isTab
-            ? null
-            : IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
-              ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -54,7 +50,7 @@ class NewUploadScreen extends StatelessWidget {
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               childAspectRatio:
-                  0.82, // Reduced to make cards taller for text space
+                  0.75, // Adjust aspect ratio for card height to prevent overflow
               children: [
                 _buildUploadCategory(
                   context,
@@ -98,99 +94,86 @@ class NewUploadScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // AI Suggestion Card
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AiCategorizationScreen(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: const Color(0xFFCCFBF1),
+                  width: 1.5,
+                ), // Soft teal border
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(
+                      0xFF10B981,
+                    ).withOpacity(0.08), // Colored shadow
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 20,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: const Color(0xFFCCFBF1),
-                    width: 1.5,
-                  ), // Soft teal border
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(
-                        0xFF10B981,
-                      ).withOpacity(0.08), // Colored shadow
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981), // Emerald Green
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981), // Emerald Green
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Don't know what record\nit is?",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800, // Extra bold
+                            fontSize: 16,
+                            height: 1.2,
+                            color: Color(0xFF111827), // Gray 900
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.auto_awesome,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Don't know what record\nit is?",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800, // Extra bold
-                              fontSize: 16,
-                              height: 1.2,
-                              color: Color(0xFF111827), // Gray 900
-                            ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Let our AI categorize your\ndocument automatically.",
+                          style: TextStyle(
+                            color: Color(0xFF6B7280), // Gray 500
+                            fontSize: 13,
+                            height: 1.4,
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            "Let our AI categorize your\ndocument automatically.",
-                            style: TextStyle(
-                              color: Color(0xFF6B7280), // Gray 500
-                              fontSize: 13,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB), // Gray 50
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        size: 20,
-                        color: Color(0xFF9CA3AF), // Gray 400
-                      ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB), // Gray 50
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
+                    child: const Icon(
+                      Icons.arrow_forward,
+                      size: 20,
+                      color: Color(0xFF9CA3AF), // Gray 400
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -229,7 +212,7 @@ class NewUploadScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              child: SvgPicture.asset(iconPath, width: 30, height: 30),
+              child: SvgPicture.asset(iconPath, width: 24, height: 24),
             ),
             const Spacer(),
             Text(
@@ -244,8 +227,6 @@ class NewUploadScreen extends StatelessWidget {
                 fontSize: 12,
                 height: 1.4,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

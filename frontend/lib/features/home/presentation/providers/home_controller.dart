@@ -13,15 +13,3 @@ class HomeIndex extends _$HomeIndex {
     state = index;
   }
 }
-
-@riverpod
-class GenderNotifier extends _$GenderNotifier {
-  @override
-  bool build() {
-    return true; // Default to female for testing as per request
-  }
-
-  void toggleGender() {
-    state = !state;
-  }
-}

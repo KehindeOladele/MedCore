@@ -43,12 +43,6 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to scan medical documents.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need photo library access to upload medical documents.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need microphone access for voice notes.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>

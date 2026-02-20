@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/medical_history_model.dart';
 import 'medical_records_screen.dart';
-import 'lab_test_details_screen.dart';
 import '../../../../features/upload/presentation/pages/new_upload_screen.dart';
 
 class MedicalHistoryScreen extends StatelessWidget {
@@ -264,19 +263,7 @@ class MedicalHistoryScreen extends StatelessWidget {
                                             SizedBox(
                                               width: double.infinity,
                                               child: TextButton.icon(
-                                                onPressed: () {
-                                                  if (item.actionText!.contains(
-                                                    "LAB",
-                                                  )) {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            const LabTestDetailsScreen(),
-                                                      ),
-                                                    );
-                                                  }
-                                                },
+                                                onPressed: () {},
                                                 icon: Icon(
                                                   item.actionText!.contains(
                                                         "LAB",

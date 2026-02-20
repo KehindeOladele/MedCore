@@ -11,8 +11,6 @@ class VitalsCard extends StatelessWidget {
   final bool showChevron;
   final VoidCallback? onTap;
   final Color? titleColor;
-  final String? secondaryTitle;
-  final String? secondarySubtitle;
 
   const VitalsCard({
     super.key,
@@ -25,8 +23,6 @@ class VitalsCard extends StatelessWidget {
     this.showChevron = false,
     this.onTap,
     this.titleColor,
-    this.secondaryTitle,
-    this.secondarySubtitle,
   });
 
   @override
@@ -70,30 +66,7 @@ class VitalsCard extends StatelessWidget {
                     ),
                     child: Icon(icon, color: iconColor, size: 20),
                   ),
-                  if (secondaryTitle != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          secondaryTitle!,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF1A1C1E),
-                              ),
-                        ),
-                        if (secondarySubtitle != null)
-                          Text(
-                            secondarySubtitle!,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Colors.grey[600],
-                                  fontSize: 10,
-                                ),
-                          ),
-                      ],
-                    )
-                  else if (showChevron)
+                  if (showChevron)
                     const Icon(
                       Icons.chevron_right_rounded,
                       color: Colors.grey,
