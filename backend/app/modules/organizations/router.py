@@ -4,7 +4,7 @@ from app.modules.organizations.models import (
     OrganizationUpdate
 )
 from app.modules.organizations.service import create_organization
-from app.core.dependencies import get_current_user
+from app.core.security import get_current_user
 from app.core.supabase import supabase
 
 
