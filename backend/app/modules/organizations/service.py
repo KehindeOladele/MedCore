@@ -1,4 +1,4 @@
-from app.core.supabase import supabase
+from app.core.supabase_client import supabase
 from fastapi import HTTPException
 import uuid
 
