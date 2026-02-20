@@ -16,3 +16,30 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 @router.post("/register")
 def register_organization(payload: OrganizationCreate):
     return create_organization(payload)
+
+
+# ----- Get My Organization Endpoint ----- 
+@router.get("/me")
+def get_my_organization(current_user=Depends(get_current_user)):
+
+    response = (
+        supabase
+        .table("admins")
+        .select("organization_id")
+        .eq("id", current_user["id"])
+        .single()
+        .execute()
+    )
+
+    org_id = response.data["organization_id"]
+
+    org = (
+        supabase
+        .table("organizations")
+        .select("*")
+        .eq("id", org_id)
+        .single()
+        .execute()
+    )
+
+    return org.data
