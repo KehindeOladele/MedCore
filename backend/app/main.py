@@ -5,6 +5,7 @@ from app.modules.records.router import router as records_router
 from app.modules.dashboard.router import router as dashboard_router
 from app.modules.medical_history.router import router as medical_history_router
 from app.modules.laboratory.router import router as laboratory_router
+from app.modules.organizations.router import router as org_router
 
 
 # ===== Initialize FastAPI Application =====
@@ -21,6 +22,8 @@ app.include_router(auth_router)
 app.include_router(patients_router)
 # Records Router
 app.include_router(records_router)
+# Organization Router
+app.include_router(org_router)
 
 
 # ===== Feature Modules =====
