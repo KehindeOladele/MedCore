@@ -5,7 +5,7 @@ from app.modules.organizations.models import (
 )
 from app.modules.organizations.service import create_organization
 from app.core.security import get_current_user
-from app.core.supabase import supabase
+from app.core.supabase_client import supabase
 
 
 # ----- Router Setup -----
