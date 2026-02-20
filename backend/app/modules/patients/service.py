@@ -321,3 +321,16 @@ def update_patient_info(patient_id: str, payload: dict) -> Dict[str, Any]:
         raise Exception("Failed to update patient")
 
     return response.data[0]
+
+
+# ---- Update Patient Profile Image ----
+def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .update({"profile_image_url": image_url})
+        .eq("id", patient_id)
+        .execute()
+    )
+
+    return response.data[0]
