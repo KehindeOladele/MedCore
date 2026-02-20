@@ -7,10 +7,11 @@ create table if not exists public.organizations (
         type in (
             'tertiary_hospital',
             'secondary_hospital',
+            'private_hospital',
+            'primary_health_center',
             'clinic',
             'pharmacy',
-            'laboratory',
-            'phc',
+            'private_laboratory',
             'pmv'
         )
     ),
@@ -19,6 +20,11 @@ create table if not exists public.organizations (
     phone text,
     email text,
     address text,
+
+    state text,
+    country text default 'Nigeria',
+
+    logo_url text,
 
     active boolean default true,
     created_at timestamp default now()
