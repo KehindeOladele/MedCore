@@ -1,4 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException,
+    UploadFile,
+    File
+)
 from fastapi.responses import StreamingResponse
 from app.core.security import (
     get_current_user, 
@@ -10,9 +16,15 @@ from app.modules.patients.service import (
     get_patient_with_records,
     assign_clinician_to_patient,
     get_patient_summary,
-    get_my_patients
+    get_my_patients,
+    get_patient_profile,
+    update_patient_info,
+    update_profile_image
     )
-from app.modules.patients.models import Patient
+from app.modules.patients.models import (
+    Patient
+    PatientUpdate
+)
 from app.modules.records.models import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
@@ -110,3 +122,13 @@ def my_patients(current_user=Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Only clinicians allowed")
 
     return get_my_patients(current_user["id"])
+
+
+# ---- Get My Patient Profile -----
+@router.get("/profile/me")
+def my_profile(current_user=Depends(get_current_user)):
+
+    if current_user["role"] != "patient":
+        raise HTTPException(403, "Only patients allowed")
+
+    return get_patient_profile(current_user["id"])
