@@ -22,7 +22,7 @@ from app.modules.patients.service import (
     update_profile_image
     )
 from app.modules.patients.models import (
-    Patient
+    Patient,
     PatientUpdate
 )
 from app.modules.records.models import MedicalRecordCreate
@@ -132,3 +132,14 @@ def my_profile(current_user=Depends(get_current_user)):
         raise HTTPException(403, "Only patients allowed")
 
     return get_patient_profile(current_user["id"])
+
+# --- Update My Patient Profile -----
+@router.put("/profile/me")
+def update_my_profile(
+    payload: PatientUpdate,
+    current_user=Depends(get_current_user)
+):
+    if current_user["role"] != "patient":
+        raise HTTPException(403, "Only patients allowed")
+
+    return update_patient_info(current_user["id"], payload.dict(exclude_unset=True))
