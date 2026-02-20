@@ -3,7 +3,7 @@ from app.shared.utils.timeline_event_trans_helper import transform_record_to_eve
 from uuid import UUID
 from typing import List, Dict, Any
 
-
+# ----- Get Patient Summary -----
 def get_patient_summary(patient_id: str) -> Dict[str, Any]:
     """
     Generate a summary of the patient's health data including 
@@ -67,11 +67,18 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
     for c in conditions:
         cd = c["clinical_data"]
-        status = (
-        cd.get("clinicalStatus", {})
-            .get("coding", [{}])[0]
-            .get("code")
-        )
+        clinical_status = cd.get("clinicalStatus")
+
+        if isinstance(clinical_status, dict):
+            status = (
+                clinical_status
+                .get("coding", [{}])[0]
+                .get("code")
+            )
+        elif isinstance(clinical_status, str):
+            status = clinical_status
+        else:
+            status = None
 
         if status == "active":
             name = cd.get("code", {}).get("text")
@@ -265,3 +272,36 @@ def get_my_patients(clinician_id: str):
         .execute()
         .data
     )
+
+
+# ---- Get Patient Profile ----
+def get_patient_profile(patient_id: str) -> Dict[str, Any]:
+    response = (
+        supabase
+        .table("patients")
+        .select("*")
+        .eq("id", patient_id)
+        .single()
+        .execute()
+    )
+
+    if not response.data:
+        raise ValueError("Patient not found")
+
+    patient = response.data
+
+    return {
+        "id": patient["id"],
+        "full_name": f"{patient.get('first_name','')} {patient.get('last_name','')}",
+        "first_name": patient.get("first_name"),
+        "last_name": patient.get("last_name"),
+        "blood_group": patient.get("blood_group"),
+        "gender": patient.get("gender"),
+        "date_of_birth": patient.get("date_of_birth"),
+        "phone": patient.get("phone"),
+        "profile_image_url": patient.get("profile_image_url"),
+        "emergency_contact": {
+            "name": patient.get("emergency_contact_name"),
+            "phone": patient.get("emergency_contact_phone")
+        }
+    }
