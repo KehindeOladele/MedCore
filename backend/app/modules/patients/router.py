@@ -8,8 +8,10 @@ from fastapi import (
 from fastapi.responses import StreamingResponse
 from app.core.security import (
     get_current_user, 
-    require_patient_access
+    require_patient_access,
+    require_permission
     )
+from app.core.supabase_client import supabase
 from app.modules.patients.service import (
     build_patient_timeline,
     get_or_create_patient,
@@ -28,9 +30,7 @@ from app.modules.patients.models import (
 from app.modules.records.models import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
-from app.core.security import require_permission
 from uuid import UUID
-from fastapi import Depends
 
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
@@ -143,3 +143,33 @@ def update_my_profile(
         raise HTTPException(403, "Only patients allowed")
 
     return update_patient_info(current_user["id"], payload.dict(exclude_unset=True))
+
+
+# ---- Upload Profile Picture -----
+@router.post("/profile/upload-avatar")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user=Depends(get_current_user)
+):
+    if current_user["role"] != "patient":
+        raise HTTPException(403, "Only patients allowed")
+
+    file_ext = file.filename.split(".")[-1]
+    file_path = f"{current_user['id']}.{file_ext}"
+
+    file_bytes = await file.read()
+
+    supabase.storage.from_("patient-avatars").upload(
+        path=file_path,
+        file=file_bytes,
+        file_options={"content-type": file.content_type}
+    )
+
+    public_url = supabase.storage.from_("patient-avatars").get_public_url(file_path)
+
+    update_profile_image(current_user["id"], public_url)
+
+    return {
+        "message": "Profile image uploaded successfully",
+        "profile_image_url": public_url
+    }
