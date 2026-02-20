@@ -21,3 +21,19 @@ class Patient(BaseModel):
     emergency_contact_phone: Optional[str] = None
     profile_image_url: Optional[str] = None
     fhir_metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+# ---- Patient Update Model -----
+class PatientUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    middle_name: Optional[str]
+    date_of_birth: Optional[date]
+    gender: Optional[str]
+    blood_group: Optional[str]
+    marital_status: Optional[str]
+    phone: Optional[str]
+    email: Optional[str]
+    address: Optional[str]
+    emergency_contact_name: Optional[str]
+    emergency_contact_phone: Optional[str]
