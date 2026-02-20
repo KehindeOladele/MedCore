@@ -3,8 +3,19 @@ create table if not exists public.organizations (
     id uuid primary key default gen_random_uuid(),
 
     name text not null,
-    type text, -- hospital, clinic, lab
+    type text check (
+        type in (
+            'tertiary_hospital',
+            'secondary_hospital',
+            'clinic',
+            'pharmacy',
+            'laboratory',
+            'phc',
+            'pmv'
+        )
+    ),
 
+    license_number text,
     phone text,
     email text,
     address text,

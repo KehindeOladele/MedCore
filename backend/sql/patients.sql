@@ -40,6 +40,7 @@ create table if not exists public.patients (
     emergency_contact_name text,
     emergency_contact_phone text,
 
+    access_pin text, -- hashed
     organization_id uuid references organizations(id),
 
     active boolean default true,
