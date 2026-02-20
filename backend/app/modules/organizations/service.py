@@ -47,3 +47,25 @@ def create_organization(payload):
         "message": "Organization registered successfully",
         "organization_id": organization["id"]
     }
+
+
+# ---- Update Organization Service -----
+def update_organization(org_id: str, payload):
+
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields provided")
+
+    response = (
+        supabase
+        .table("organizations")
+        .update(update_data)
+        .eq("id", org_id)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    return response.data[0]
