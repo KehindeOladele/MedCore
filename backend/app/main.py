@@ -1,3 +1,5 @@
+import os
+from app.core.supabase_client import supabase
 from fastapi import FastAPI
 from app.modules.auth.router import router as auth_router
 from app.modules.patients.router import router as patients_router
