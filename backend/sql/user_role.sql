@@ -2,8 +2,9 @@
 create table if not exists public.user_roles (
     user_id uuid references auth.users(id) on delete cascade,
     role_id uuid references public.roles(id) on delete cascade,
+    organization_id uuid references organization(id) on delete cascade,
     assigned_at timestamptz default now(),
-    primary key (user_id, role_id)
+    primary key (user_id, role_id, organization_id)
 );
 
 
