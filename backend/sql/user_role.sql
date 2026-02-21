@@ -21,14 +21,16 @@ using (auth.uid() = user_id);
 
 
 -- Policy to allow admins to manage roles
-create policy "Admins manage roles"
+create policy "Org admins manage roles"
 on public.user_roles
 for all
 using (
     exists (
-    select 1 from user_roles ur
-    join roles r on ur.role_id = r.id
-    where ur.user_id = auth.uid()
-    and r.name = 'admin'
+        select 1
+        from user_roles ur
+        join roles r on ur.role_id = r.id
+        where ur.user_id = auth.uid()
+        and r.name = 'org_admin'
+        and ur.organization_id = user_roles.organization_id
     )
 );
