@@ -118,7 +118,7 @@ def assign_patient(
 # ----- Get My Patients (for Clinicians) -----
 @router.get("/mine")
 def my_patients(current_user=Depends(get_current_user)):
-    if current_user["role"] != "doctor":
+    if current_user["role"] != "practitioner":
         raise HTTPException(status_code=403, detail="Only clinicians allowed")
 
     return get_my_patients(current_user["id"])
