@@ -234,7 +234,7 @@ def assign_clinician_to_patient(
     role: str,
     assigned_by: str
 ):
-    return (
+    response = (
         supabase
         .table("clinicians_patients")
         .upsert({
@@ -245,7 +245,12 @@ def assign_clinician_to_patient(
             "assigned_by": assigned_by
         })
         .execute()
-    ).data[0]
+    )
+
+    if not response.data:
+        raise Exception("Failed to assign clinician")
+
+    return response.data[0]
 
 
 # ---- Get My Patients for Clinician ----
