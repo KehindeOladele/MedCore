@@ -116,7 +116,7 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
 
 # ----- Get or Create Patient -----
-def get_or_create_patient(user_id: str):
+def get_or_create_patient_for_self(user_id: str):
     response = (
         supabase
         .table("patients")
@@ -314,7 +314,7 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
 
 
 # ---- Update Patient Info ----
-def update_patient_info(patient_id: str, payload: dict) -> Dict[str, Any]:
+def update_patient_info(patient_id: str, payload: dict):
     response = (
         supabase
         .table("patients")
