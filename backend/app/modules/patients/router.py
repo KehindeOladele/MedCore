@@ -101,7 +101,7 @@ def get_patient_timeline(
 
 
 # ---- Assign Clinician to Patient -----
-@router.post("/patients/{patient_id}/assign")
+@router.post("/{patient_id}/assign")
 def assign_patient(
     patient_id: str,
     clinician_id: str,
