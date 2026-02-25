@@ -339,4 +339,8 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
         .execute()
     )
 
+    if not response.data:
+        raise Exception("Failed to update profile image")
+
+
     return response.data[0]
