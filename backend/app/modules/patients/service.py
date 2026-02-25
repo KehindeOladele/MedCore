@@ -187,11 +187,12 @@ def build_patient_timeline(patient_id: UUID):
 
     records = response.data or []
 
-    events = [
-        transform_record_to_event(record)
-        for record in records
-        if transform_record_to_event(record) is not None
-    ]
+    events = []
+    for record in records:
+        event= transform_record_to_event(record)
+        if event:
+            events.append(event)
+    
 
     events.sort(key=lambda e: e["date"], reverse=True)
 
