@@ -162,7 +162,10 @@ async def upload_profile_picture(
     supabase.storage.from_("patient-avatars").upload(
         path=file_path,
         file=file_bytes,
-        file_options={"content-type": file.content_type}
+        file_options={
+            "content-type": file.content_type,
+            "upsert": True
+            }
     )
 
     public_url = supabase.storage.from_("patient-avatars").get_public_url(file_path)
