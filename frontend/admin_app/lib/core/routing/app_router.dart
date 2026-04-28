@@ -6,6 +6,18 @@ import '../../features/dashboard/presentation/pages/dashboard_screen.dart';
 import '../../features/patient_records/presentation/pages/patient_records_screen.dart';
 import '../../features/patient_history/presentation/pages/patient_history_screen.dart';
 import '../../features/data_capture/presentation/pages/add_clinical_note_screen.dart';
+import '../../features/data_capture/presentation/pages/voice_dictation_screen.dart';
+import '../../features/ai_categorization/presentation/pages/ai_categorization_screen.dart';
+import '../../features/ai_categorization/presentation/pages/capture_screen.dart';
+import '../../features/ai_categorization/presentation/pages/upload_confirmation_screen.dart';
+import '../../features/ai_categorization/presentation/pages/ai_scan_result_screen.dart';
+import '../../features/ai_categorization/presentation/pages/ai_categorization_result_screen.dart';
+import '../../features/patient_records/presentation/pages/medical_records_screen.dart';
+import '../../features/patient_records/presentation/pages/clinical_notes_screen.dart';
+import '../../features/patient_records/presentation/pages/prescriptions_screen.dart';
+import '../../features/patient_records/presentation/pages/add_prescription_screen.dart';
+import '../../features/patient_records/data/models/prescription_model.dart';
+import '../../features/patient_records/presentation/pages/note_detail_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -30,10 +42,62 @@ class AppRouter {
         builder: (context, state) => const PatientHistoryScreen(),
       ),
       GoRoute(
+        path: '/medical_records',
+        builder: (context, state) => const MedicalRecordsScreen(),
+      ),
+      GoRoute(
         path: '/add_clinical_note',
         builder: (context, state) => const AddClinicalNoteScreen(),
       ),
-      // Add more routes here as we build them out
+      GoRoute(
+        path: '/voice_dictation',
+        builder: (context, state) => const VoiceDictationScreen(),
+      ),
+      GoRoute(
+        path: '/ai_categorization',
+        builder: (context, state) => const AiCategorizationScreen(),
+      ),
+      GoRoute(
+        path: '/capture',
+        builder: (context, state) => const CaptureScreen(),
+      ),
+      GoRoute(
+        path: '/upload_confirmation',
+        builder: (context, state) => const UploadConfirmationScreen(),
+      ),
+      GoRoute(
+        path: '/ai_scan_result',
+        builder: (context, state) {
+          final autoLaunch = state.extra == true;
+          return AiScanResultScreen(autoLaunchCamera: autoLaunch);
+        },
+      ),
+      GoRoute(
+        path: '/ai_categorization_result',
+        builder: (context, state) => const AiCategorizationResultScreen(),
+      ),
+      GoRoute(
+        path: '/clinical_notes',
+        builder: (context, state) => const ClinicalNotesScreen(),
+      ),
+      GoRoute(
+        path: '/prescriptions',
+        builder: (context, state) => const PrescriptionsScreen(),
+      ),
+      GoRoute(
+        path: '/add_prescription',
+        builder: (context, state) {
+          // If extras carry a PrescriptionModel, open in edit mode
+          final prescription = state.extra is PrescriptionModel
+              ? state.extra as PrescriptionModel
+              : null;
+          return AddPrescriptionScreen(prescription: prescription);
+        },
+      ),
+      GoRoute(
+        path: '/note_detail',
+        builder: (context, state) => const NoteDetailScreen(),
+      ),
     ],
   );
 }

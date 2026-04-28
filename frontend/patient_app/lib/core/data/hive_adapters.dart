@@ -21,6 +21,7 @@ class IconDataAdapter extends TypeAdapter<IconData> {
   final int typeId = 201;
 
   @override
+  @pragma('vm:entry-point')
   IconData read(BinaryReader reader) {
     final codePoint = reader.readInt();
     final fontFamily = reader.readString();

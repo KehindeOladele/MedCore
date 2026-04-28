@@ -84,7 +84,7 @@ class _AddClinicalNoteScreenState extends State<AddClinicalNoteScreen> {
                           ],
                         ),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () => context.push('/capture'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF059669),
                             foregroundColor: Colors.white,
@@ -149,7 +149,7 @@ class _AddClinicalNoteScreenState extends State<AddClinicalNoteScreen> {
                           icon: Icons.mic_none,
                           label: 'Dictate',
                           color: const Color(0xFF059669),
-                          onTap: () {},
+                          onTap: () => context.push('/voice_dictation'),
                         ),
                         SizedBox(width: 12.w),
                         _buildToolButton(
@@ -199,7 +199,7 @@ class _AddClinicalNoteScreenState extends State<AddClinicalNoteScreen> {
                 width: double.infinity,
                 height: 56.h,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () => context.push('/ai_categorization'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
