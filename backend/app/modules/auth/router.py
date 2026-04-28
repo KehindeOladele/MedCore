@@ -6,7 +6,11 @@ from app.modules.auth.schemas import (
     SignupResponse,
     LoginRequest
 )
-from app.modules.auth.service import ensure_profile_exists, sign_up
+from app.modules.auth.service import (
+    ensure_profile_exists, 
+    sign_up,
+    login_user
+)
 # from app.core.supabase_client import supabase
 
 
