@@ -10,11 +10,11 @@ void main() {
   runApp(const ProviderScope(child: AdminApp()));
 }
 
-class AdminApp extends StatelessWidget {
+class AdminApp extends ConsumerWidget {
   const AdminApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ScreenUtilInit(
       designSize: const Size(390, 844), // Base design size from Figma
       minTextAdapt: true,
@@ -24,7 +24,7 @@ class AdminApp extends StatelessWidget {
           title: 'MedCore Admin',
           theme: AppTheme.lightTheme,
           debugShowCheckedModeBanner: false,
-          routerConfig: AppRouter.router,
+          routerConfig: ref.watch(goRouterProvider),
         );
       },
     );

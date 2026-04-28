@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/providers/auth_controller.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -32,13 +34,25 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _animationController.forward().then((_) {
-      // Navigate after animation completes
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          context.go('/role_selection');
-        }
-      });
+      // Check if auth state is already loaded
+      _checkNavigation();
     });
+  }
+
+  void _checkNavigation() {
+    if (!mounted) return;
+    
+    // Make sure animation finished (at least 1.5s)
+    if (_animationController.isAnimating) return;
+    
+    final authState = ref.read(authControllerProvider);
+    if (authState.isLoading) {
+      // Still loading, ref.listen will catch it when it finishes
+      return;
+    }
+    
+    // Auth finished loading and animation finished
+    context.go('/role_selection');
   }
 
   @override
@@ -49,6 +63,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authControllerProvider, (previous, next) {
+      if (!next.isLoading) {
+        _checkNavigation();
+      }
+    });
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(

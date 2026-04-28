@@ -1,4 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/data/providers/auth_controller.dart';
 import '../../features/auth/presentation/pages/splash_screen.dart';
 import '../../features/auth/presentation/pages/login_screen.dart';
 import '../../features/auth/presentation/pages/role_selection_screen.dart';
@@ -19,9 +22,37 @@ import '../../features/patient_records/presentation/pages/add_prescription_scree
 import '../../features/patient_records/data/models/prescription_model.dart';
 import '../../features/patient_records/presentation/pages/note_detail_screen.dart';
 
-class AppRouter {
-  static final GoRouter router = GoRouter(
+final goRouterProvider = Provider<GoRouter>((ref) {
+  // Notifier to trigger GoRouter redirects when auth state changes
+  final authNotifier = ValueNotifier(ref.read(authControllerProvider));
+  
+  ref.listen(authControllerProvider, (_, next) {
+    authNotifier.value = next;
+  });
+
+  return GoRouter(
     initialLocation: '/',
+    refreshListenable: authNotifier,
+    redirect: (context, state) {
+      final authState = authNotifier.value;
+      final isAuth = authState.value != null;
+      final isGoingToLogin = state.matchedLocation == '/login' || state.matchedLocation == '/role_selection';
+      
+      // If the app is starting up or processing auth, stay where we are
+      if (authState.isLoading) return null;
+
+      // Protect all routes except splash, login, and role selection
+      if (!isAuth && !isGoingToLogin && state.matchedLocation != '/') {
+        return '/role_selection';
+      }
+
+      // If authenticated and trying to go to login, redirect to dashboard
+      if (isAuth && isGoingToLogin) {
+        return '/dashboard';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
@@ -100,4 +131,4 @@ class AppRouter {
       ),
     ],
   );
-}
+});

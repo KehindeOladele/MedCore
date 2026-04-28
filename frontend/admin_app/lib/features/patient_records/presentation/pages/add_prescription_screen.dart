@@ -79,10 +79,11 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     );
     if (picked != null) {
       setState(() {
-        if (isStart)
+        if (isStart) {
           _startDate = picked;
-        else
+        } else {
           _endDate = picked;
+        }
       });
     }
   }
@@ -252,8 +253,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                                       )
                                       .toList(),
                               onChanged: (val) {
-                                if (val != null)
+                                if (val != null) {
                                   setState(() => _selectedFrequency = val);
+                                }
                               },
                             ),
                           ),
@@ -314,7 +316,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                   ),
                   Switch(
                     value: _setReminder,
-                    activeColor: _primaryGreen,
+                    activeThumbColor: _primaryGreen,
                     activeTrackColor: _primaryGreen.withValues(alpha: 0.2),
                     onChanged: (v) => setState(() => _setReminder = v),
                   ),
@@ -339,8 +341,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                           context: context,
                           initialTime: _selectedTime,
                         );
-                        if (picked != null)
+                        if (picked != null) {
                           setState(() => _selectedTime = picked);
+                        }
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
