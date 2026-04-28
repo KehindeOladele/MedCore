@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/providers/auth_controller.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,23 +31,37 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate login
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        context.go('/dashboard');
-      }
-    });
+    ref.read(authControllerProvider.notifier).login(
+      _emailController.text,
+      _passwordController.text,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Listen for auth state changes to show errors or handle navigation
+    ref.listen(authControllerProvider, (previous, next) {
+      next.whenOrNull(
+        data: (user) {
+          if (user != null && previous?.value == null) {
+            // Successfully logged in
+            context.go('/dashboard');
+          }
+        },
+        error: (error, stackTrace) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login failed: ${error.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        },
+      );
+    });
+
+    final authState = ref.watch(authControllerProvider);
+    final isLoading = authState.isLoading;
+
     const Color brandGreen = Color(0xFF0D9765); // Exact Green from Figma button
     const Color textDark = Color(0xFF0F172A);
     const Color textGray = Color(0xFF64748B);
@@ -290,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
+                        onPressed: isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: brandGreen,
                           shape: RoundedRectangleBorder(
@@ -298,7 +313,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           elevation: 0,
                         ),
-                        child: _isLoading
+                        child: isLoading
                             ? const SizedBox(
                                 height: 15,
                                 width: 15,

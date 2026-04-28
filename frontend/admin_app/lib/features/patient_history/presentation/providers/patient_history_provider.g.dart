@@ -55,7 +55,7 @@ final class PatientHistoryRepositoryProvider
 }
 
 String _$patientHistoryRepositoryHash() =>
-    r'9c6addae52e681f5516d29d9b51e4c94072bae82';
+    r'b6c54a553803ebede152f3ec1f894b67f1f0dc29';
 
 @ProviderFor(patientMedicalHistory)
 const patientMedicalHistoryProvider = PatientMedicalHistoryProvider._();
@@ -97,4 +97,4 @@ final class PatientMedicalHistoryProvider
 }
 
 String _$patientMedicalHistoryHash() =>
-    r'd8503592bc7bc7d42583faabe1252e27f043c0c8';
+    r'17c0c9894ec4adf2c6835c5015a4f01c65a69b0a';

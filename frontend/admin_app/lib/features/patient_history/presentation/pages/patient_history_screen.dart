@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/patient_history_provider.dart';
+import '../../../patient_records/presentation/pages/lab_test_details_screen.dart';
+import '../../../patient_records/presentation/pages/add_prescription_screen.dart';
+import '../../../patient_records/data/models/prescription_model.dart';
+import '../../../patient_records/presentation/pages/note_detail_screen.dart';
 
 class PatientHistoryScreen extends ConsumerWidget {
   const PatientHistoryScreen({super.key});
@@ -172,7 +176,11 @@ class PatientHistoryScreen extends ConsumerWidget {
                                             ],
                                           ),
                                           child: IconButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              context.push(
+                                                '/add_clinical_note',
+                                              );
+                                            },
                                             icon: const Icon(
                                               Icons.add,
                                               color: Colors.white,
@@ -236,169 +244,244 @@ class PatientHistoryScreen extends ConsumerWidget {
                                     Expanded(
                                       child: Padding(
                                         padding: EdgeInsets.only(bottom: 24.h),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                            border: Border.all(
-                                              color: const Color(0xFFF1F5F9),
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.02,
+                                        child: GestureDetector(
+                                          onTap: item.type == 'diagnosis'
+                                              ? () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          const NoteDetailScreen(),
+                                                    ),
+                                                  );
+                                                }
+                                              : null,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              border: Border.all(
+                                                color: const Color(0xFFF1F5F9),
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.02),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
                                                 ),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          padding: EdgeInsets.all(16.w),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    padding: EdgeInsets.all(
-                                                      8.w,
-                                                    ),
-                                                    decoration: BoxDecoration(
-                                                      color:
-                                                          item.type ==
-                                                              'pharmacy'
-                                                          ? const Color(
-                                                              0xFFE0F7FA,
-                                                            )
-                                                          : const Color(
-                                                              0xFFE8F5E9,
-                                                            ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            8,
-                                                          ),
-                                                    ),
-                                                    child: Icon(
-                                                      item.type == 'pharmacy'
-                                                          ? Icons
-                                                                .assignment_outlined
-                                                          : Icons
-                                                                .local_hospital_outlined,
-                                                      color:
-                                                          item.type ==
-                                                              'pharmacy'
-                                                          ? const Color(
-                                                              0xFF00BCD4,
-                                                            )
-                                                          : const Color(
-                                                              0xFF4CAF50,
-                                                            ),
-                                                      size: 20,
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 12.w),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          item.title,
-                                                          style: TextStyle(
-                                                            color: const Color(
-                                                              0xFF0F172A,
-                                                            ),
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            fontSize: 14.sp,
-                                                            fontFamily: 'Inter',
-                                                          ),
-                                                        ),
-                                                        Text(
-                                                          item.subtitle,
-                                                          style: TextStyle(
-                                                            color: const Color(
-                                                              0xFF94A3B8,
-                                                            ),
-                                                            fontSize: 12.sp,
-                                                            fontFamily: 'Inter',
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              SizedBox(height: 12.h),
-                                              Text(
-                                                item.description,
-                                                style: TextStyle(
-                                                  color: const Color(
-                                                    0xFF475569,
-                                                  ),
-                                                  fontSize: 13.sp,
-                                                  height: 1.5,
-                                                  fontFamily: 'Inter',
-                                                ),
-                                              ),
-                                              if (item.actionText != null) ...[
-                                                SizedBox(height: 16.h),
-                                                SizedBox(
-                                                  width: double.infinity,
-                                                  child: TextButton.icon(
-                                                    onPressed: () {},
-                                                    icon: Icon(
-                                                      item.actionText!.contains(
-                                                            "LAB",
-                                                          )
-                                                          ? Icons
-                                                                .description_outlined
-                                                          : Icons
-                                                                .calendar_view_day_outlined,
-                                                      size: 16.sp,
-                                                      color: const Color(
-                                                        0xFF059669,
+                                              ],
+                                            ),
+                                            padding: EdgeInsets.all(16.w),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Container(
+                                                      padding: EdgeInsets.all(
+                                                        8.w,
                                                       ),
-                                                    ),
-                                                    label: Text(
-                                                      item.actionText!,
-                                                      style: TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        fontSize: 12.sp,
-                                                        color: const Color(
-                                                          0xFF059669,
-                                                        ),
-                                                        letterSpacing: 0.5,
-                                                      ),
-                                                    ),
-                                                    style: TextButton.styleFrom(
-                                                      backgroundColor:
-                                                          const Color.fromRGBO(
-                                                            5,
-                                                            150,
-                                                            105,
-                                                            0.08,
-                                                          ),
-                                                      shape: RoundedRectangleBorder(
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            item.type ==
+                                                                'pharmacy'
+                                                            ? const Color(
+                                                                0xFFE0F7FA,
+                                                              )
+                                                            : const Color(
+                                                                0xFFE8F5E9,
+                                                              ),
                                                         borderRadius:
                                                             BorderRadius.circular(
                                                               8,
                                                             ),
                                                       ),
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                            vertical: 10.h,
-                                                          ),
+                                                      child: Icon(
+                                                        item.type == 'pharmacy'
+                                                            ? Icons
+                                                                  .assignment_outlined
+                                                            : Icons
+                                                                  .local_hospital_outlined,
+                                                        color:
+                                                            item.type ==
+                                                                'pharmacy'
+                                                            ? const Color(
+                                                                0xFF00BCD4,
+                                                              )
+                                                            : const Color(
+                                                                0xFF4CAF50,
+                                                              ),
+                                                        size: 20,
+                                                      ),
                                                     ),
+                                                    SizedBox(width: 12.w),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            item.title,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF0F172A,
+                                                                  ),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700,
+                                                              fontSize: 14.sp,
+                                                              fontFamily:
+                                                                  'Inter',
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            item.subtitle,
+                                                            style: TextStyle(
+                                                              color:
+                                                                  const Color(
+                                                                    0xFF94A3B8,
+                                                                  ),
+                                                              fontSize: 12.sp,
+                                                              fontFamily:
+                                                                  'Inter',
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 12.h),
+                                                Text(
+                                                  item.description,
+                                                  style: TextStyle(
+                                                    color: const Color(
+                                                      0xFF475569,
+                                                    ),
+                                                    fontSize: 13.sp,
+                                                    height: 1.5,
+                                                    fontFamily: 'Inter',
                                                   ),
                                                 ),
+                                                if (item.actionText !=
+                                                    null) ...[
+                                                  SizedBox(height: 16.h),
+                                                  SizedBox(
+                                                    width: double.infinity,
+                                                    child: TextButton.icon(
+                                                      onPressed: () {
+                                                        if (item.actionText!
+                                                            .contains('LAB')) {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  const LabTestDetailsScreen(),
+                                                            ),
+                                                          );
+                                                        } else if (item
+                                                            .actionText!
+                                                            .contains(
+                                                              'PRESCRIPTION',
+                                                            )) {
+                                                          // Build a pre-filled PrescriptionModel from the history card data
+                                                          final prescription =
+                                                              PrescriptionModel(
+                                                                id: 'igwe-24930',
+                                                                name:
+                                                                    'Amoxicillin',
+                                                                dosage: '500mg',
+                                                                frequency:
+                                                                    'Twice',
+                                                                doctor:
+                                                                    'Dr. Tunde Femi',
+                                                                instructions:
+                                                                    'Take after a meal with a full glass of water. Complete the full course.',
+                                                                startDate:
+                                                                    DateTime(
+                                                                      2023,
+                                                                      10,
+                                                                      10,
+                                                                    ),
+                                                                endDate:
+                                                                    DateTime(
+                                                                      2023,
+                                                                      10,
+                                                                      17,
+                                                                    ),
+                                                                reminderTime:
+                                                                    const TimeOfDay(
+                                                                      hour: 8,
+                                                                      minute: 0,
+                                                                    ),
+                                                                hasReminder:
+                                                                    true,
+                                                              );
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  AddPrescriptionScreen(
+                                                                    prescription:
+                                                                        prescription,
+                                                                  ),
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+                                                      icon: Icon(
+                                                        item.actionText!
+                                                                .contains("LAB")
+                                                            ? Icons
+                                                                  .description_outlined
+                                                            : Icons
+                                                                  .calendar_view_day_outlined,
+                                                        size: 16.sp,
+                                                        color: const Color(
+                                                          0xFF059669,
+                                                        ),
+                                                      ),
+                                                      label: Text(
+                                                        item.actionText!,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          fontSize: 12.sp,
+                                                          color: const Color(
+                                                            0xFF059669,
+                                                          ),
+                                                          letterSpacing: 0.5,
+                                                        ),
+                                                      ),
+                                                      style: TextButton.styleFrom(
+                                                        backgroundColor:
+                                                            const Color.fromRGBO(
+                                                              5,
+                                                              150,
+                                                              105,
+                                                              0.08,
+                                                            ),
+                                                        shape: RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                8,
+                                                              ),
+                                                        ),
+                                                        padding:
+                                                            EdgeInsets.symmetric(
+                                                              vertical: 10.h,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ],
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -420,7 +503,9 @@ class PatientHistoryScreen extends ConsumerWidget {
                           width: double.infinity,
                           height: 56.h,
                           child: ElevatedButton.icon(
-                            onPressed: () {},
+                            onPressed: () {
+                              context.push('/medical_records');
+                            },
                             icon: const Icon(
                               Icons.assignment,
                               color: Colors.white,
