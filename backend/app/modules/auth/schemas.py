@@ -21,3 +21,8 @@ class SignupResponse(BaseModel):
     id: UUID
     email: EmailStr
     role: str
+
+# ----- LoginRequest Schema -----
+class LoginRequest(BaseModel):
+    email: str
+    password: str
