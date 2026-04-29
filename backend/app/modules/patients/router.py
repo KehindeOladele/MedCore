@@ -41,7 +41,7 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
 def get_my_patient_record(current_user=Depends(get_current_user)):
     
     # Only patients can access this endpoint
-    if current_user["role"] != "patient":
+    if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients can access this endpoint")
 
     return get_or_create_patient(current_user["id"])
@@ -118,7 +118,7 @@ def assign_patient(
 # ----- Get My Patients (for Clinicians) -----
 @router.get("/mine")
 def my_patients(current_user=Depends(get_current_user)):
-    if current_user["role"] != "doctor":
+    if not current_user["is_practitioner"]:
         raise HTTPException(status_code=403, detail="Only clinicians allowed")
 
     return get_my_patients(current_user["id"])
@@ -128,7 +128,7 @@ def my_patients(current_user=Depends(get_current_user)):
 @router.get("/profile/me")
 def my_profile(current_user=Depends(get_current_user)):
 
-    if current_user["role"] != "patient":
+    if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients allowed")
 
     return get_patient_profile(current_user["id"])
@@ -139,7 +139,7 @@ def update_my_profile(
     payload: PatientUpdate,
     current_user=Depends(get_current_user)
 ):
-    if current_user["role"] != "patient":
+    if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients allowed")
 
     return update_patient_info(current_user["id"], payload.dict(exclude_unset=True))
@@ -151,7 +151,7 @@ async def upload_profile_picture(
     file: UploadFile = File(...),
     current_user=Depends(get_current_user)
 ):
-    if current_user["role"] != "patient":
+    if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients allowed")
 
     file_ext = file.filename.split(".")[-1]
