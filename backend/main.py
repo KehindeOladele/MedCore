@@ -1,6 +1,7 @@
 import os
-from app.core.supabase_client import supabase
 from fastapi import FastAPI
+
+from app.core.supabase_client import supabase
 from app.modules.auth.router import router as auth_router
 from app.modules.patients.router import router as patients_router
 from app.modules.records.router import router as records_router
@@ -11,10 +12,7 @@ from app.modules.organizations.router import router as org_router
 
 
 # ===== Initialize FastAPI Application =====
-app = FastAPI(title="MedCore API", version="1.0.0", description="API for Electronic Medical History System")
-
-
-# ===== Include Routers =====
+app = FastAPI(title="MedCore API", version="1.0.0", description="API for Electronic Medical History System by MedCore")
 
 
 #  ===== Core Modules =====
