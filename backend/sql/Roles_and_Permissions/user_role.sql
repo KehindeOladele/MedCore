@@ -35,6 +35,31 @@
 -- -- Update Admin Manage Roles above
 -- drop policy if exists "Admins manage roles" on public.user_roles;
 
+-- drop policy if exists "Admins manage roles" on public.user_roles;
+
+-- create or replace function can_manage_roles()
+-- returns boolean
+-- language sql
+-- security definer
+-- as $$
+--     select exists (
+--         select 1
+--         from user_roles ur
+--         join roles r on ur.role_id = r.id
+--         where ur.user_id = auth.uid()
+--         and (
+--             r.name = 'org_admin'
+--             or r.role_type = 'system'
+--         )
+--     );
+-- $$;
+
+-- create policy "Admins manage roles"
+-- on public.user_roles
+-- for all
+-- using (can_manage_roles());
+
+--  Or user this first before using the above 👆
 -- create policy "Admins manage roles"
 -- on public.user_roles
 -- for all
