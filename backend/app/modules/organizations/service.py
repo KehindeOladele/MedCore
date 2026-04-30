@@ -80,9 +80,10 @@ def assign_user_role(role_data: dict):
     supabase
     .table("roles")
     .select("id")
-    .eq("name", role_data["role_name"])
-    .eq("organization_id", role_data["org_id"])
-    .single()
+    .or_(
+        f"and(name.eq.{role_data['role_name']},organization_id.eq.{role_data['org_id']}),"
+        f"and(name.eq.{role_data['role_name']},role_type.eq.system)"
+    )
     .execute()
 )
 
