@@ -43,3 +43,16 @@ class RoleAssignment(BaseModel):
     user_id: UUID
     role_name: str
     org_id: str
+
+
+# ----- Onboarding Invite Models -----
+class OnboardingInvite(BaseModel):
+    email: EmailStr
+    role_name: str
+    org_id: str
+
+
+# ---- Accept Invitation Models -----
+class AcceptInviteRequest(BaseModel):
+    token: str
+    password: str
