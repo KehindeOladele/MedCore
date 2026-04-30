@@ -4,7 +4,7 @@ import uuid
 
 
 #  ----- Organization Service -----
-def create_organization(payload):
+def create_organization(payload) -> dict:
 
     # Create admin user in Supabase Auth
     auth_response = supabase.auth.admin.create_user({
@@ -69,3 +69,40 @@ def update_organization(org_id: str, payload):
         raise HTTPException(status_code=404, detail="Organization not found")
 
     return response.data[0]
+
+
+# ---- Role Management Service -----
+def assign_user_role(role_data: dict):
+
+    # ---- Get Role ID ----
+    role_resp = (
+    supabase
+    .table("roles")
+    .select("id")
+    .eq("name", role_data["role_name"])
+    .eq("organization_id", role_data["org_id"])
+    .single()
+    .execute()
+)
+
+    if not role_resp.data:
+        raise Exception("Role not found")
+
+    role_id= role_resp.data["id"]
+
+    # ---- Insert Mapping ----
+    result = (
+        supabase
+        .table("user_roles")
+        .upsert({
+            "user_id": role_data["user_id"],
+            "role_id": role_id,
+            "organization_id": role_data["org_id"]
+        })
+        .execute()
+    )
+
+    if not result.data:
+        raise Exception("Failed to assign role")
+
+    return result.data[0]
