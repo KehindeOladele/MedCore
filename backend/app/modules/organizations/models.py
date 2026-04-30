@@ -36,3 +36,10 @@ class OrganizationUpdate(BaseModel):
 class OrganizationLogo(OrganizationBase):
     id: UUID
     logo_url: Optional[str]
+    
+
+# ----- Role Assignment Models -----
+class RoleAssignment(BaseModel):
+    user_id: UUID
+    role_name: str
+    org_id: str

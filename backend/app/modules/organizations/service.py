@@ -4,7 +4,7 @@ import uuid
 
 
 #  ----- Organization Service -----
-def create_organization(payload):
+def create_organization(payload) -> dict:
 
     # Create admin user in Supabase Auth
     auth_response = supabase.auth.admin.create_user({
@@ -47,3 +47,62 @@ def create_organization(payload):
         "message": "Organization registered successfully",
         "organization_id": organization["id"]
     }
+
+
+# ---- Update Organization Service -----
+def update_organization(org_id: str, payload):
+
+    update_data = payload.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields provided")
+
+    response = (
+        supabase
+        .table("organizations")
+        .update(update_data)
+        .eq("id", org_id)
+        .execute()
+    )
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    return response.data[0]
+
+
+# ---- Role Management Service -----
+def assign_user_role(role_data: dict):
+
+    # ---- Get Role ID ----
+    role_resp = (
+    supabase
+    .table("roles")
+    .select("id")
+    .eq("name", role_data["role_name"])
+    .eq("organization_id", role_data["org_id"])
+    .single()
+    .execute()
+)
+
+    if not role_resp.data:
+        raise Exception("Role not found")
+
+    role_id= role_resp.data["id"]
+
+    # ---- Insert Mapping ----
+    result = (
+        supabase
+        .table("user_roles")
+        .upsert({
+            "user_id": role_data["user_id"],
+            "role_id": role_id,
+            "organization_id": role_data["org_id"]
+        })
+        .execute()
+    )
+
+    if not result.data:
+        raise Exception("Failed to assign role")
+
+    return result.data[0]
