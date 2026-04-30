@@ -2,21 +2,72 @@ from app.core.supabase_client import supabase
 
 
 # ----- Siugnup Service [email & password] -----
-def sign_up(email: str, password: str):
-    
-    # ----- Create user in Supabase Auth -----
-    response = supabase.auth.sign_up({
+def signup_user(email: str, password: str):
+
+    # ---- Check if user is invited (staff flow) ----
+    invite_resp = (
+        supabase
+        .table("invitations")
+        .select("*")
+        .eq("email", email)
+        .eq("status", "pending")
+        .execute()
+    )
+
+    is_invited = bool(invite_resp.data)
+
+    # ---- If NOT invited → treat as patient signup ----
+    if not is_invited:
+        # Allow only patient self-signup
+        role_name = "patient"
+        org_id = None
+    else:
+        # Staff signup via invite
+        invite = invite_resp.data[0]
+        role_name = invite["role_name"]
+        org_id = invite["organization_id"]
+
+    # ---- Create user in Supabase Auth ----
+    res = supabase.auth.sign_up({
         "email": email,
         "password": password
     })
-    
-    # ----- Return Response -----
-    user = response.user
-    if not user:
-        return {"error": response.get("error")}
 
-    # ----- Return user info -----
-    return user
+    user = res.user
+
+    if not user:
+        raise Exception("Signup failed")
+
+    # ---- Assign role ----
+    role_resp = (
+        supabase
+        .table("roles")
+        .select("id")
+        .eq("name", role_name)
+        .execute()
+    )
+
+    if not role_resp.data:
+        raise Exception("Role not found")
+
+    role_id = role_resp.data[0]["id"]
+
+    supabase.table("user_roles").insert({
+        "user_id": user.id,
+        "role_id": role_id,
+        "organization_id": org_id
+    }).execute()
+
+    # ---- Mark invite accepted (if exists) ----
+    if is_invited:
+        supabase.table("invitations").update({
+            "status": "accepted"
+        }).eq("id", invite["id"]).execute()
+
+    return {
+        "message": "Signup successful",
+        "user_id": user.id
+    }
 
 
 # ----- Ensure User Profile Exists -----
