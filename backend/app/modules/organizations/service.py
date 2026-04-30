@@ -1,6 +1,7 @@
 from app.core.supabase_client import supabase
 from fastapi import HTTPException
 import uuid
+from datetime import datetime, timedelta
 
 
 #  ----- Organization Service -----
@@ -106,3 +107,94 @@ def assign_user_role(role_data: dict):
         raise Exception("Failed to assign role")
 
     return result.data[0]
+
+
+# ---- Onboarding Invite Service -----
+def create_invitation(org_id: str, email: str, role_name: str, invited_by: str):
+
+    token = str(uuid.uuid4())
+
+    result = (
+        supabase
+        .table("invitations")
+        .insert({
+            "email": email,
+            "organization_id": org_id,
+            "role_name": role_name,
+            "invited_by": invited_by,
+            "token": token,
+            "expires_at": (datetime.utcnow() + timedelta(days=2)).isoformat()
+        })
+        .execute()
+    )
+
+    if not result.data:
+        raise Exception("Failed to create invitation")
+
+    # TODO: send email with token link
+    # link = f"https://your-frontend.com/accept-invite?token={token}"
+
+    return result.data[0]
+
+
+# ----- Accept Invitation Service -----
+def accept_invitation(payload: dict):
+
+    # ---- Find invitation ----
+    invite_resp = (
+        supabase
+        .table("invitations")
+        .select("*")
+        .eq("token", payload["token"])
+        .eq("status", "pending")
+        .single()
+        .execute()
+    )
+
+    if not invite_resp.data:
+        raise Exception("Invalid or expired invitation")
+
+    invite = invite_resp.data
+
+    # ---- Create user in Supabase Auth ----
+    res = supabase.auth.sign_up({
+        "email": invite["email"],
+        "password": payload["password"]
+    })
+
+    user = res.user
+
+    if not user:
+        raise Exception("Signup failed")
+
+    # ---- Assign role ----
+    role_resp = (
+        supabase
+        .table("roles")
+        .select("id")
+        .eq("name", invite["role_name"])
+        .eq("organization_id", invite["organization_id"])
+        .single()
+        .execute()
+    )
+
+    if not role_resp.data:
+        raise Exception("Role not found")
+
+    role_id = role_resp.data["id"]
+
+    supabase.table("user_roles").insert({
+        "user_id": user.id,
+        "role_id": role_id,
+        "organization_id": invite["organization_id"]
+    }).execute()
+
+    # ---- Mark invitation accepted ----
+    supabase.table("invitations").update({
+        "status": "accepted"
+    }).eq("id", invite["id"]).execute()
+
+    return {
+        "message": "Account created successfully",
+        "user_id": user.id
+    }

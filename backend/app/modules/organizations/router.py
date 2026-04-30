@@ -2,12 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from app.modules.organizations.models import (
     OrganizationCreate,
     OrganizationUpdate,
-    RoleAssignment
+    RoleAssignment,
+    OnboardingInvite,
+    AcceptInviteRequest
 )
 from app.modules.organizations.service import (
     create_organization,
     update_organization,
-    assign_user_role
+    assign_user_role,
+    create_invitation,
+    accept_invitation
 )
 from app.core.security import (
     get_current_user,
@@ -133,3 +137,18 @@ def assign_role_to_user(
     payload["org_id"] = org_id  # enforce path param
 
     return assign_user_role(payload)
+
+
+# ---- Onboarding Invite Endpoint -----
+@router.post("/{org_id}/invite")
+def invite_user(
+    invite_data: OnboardingInvite,
+    current_user=Depends(require_permission("manage_organization"))
+):
+    return create_invitation(invite_data.org_id, invite_data.email, invite_data.role_name, current_user["id"])
+
+
+# ---- Accept Invitation Endpoint -----
+@router.post("/accept-invite")
+def accept_invite(payload: AcceptInviteRequest):
+    return accept_invitation(payload)
