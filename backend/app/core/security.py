@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.supabase_client import supabase
 from jose import jwt  
@@ -72,7 +72,7 @@ def get_current_user(
         "email": user.email,
         "role": role,
     }
-  
+
 
 # ----- Role-Based Access Control -----
 def require_role(required_role: str):
@@ -105,33 +105,53 @@ def get_user_permissions(user_id: str) -> set[str]:
 
 
 # ----- Permission Guard Dependency -----
-def require_permission(permission_name: str):
-    def checker(current_user=Depends(get_current_user)):
-
+def require_permission(permission_name: str, org_id_param: str = "org_id"):
+    def checker(
+        request: Request,
+        current_user=Depends(get_current_user)
+    ):
         user_id = current_user["id"]
+
+        # ---- Extract org_id dynamically from path ----
+        org_id = request.path_params.get(org_id_param)
+
+        if not org_id:
+            raise HTTPException(400, "Organization context required")
 
         result = (
             supabase
             .table("user_roles")
-            .select(
-                "roles!inner(id, name, role_permissions!inner(permissions!inner(name)))"
-            )
+            .select("""
+                organization_id,
+                roles!inner(
+                    name,
+                    role_permissions!inner(
+                        permissions!inner(name)
+                    )
+                )
+            """)
             .eq("user_id", user_id)
+            .eq("organization_id", org_id)
             .execute()
         )
 
         if not result.data:
-            raise HTTPException(403, "Not authorized")
+            raise HTTPException(403, "No roles in this organization")
 
-        permissions = {
-            perm["name"]
-            for role in result.data
-            for rp in role["roles"]["role_permissions"]
-            for perm in [rp["permissions"]]
-        }
+        permissions = set()
+
+        for row in result.data:
+            role = row.get("roles")
+            if not role:
+                continue
+
+            for rp in role.get("role_permissions", []):
+                perm = rp.get("permissions")
+                if perm:
+                    permissions.add(perm.get("name"))
 
         if permission_name not in permissions:
-            raise HTTPException(403, "Not authorized")
+            raise HTTPException(403, "Permission denied")
 
         return current_user
 
