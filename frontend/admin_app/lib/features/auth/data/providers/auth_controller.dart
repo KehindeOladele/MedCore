@@ -27,38 +27,19 @@ class AuthController extends _$AuthController {
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
     try {
-      // TODO: Replace this with the actual login API call when the backend provides the endpoint.
-      // Currently, the Swagger API docs do not define a /auth/login route that returns a token.
-      
-      /*
-      // Expected Implementation:
-      final response = await ref.read(apiClientProvider).dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
-      final token = response.data['access_token'];
-      await ref.read(secureStorageServiceProvider).saveToken(token);
-      final user = await ref.read(authRepositoryProvider).getMe();
-      state = AsyncData(user);
-      */
+      final repo = ref.read(authRepositoryProvider);
+      final storage = ref.read(secureStorageServiceProvider);
 
-      // Simulated Implementation for now:
-      await Future.delayed(const Duration(seconds: 1)); // Simulate network request
-      
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception("Invalid credentials");
-      }
-      
-      // Simulate saving a dummy token
-      await ref.read(secureStorageServiceProvider).saveToken("dummy_jwt_token");
-      
-      // Set dummy user state
-      state = const AsyncData(UserMe(
-        id: "12345",
-        email: "doctor@medcore.com",
-        role: "admin",
-      ));
-      
+      // 1. Call POST /auth/login to get the real token
+      final token = await repo.login(LoginRequest(email: email, password: password));
+
+      // 2. Persist the token so ApiClient's interceptor can attach it to all future requests
+      await storage.saveToken(token);
+
+      // 3. Fetch the actual logged-in user profile
+      final user = await repo.getMe();
+
+      state = AsyncData(user);
     } catch (e, st) {
       state = AsyncError(e, st);
     }

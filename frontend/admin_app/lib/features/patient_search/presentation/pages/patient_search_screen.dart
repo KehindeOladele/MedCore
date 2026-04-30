@@ -2,31 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/models/patient_models.dart';
+import '../providers/patient_controller.dart';
 
-class PatientSearchScreen extends StatefulWidget {
+class PatientSearchScreen extends ConsumerStatefulWidget {
   const PatientSearchScreen({super.key});
 
   @override
-  State<PatientSearchScreen> createState() => _PatientSearchScreenState();
+  ConsumerState<PatientSearchScreen> createState() => _PatientSearchScreenState();
 }
 
-class _PatientSearchScreenState extends State<PatientSearchScreen> {
+class _PatientSearchScreenState extends ConsumerState<PatientSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  // Simulated backend datastore
-  final List<Map<String, String>> _allPatients = [
-    {'name': 'Luke Maxwell', 'id': 'MED-882190', 'age': '34 yrs'},
-    {'name': 'Sarah Johnson', 'id': 'MED-882191', 'age': '28 yrs'},
-    {'name': 'Michael Chen', 'id': 'MED-882192', 'age': '45 yrs'},
-  ];
-
-  // Recently consulted list - populate with the dummy data to ensure it displays immediately
-  final List<Map<String, String>> _recentConsultees = [
-    {'name': 'Luke Maxwell', 'id': 'MED-882190', 'age': '34 yrs'},
-  ];
-
-  List<Map<String, String>> _searchResults = [];
-  bool _isSearching = false;
   bool _hasUnreadNotifications = true; // Simulating unread notifications state
 
   @override
@@ -43,28 +32,18 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.trim().toLowerCase();
-    if (query.isEmpty) {
-      setState(() {
-        _isSearching = false;
-        _searchResults = [];
-      });
-      return;
-    }
+    setState(() {}); // rebuilds to show/hide the search section header
+  }
 
-    // Querying the "backend" for options matching ID or Name
-    setState(() {
-      _isSearching = true;
-      _searchResults = _allPatients.where((patient) {
-        final nameMatch = patient['name']!.toLowerCase().contains(query);
-        final idMatch = patient['id']!.toLowerCase().contains(query);
-        return nameMatch || idMatch;
-      }).toList();
-    });
+  void _triggerSearch() {
+    final query = _searchController.text.trim();
+    ref.read(patientControllerProvider.notifier).search(query);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isSearching = _searchController.text.trim().isNotEmpty;
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -245,7 +224,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                 width: double.infinity,
                 height: 50.h,
                 child: ElevatedButton(
-                  onPressed: _onSearchChanged,
+                  onPressed: _triggerSearch,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF059669),
                     foregroundColor: Colors.white,
@@ -272,7 +251,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _isSearching ? 'SEARCH RESULTS' : 'RECENTLY CONSULTED',
+                    isSearching ? 'SEARCH RESULTS' : 'SEARCH HISTORY',
                     style: TextStyle(
                       color: const Color(0xFF94A3B8),
                       fontSize: 12.sp,
@@ -281,7 +260,6 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                       letterSpacing: 1.8,
                     ),
                   ),
-                  if (!_isSearching && _recentConsultees.isNotEmpty)
                     TextButton(
                       onPressed: () {},
                       style: TextButton.styleFrom(
@@ -305,26 +283,39 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
               SizedBox(height: 16.h),
 
               // Dynamic List Rendering
-              if (_isSearching)
-                _searchResults.isEmpty
-                    ? _buildEmptyState('No patient found matching your query.')
-                    : Column(
-                        children: _searchResults
-                            .map(
-                              (patient) => _buildPatientCard(context, patient),
-                            )
-                            .toList(),
-                      )
-              else
-                _recentConsultees.isEmpty
-                    ? _buildEmptyState('No recent consultee found.')
-                    : Column(
-                        children: _recentConsultees
-                            .map(
-                              (patient) => _buildPatientCard(context, patient),
-                            )
-                            .toList(),
-                      ),
+              Builder(builder: (context) {
+                final patientsAsync = ref.watch(patientControllerProvider);
+
+                // Idle state — no search performed yet
+                if (patientsAsync is AsyncData &&
+                    patientsAsync.value == null) {
+                  return _buildIdleState();
+                }
+
+                return patientsAsync.when(
+                  loading: () => Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40.h),
+                      child: const CircularProgressIndicator(
+                          color: Color(0xFF059669)),
+                    ),
+                  ),
+                  error: (error, _) =>
+                      _buildEmptyState('Something went wrong.\nPlease try again.'),
+                  data: (patients) {
+                    final list = patients ?? [];
+                    if (list.isEmpty) {
+                      return _buildEmptyState(
+                          'No patient found matching your query.');
+                    }
+                    return Column(
+                      children: list
+                          .map((p) => _buildPatientCard(context, p))
+                          .toList(),
+                    );
+                  },
+                );
+              }),
 
               SizedBox(height: 32.h), // Bottom Padding
             ],
@@ -375,7 +366,54 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
     );
   }
 
-  Widget _buildPatientCard(BuildContext context, Map<String, String> patient) {
+  Widget _buildIdleState() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 56.h),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF0FDF4),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.search_rounded,
+                color: Color(0xFF059669),
+                size: 32,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'No search history',
+            style: TextStyle(
+              color: const Color(0xFF0F172A),
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Inter',
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Enter a patient name or ID\nand tap Search',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF94A3B8),
+              fontSize: 13.sp,
+              fontFamily: 'Inter',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPatientCard(BuildContext context, Patient patient) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: InkWell(
@@ -425,7 +463,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      patient['name']!,
+                      patient.fullName,
                       style: TextStyle(
                         color: const Color(0xFF0F172A),
                         fontSize: 18.sp,
@@ -435,7 +473,7 @@ class _PatientSearchScreenState extends State<PatientSearchScreen> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      'ID: ${patient['id']} • ${patient['age']}',
+                      'ID: ${patient.id} • ${patient.age}',
                       style: TextStyle(
                         color: const Color(0xFF64748B),
                         fontSize: 14.sp,
