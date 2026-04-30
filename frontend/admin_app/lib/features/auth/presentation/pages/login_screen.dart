@@ -211,6 +211,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         color: textDark,
                         fontWeight: FontWeight.w500,
                       ),
+                      cursorColor: brandGreen,
                       decoration: InputDecoration(
                         hintText: 'ID-000-0000',
                         hintStyle: TextStyle(
@@ -258,6 +259,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         color: textDark,
                         fontWeight: FontWeight.w500,
                       ),
+                      cursorColor: brandGreen,
                       decoration: InputDecoration(
                         hintText: '• • • • • • • •',
                         hintStyle: TextStyle(

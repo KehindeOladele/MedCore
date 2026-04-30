@@ -21,6 +21,7 @@ import '../../features/patient_records/presentation/pages/prescriptions_screen.d
 import '../../features/patient_records/presentation/pages/add_prescription_screen.dart';
 import '../../features/patient_records/data/models/prescription_model.dart';
 import '../../features/patient_records/presentation/pages/note_detail_screen.dart';
+import '../../features/auth/presentation/pages/hospital_admin_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   // Notifier to trigger GoRouter redirects when auth state changes
@@ -128,6 +129,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/note_detail',
         builder: (context, state) => const NoteDetailScreen(),
+      ),
+      GoRoute(
+        path: '/hospital_admin',
+        builder: (context, state) => const HospitalAdminScreen(),
       ),
     ],
   );

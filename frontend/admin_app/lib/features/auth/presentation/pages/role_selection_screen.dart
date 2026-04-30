@@ -110,10 +110,10 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               _RoleCard(
-                iconPath: 'assets/icons/admin.svg', // fallback icon for Admin
+                iconPath: 'assets/icons/admin.svg',
                 title: 'Hospital Administrator',
                 isFullWidth: true,
-                onTap: () => context.push('/login'),
+                onTap: () => context.push('/hospital_admin'),
               ),
 
               const SizedBox(height: 32),
