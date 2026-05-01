@@ -36,9 +36,9 @@ def get_my_organization(current_user=Depends(get_current_user)):
 
     response = (
         supabase
-        .table("admins")
+        .table("user_roles")
         .select("organization_id")
-        .eq("id", current_user["id"])
+        .eq("user_id", current_user["id"])
         .single()
         .execute()
     )
@@ -142,10 +142,16 @@ def assign_role_to_user(
 # ---- Onboarding Invite Endpoint -----
 @router.post("/{org_id}/invite")
 def invite_user(
+    org_id: str,
     invite_data: OnboardingInvite,
     current_user=Depends(require_permission("manage_organization"))
 ):
-    return create_invitation(invite_data.org_id, invite_data.email, invite_data.role_name, current_user["id"])
+    return create_invitation(
+        org_id,
+        invite_data.email,
+        invite_data.role_name,
+        current_user["id"]
+    )
 
 
 # ---- Accept Invitation Endpoint -----
