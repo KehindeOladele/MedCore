@@ -8,7 +8,7 @@ from app.modules.auth.schemas import (
 )
 from app.modules.auth.service import (
     ensure_profile_exists, 
-    sign_up,
+    signup_user,
     login_user
 )
 # from app.core.supabase_client import supabase
@@ -30,7 +30,7 @@ def me(current_user=Depends(get_current_user)):
 def signup(req: SignupRequest):
     try: 
         # ----- Create user in Supabase Auth -----
-        user= sign_up(req.email, req.password)
+        user= signup_user(req.email, req.password)
 
         # ----- Auto-create profile -----
         ensure_profile_exists(user)
