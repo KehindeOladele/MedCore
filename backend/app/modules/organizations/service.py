@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 
 #  ----- Organization Service -----
-def create_organization(payload) -> dict:
+def create_organization(payload):
 
     # Create admin user in Supabase Auth
     auth_response = supabase.auth.admin.create_user({
@@ -19,34 +19,65 @@ def create_organization(payload) -> dict:
 
     admin_id = auth_response.user.id
 
-    # Create Organization
+    # ----- Create Organization -----
     org_response = (
         supabase
         .table("organizations")
-        .insert({
-            "name": payload.name,
-            "type": payload.type,
-            "email": payload.email,
-            "phone": payload.phone,
-            "address": payload.address,
-            "state": payload.state,
-            "country": payload.country
-        })
+        .insert(payload.model_dump(exclude={"admin_email", "admin_password"}))
         .execute()
     )
 
-    organization = org_response.data[0]
+    if not org_response.data:
+        raise Exception("Failed to create organization")
+
+    org = org_response.data[0]
+    org_id = org["id"]
 
     # Insert Admin Record
     supabase.table("admins").insert({
         "id": admin_id,
-        "organization_id": organization["id"],
+        "organization_id": org_id,
         "role": "org_admin"
+    }).execute()
+
+    # ----- Create Default Roles for Org -----
+    default_roles = ["org_admin", "practitioner", "staff"]
+
+    # Insert Default Roles
+    roles_to_insert = [
+        {
+            "name": role,
+            "organization_id": org_id,
+            "role_type": "organization"
+        }
+        for role in default_roles
+    ]
+
+    supabase.table("roles").insert(roles_to_insert).execute()
+
+    # Get org_admin role id
+    role_resp = (
+        supabase
+        .table("roles")
+        .select("id")
+        .eq("name", "org_admin")
+        .eq("organization_id", org_id)
+        .single()
+        .execute()
+    )
+
+    role_id = role_resp.data["id"]
+
+    # Assign role to admin
+    supabase.table("user_roles").insert({
+        "user_id": admin_id,
+        "role_id": role_id,
+        "organization_id": org_id
     }).execute()
 
     return {
         "message": "Organization registered successfully",
-        "organization_id": organization["id"]
+        "organization_id": org_id
     }
 
 
@@ -80,17 +111,16 @@ def assign_user_role(role_data: dict):
     supabase
     .table("roles")
     .select("id")
-    .or_(
-        f"and(name.eq.{role_data['role_name']},organization_id.eq.{role_data['org_id']}),"
-        f"and(name.eq.{role_data['role_name']},role_type.eq.system)"
-    )
+    .eq("name", role_data["role_name"])
+    .eq("organization_id", role_data["org_id"])
+    .single()
     .execute()
 )
 
     if not role_resp.data:
         raise Exception("Role not found")
 
-    role_id= role_resp.data["id"]
+    role_id= role_resp.data[0]["id"]
 
     # ---- Insert Mapping ----
     result = (
@@ -156,6 +186,9 @@ def accept_invitation(payload: dict):
         raise Exception("Invalid or expired invitation")
 
     invite = invite_resp.data
+
+    if datetime.now() > datetime.fromisoformat(invite["expires_at"]):
+        raise Exception("Invitation expired")
 
     # ---- Create user in Supabase Auth ----
     res = supabase.auth.sign_up({
