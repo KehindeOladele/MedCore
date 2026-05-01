@@ -33,13 +33,6 @@ def create_organization(payload):
     org = org_response.data[0]
     org_id = org["id"]
 
-    # Insert Admin Record
-    supabase.table("admins").insert({
-        "id": admin_id,
-        "organization_id": org_id,
-        "role": "org_admin"
-    }).execute()
-
     # ----- Create Default Roles for Org -----
     default_roles = ["org_admin", "practitioner", "staff"]
 
@@ -65,6 +58,9 @@ def create_organization(payload):
         .single()
         .execute()
     )
+
+    if not role_resp.data:
+        raise Exception("org_admin role not found")
 
     role_id = role_resp.data["id"]
 

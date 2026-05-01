@@ -43,7 +43,10 @@ def get_my_organization(current_user=Depends(get_current_user)):
         .execute()
     )
 
-    org_id = response.data["organization_id"]
+    if not response.data:
+        raise HTTPException(404, "User not assigned to any organization")
+
+    org_id = response.data[0]["organization_id"]
 
     org = (
         supabase
@@ -68,12 +71,15 @@ async def upload_logo(
     # Get org id
     admin_record = (
         supabase
-        .table("admins")
+        .table("user_roles")
         .select("organization_id")
         .eq("id", current_user["id"])
         .single()
         .execute()
     )
+
+    if not admin_record.data:
+        raise HTTPException(404, "Admin record not found")
 
     org_id = admin_record.data["organization_id"]
 
