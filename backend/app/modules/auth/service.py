@@ -3,30 +3,6 @@ from app.core.supabase_client import supabase
 
 # ----- Siugnup Service [email & password] -----
 def signup_user(email: str, password: str):
-
-    # ---- Check if user is invited (staff flow) ----
-    invite_resp = (
-        supabase
-        .table("invitations")
-        .select("*")
-        .eq("email", email)
-        .eq("status", "pending")
-        .execute()
-    )
-
-    is_invited = bool(invite_resp.data)
-
-    # ---- If NOT invited → treat as patient signup ----
-    if not is_invited:
-        # Allow only patient self-signup
-        role_name = "patient"
-        org_id = None
-    else:
-        # Staff signup via invite
-        invite = invite_resp.data[0]
-        role_name = invite["role_name"]
-        org_id = invite["organization_id"]
-
     # ---- Create user in Supabase Auth ----
     res = supabase.auth.sign_up({
         "email": email,
@@ -37,32 +13,45 @@ def signup_user(email: str, password: str):
 
     if not user:
         raise Exception("Signup failed")
+    
+    # ---- Email Confirmation -----
+    if not res.session:
+        return {
+            "message": "Check your email to confirm account"
+        }
+    
+    try:
+        # Create patient profile
+        supabase.table("profiles").insert({
+            "id": user.id,
+            "type": "patient"
+        }).execute()
 
-    # ---- Assign role ----
-    role_resp = (
-        supabase
-        .table("roles")
-        .select("id")
-        .eq("name", role_name)
-        .execute()
-    )
+        # ---- Get patient role ----
+        role_resp = (
+            supabase
+            .table("roles")
+            .select("id")
+            .eq("name", "patient")
+            .eq("role_type", "system")
+            .single()
+            .execute()
+        )
 
-    if not role_resp.data:
-        raise Exception("Role not found")
+        if not role_resp.data:
+            raise Exception("Role not found")
 
-    role_id = role_resp.data[0]["id"]
+        # ---- Assign role ----
+        supabase.table("user_roles").insert({
+            "user_id": user.id,
+            "role_id": role_resp.data["id"],
+            "organization_id": None
+        }).execute()
 
-    supabase.table("user_roles").insert({
-        "user_id": user.id,
-        "role_id": role_id,
-        "organization_id": org_id
-    }).execute()
-
-    # ---- Mark invite accepted (if exists) ----
-    if is_invited:
-        supabase.table("invitations").update({
-            "status": "accepted"
-        }).eq("id", invite["id"]).execute()
+    except Exception as e:
+        # Rollback user creation on failure
+        supabase.auth.admin.delete_user(user.id)
+        raise Exception(f"Signup failed: {str(e)}")
 
     return {
         "message": "Signup successful",
