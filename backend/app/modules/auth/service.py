@@ -11,22 +11,22 @@ def signup_user(email: str, password: str):
         "password": password
     })
 
-    user = res.user
-
-    if not user:
+    if not res.user:
         raise Exception("Signup failed")
     
     # ---- Email Confirmation -----
     if not res.session:
-        return {
-            "message": "Check your email to confirm account"
-        }
-
+        raise Exception("Signup failed")
+    
     return {
-        "message": "Signup successful",
-        "user_id": user.id
+        "user_id": res.user.id,
+        "email_confirmed": res.session is not None,
+        "message": (
+            "Signup successful"
+            if res.session
+            else "Check your email to confirm account"
+        )
     }
-
 
 # ----- Ensure User Profile Exists -----
 def ensure_profile_exists(user_id: str):
