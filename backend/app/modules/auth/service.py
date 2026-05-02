@@ -1,32 +1,34 @@
 import email
-
+from fastapi import HTTPException
 from app.core.supabase_client import supabase
+
 
 
 # ----- Siugnup Service [email & password] -----
 def signup_user(email: str, password: str):
-    # ---- Create user in Supabase Auth ----
+
     res = supabase.auth.sign_up({
         "email": email,
         "password": password
     })
 
     if not res.user:
-        raise Exception("Signup failed")
-    
-    # ---- Email Confirmation -----
+        raise HTTPException(status_code=400, detail="Signup failed")
+
+    # ----- Email confirmation case (THIS IS SUCCESS) -----
     if not res.session:
-        raise Exception("Signup failed")
-    
+        return {
+            "status": "pending_verification",
+            "message": "Check your email to confirm account"
+        }
+
+    # ----- Rare case: auto-login enabled -----
     return {
-        "user_id": res.user.id,
-        "email_confirmed": res.session is not None,
-        "message": (
-            "Signup successful"
-            if res.session
-            else "Check your email to confirm account"
-        )
+        "status": "active",
+        "message": "Signup successful",
+        "user_id": res.user.id
     }
+
 
 # ----- Ensure User Profile Exists -----
 def ensure_profile_exists(user_id: str):
