@@ -33,6 +33,15 @@ app.include_router(laboratory_router)
 # ===== Aggregation Layer =====
 app.include_router(dashboard_router)
 
+
+# ===== Root Endpoint =====
+@app.get("/")
+def root():
+    return {
+        "message": "MedCore API is running 🚀",
+        "docs": "/docs"
+    }
+
 # ----- Health Check Endpoint -----
 @app.get("/health")
 def health():
