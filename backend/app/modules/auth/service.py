@@ -80,8 +80,9 @@ def ensure_profile_exists(user_id: str):
     )
 
     if not profile.data:
-        supabase.table("profiles").insert({
+        supabase_admin.table("profiles").insert({
             "id": user_id,
+            "email": email,
         }).execute()
 
     # ---- Check if role already assigned ----
@@ -111,7 +112,7 @@ def ensure_profile_exists(user_id: str):
         raise Exception("Patient role not configured")
 
     # ---- Assign role ----
-    supabase.table("user_roles").insert({
+    supabase_admin.table("user_roles").insert({
         "user_id": user_id,
         "role_id": role_resp.data[0]["id"],
         "organization_id": None
