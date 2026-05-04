@@ -1,6 +1,7 @@
 import email
 from fastapi import HTTPException
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 
 
 
@@ -12,21 +13,52 @@ def signup_user(email: str, password: str):
         "password": password
     })
 
-    if not res.user:
-        raise HTTPException(status_code=400, detail="Signup failed")
-
-    # ----- Email confirmation case (THIS IS SUCCESS) -----
+    # Email confirmation required
     if not res.session:
         return {
             "status": "pending_verification",
             "message": "Check your email to confirm account"
         }
 
-    # ----- Rare case: auto-login enabled -----
+    # User is immediately available
+    user = res.user
+
+    if not user:
+        raise Exception("Signup failed")
+
+    try:
+        # Create patient profile
+        supabase.table("profiles").insert({
+            "id": user.id,
+            "type": "patient"
+        }).execute()
+
+        # Get patient role
+        role_resp = (
+            supabase
+            .table("roles")
+            .select("id")
+            .eq("name", "patient")
+            .eq("role_type", "system")
+            .single()
+            .execute()
+        )
+
+        # Assign role
+        supabase.table("user_roles").insert({
+            "user_id": user.id,
+            "role_id": role_resp.data["id"],
+            "organization_id": None
+        }).execute()
+
+    except Exception as e:
+        # Only rollback if session exists (real user created)
+        supabase_admin.auth.admin.delete_user(user.id)
+        raise Exception(f"Signup failed: {str(e)}")
+
     return {
-        "status": "active",
-        "message": "Signup successful",
-        "user_id": res.user.id
+        "status": "success",
+        "user_id": user.id
     }
 
 
@@ -59,6 +91,7 @@ def ensure_profile_exists(user_id: str):
         .table("user_roles")
         .select("id")
         .eq("user_id", user_id)
+        .is_("organization_id", None)
         .execute()
     )
 
@@ -96,7 +129,7 @@ def login_user(email: str, password: str):
     })
 
     if not response.user:
-        raise Exception("Invalid credentials")
+        raise Exception(401, "Invalid credentials")
     
     user_id = response.user.id
 
@@ -105,5 +138,8 @@ def login_user(email: str, password: str):
 
     return {
         "access_token": response.session.access_token,
-        "user": response.user,
+        "user": {
+            "id": user_id,
+            "email": response.user.email
+        },
     }
