@@ -27,23 +27,16 @@ def me(current_user=Depends(get_current_user)):
 
 # ----- Signup Endpoint -----
 @router.post("/signup", response_model=SignupResponse)
-def signup(req: SignupRequest):
-    try: 
-        # ----- Create user in Supabase Auth -----
-        user= signup_user(req.email, req.password)
+def signup(req: SignupRequest): 
+    # ----- Create user in Supabase Auth -----
+    user= signup_user(req.email, req.password)
 
-        # ----- Auto-create profile -----
-        ensure_profile_exists(user)
+    # If pending verification → return early
+    if user.get("status") == "pending_verification":
+        return user
 
-        # ----- Return user info -----
-        return {
-            "id": user.id, 
-            "email": user.email, 
-            "role": "patient"
-            }
-
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # Otherwise it's success
+    return user
     
 
 # ----- Login Endpoint -----
