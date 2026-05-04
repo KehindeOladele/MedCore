@@ -21,12 +21,12 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 # ----- Get Current User Endpoint -----
 @router.get("/me", response_model=UserMe)
 def me(current_user=Depends(get_current_user)):
-    ensure_profile_exists(current_user)
+    ensure_profile_exists(current_user["id"])
     return current_user
 
 
 # ----- Signup Endpoint -----
-@router.post("/signup", response_model=SignupResponse)
+@router.post("/signup")
 def signup(req: SignupRequest): 
     # ----- Create user in Supabase Auth -----
     user= signup_user(req.email, req.password)
