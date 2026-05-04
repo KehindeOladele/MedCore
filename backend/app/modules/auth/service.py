@@ -88,7 +88,7 @@ def ensure_profile_exists(user_id: str):
     role_check = (
         supabase
         .table("user_roles")
-        .select("id")
+        .select("user_id")
         .eq("user_id", user_id)
         .is_("organization_id", None)
         .execute()
