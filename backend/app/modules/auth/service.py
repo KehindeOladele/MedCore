@@ -104,7 +104,6 @@ def ensure_profile_exists(user_id: str):
         .select("id")
         .eq("name", "patient")
         .eq("role_type", "system")
-        .single()
         .execute()
     )
 
@@ -114,7 +113,7 @@ def ensure_profile_exists(user_id: str):
     # ---- Assign role ----
     supabase.table("user_roles").insert({
         "user_id": user_id,
-        "role_id": role_resp.data["id"],
+        "role_id": role_resp.data[0]["id"],
         "organization_id": None
     }).execute()
 
