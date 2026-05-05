@@ -136,6 +136,9 @@ def login_user(email: str, password: str):
     # Ensure onboarding is completed
     ensure_profile_exists(user_id, user_email=email)
 
+    print("User ID:", user_id)
+    print("Assigning role:", role_resp.data["id"])
+
     return {
         "access_token": response.session.access_token,
         "user": {
