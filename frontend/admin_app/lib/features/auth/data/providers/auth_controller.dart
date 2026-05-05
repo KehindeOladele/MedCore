@@ -48,16 +48,23 @@ class AuthController extends _$AuthController {
   Future<void> signup(String email, String password) async {
     state = const AsyncLoading();
     try {
-      final req = SignupRequest(email: email, password: password);
-      final response = await ref.read(authRepositoryProvider).signup(req);
-      
-      // If backend login is required after signup, do it here. 
-      // For now, we will simulate login success after signup.
-      state = AsyncData(UserMe(
-        id: response.id,
-        email: response.email,
-        role: response.role,
-      ));
+      final repo = ref.read(authRepositoryProvider);
+      final storage = ref.read(secureStorageServiceProvider);
+
+      // 1. Register the user via POST /auth/signup
+      await repo.signup(SignupRequest(email: email, password: password));
+
+      // 2. Immediately log in with the same credentials to get a real token.
+      //    The signup endpoint only returns {id, email, role} — no token.
+      final token = await repo.login(LoginRequest(email: email, password: password));
+
+      // 3. Persist the token for all future authenticated requests
+      await storage.saveToken(token);
+
+      // 4. Fetch the actual user profile to populate the state
+      final user = await repo.getMe();
+
+      state = AsyncData(user);
     } catch (e, st) {
       state = AsyncError(e, st);
     }

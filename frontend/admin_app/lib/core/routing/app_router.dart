@@ -37,7 +37,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final authState = authNotifier.value;
       final isAuth = authState.value != null;
-      final isGoingToLogin = state.matchedLocation == '/login' || state.matchedLocation == '/role_selection';
+      // Public routes — accessible without a token
+      const publicRoutes = {'/login', '/role_selection', '/hospital_admin'};
+      final isGoingToLogin = publicRoutes.contains(state.matchedLocation);
       
       // If the app is starting up or processing auth, stay where we are
       if (authState.isLoading) return null;
