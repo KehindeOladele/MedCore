@@ -63,7 +63,7 @@ def signup_user(email: str, password: str):
 
 
 # ----- Ensure User Profile Exists -----
-def ensure_profile_exists(user_id: str):
+def ensure_profile_exists(user_id: str, user_email: str):
     """
     Ensure a profiles row exists for authenticated users. Sync Supabase Auth → DB
 
@@ -82,7 +82,7 @@ def ensure_profile_exists(user_id: str):
     if not profile.data:
         supabase_admin.table("profiles").insert({
             "id": user_id,
-            "email": email,
+            "email": user_email,
         }).execute()
 
     # ---- Check if role already assigned ----
