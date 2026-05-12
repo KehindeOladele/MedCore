@@ -111,6 +111,10 @@ def ensure_profile_exists(user_id: str, user_email: str):
 
     if not role_resp.data:
         raise Exception("Patient role not configured")
+    
+    # check Id and role of user
+    print("User ID:", user_id)
+    print("Assigning role:", role_resp.data["id"])
 
     # ---- Assign role ----
     supabase.table("user_roles").insert({
@@ -135,9 +139,6 @@ def login_user(email: str, password: str):
 
     # Ensure onboarding is completed
     ensure_profile_exists(user_id, user_email=email)
-
-    print("User ID:", user_id)
-    print("Assigning role:", response.data["id"])
 
     return {
         "access_token": response.session.access_token,
