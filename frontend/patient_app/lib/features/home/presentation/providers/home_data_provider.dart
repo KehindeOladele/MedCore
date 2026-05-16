@@ -5,11 +5,21 @@ import '../../data/models/vital_model.dart';
 import '../../data/models/activity_model.dart';
 import '../../data/models/reminder_model.dart';
 import '../../data/models/prescription_model.dart';
+import '../../data/models/user_summary_model.dart';
 import '../../data/repositories/home_repository.dart';
+import '../../data/repositories/dashboard_repository.dart';
 import 'home_controller.dart';
 import '../../../profile/presentation/providers/menstrual_cycle_provider.dart';
 
 part 'home_data_provider.g.dart';
+
+// ── Live backend provider ─────────────────────────────────────────────────────
+
+/// Fetches the aggregated user summary from `GET /api/v1/user/summary`.
+/// This is the primary source of truth for the home screen when online.
+final userSummaryProvider = FutureProvider<UserSummaryModel>((ref) async {
+  return DashboardRepository().getUserSummary();
+});
 
 @riverpod
 HomeRepository homeRepository(Ref ref) {

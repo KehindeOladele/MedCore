@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
+import '../../../../core/services/api_service.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -18,19 +19,49 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleSignUp() {
-    if (_formKey.currentState!.validate() && _agreeToTerms) {
-      Navigator.of(context).pushReplacementNamed('/email_verification');
-    } else if (!_agreeToTerms) {
+  Future<void> _handleSignUp() async {
+    if (!(_formKey.currentState!.validate())) return;
+
+    if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please agree to Terms of Service & Privacy Policy'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final status = await ref
+          .read(authProvider.notifier)
+          .signup(_emailController.text.trim(), _passwordController.text);
+
+      if (!mounted) return;
+
+      if (status == 'pending_verification') {
+        Navigator.of(context).pushReplacementNamed('/email_verification');
+      } else if (status == 'success') {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Network error. Please check your connection.'),
+          backgroundColor: Color(0xFFDC2626),
         ),
       );
     }
@@ -38,6 +69,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(authProvider).isLoading;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -61,7 +94,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 8),
                 // Subtitle
                 const Text(
-                  'Welcome! please enter your details.',
+                  'Welcome! Please enter your details.',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -69,64 +102,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                // Full Name Field
-                TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    hintText: 'Micah Chukwuemeka',
-                    hintStyle: const TextStyle(
-                      color: Color(0xFFE1E1E1),
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: SvgPicture.asset(
-                        'assets/icons/user_name.svg',
-                        width: 10.78,
-                        height: 13.38,
-                        fit: BoxFit.scaleDown,
-                      ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE1E1E1),
-                        width: 1,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE1E1E1),
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: const BorderSide(
-                        color: Color(0xFF059669),
-                        width: 1.5,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value?.isEmpty ?? true) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+
                 // Email Field
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
                   decoration: InputDecoration(
-                    hintText: 'micahchu@gmail.com',
+                    hintText: 'you@example.com',
                     hintStyle: const TextStyle(
                       color: Color(0xFFE1E1E1),
                       fontSize: 14,
@@ -173,6 +156,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
+
                 // Password Field
                 TextFormField(
                   controller: _passwordController,
@@ -193,14 +177,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         _obscurePassword
                             ? Icons.visibility_off
                             : Icons.visibility,
-                        color: Color(0xFF757575),
+                        color: const Color(0xFF757575),
                         size: 20,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      onPressed: () => setState(
+                        () => _obscurePassword = !_obscurePassword,
+                      ),
                     ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -239,16 +221,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
+
                 // Terms checkbox
                 Row(
                   children: [
                     Checkbox(
                       value: _agreeToTerms,
-                      onChanged: (value) {
-                        setState(() {
-                          _agreeToTerms = value ?? false;
-                        });
-                      },
+                      onChanged: (value) => setState(
+                        () => _agreeToTerms = value ?? false,
+                      ),
                       activeColor: const Color(0xFF059669),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4),
@@ -256,31 +237,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     Expanded(
                       child: RichText(
-                        text: TextSpan(
+                        text: const TextSpan(
                           children: [
-                            const TextSpan(
+                            TextSpan(
                               text: 'Agree To ',
                               style: TextStyle(
                                 color: Color(0xFF191919),
                                 fontSize: 13,
                               ),
                             ),
-                            const TextSpan(
-                              text: 'Terms of Services',
+                            TextSpan(
+                              text: 'Terms of Service',
                               style: TextStyle(
                                 color: Color(0xFF0066CC),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const TextSpan(
-                              text: '& ',
+                            TextSpan(
+                              text: ' & ',
                               style: TextStyle(
                                 color: Color(0xFF191919),
                                 fontSize: 13,
                               ),
                             ),
-                            const TextSpan(
+                            TextSpan(
                               text: 'Privacy Policy',
                               style: TextStyle(
                                 color: Color(0xFF0066CC),
@@ -295,12 +276,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
+
                 // Sign Up Button
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _handleSignUp,
+                    onPressed: isLoading ? null : _handleSignUp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF059669),
                       shape: RoundedRectangleBorder(
@@ -308,25 +290,34 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : const Text(
+                            'Sign Up',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Divider with text
+
+                // Divider
                 Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        height: 1,
-                        color: const Color(0xFFE1E1E1),
-                      ),
+                      child: Container(height: 1, color: const Color(0xFFE1E1E1)),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -334,20 +325,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         'or sign up with',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF757575),
+                          color: const Color(0xFF757575),
                         ),
                       ),
                     ),
                     Expanded(
-                      child: Container(
-                        height: 1,
-                        color: const Color(0xFFE1E1E1),
-                      ),
+                      child: Container(height: 1, color: const Color(0xFFE1E1E1)),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Social buttons
+
+                // Social buttons (placeholder)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -359,12 +348,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ],
                 ),
                 const SizedBox(height: 24),
+
                 // Log In link
                 Center(
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, '/patient_login');
-                    },
+                    onTap: () => Navigator.pushNamed(context, '/patient_login'),
                     child: RichText(
                       text: const TextSpan(
                         children: [
@@ -409,9 +397,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {
-            // Handle social login
-          },
+          onTap: () {},
           borderRadius: BorderRadius.circular(12),
           child: Center(
             child: Icon(icon, size: 28, color: const Color(0xFF191919)),

@@ -6,13 +6,15 @@ import '../widgets/reminder_card.dart';
 import '../widgets/prescription_card.dart';
 import '../widgets/activity_item.dart';
 import '../widgets/flow_vital_card.dart';
+import '../../data/models/vital_model.dart';
+import '../../data/models/prescription_model.dart';
+import '../../data/models/user_summary_model.dart';
 
 import '../providers/home_controller.dart';
 import '../providers/home_data_provider.dart';
 
 import '../../../allergies/presentation/pages/allergies_screen.dart';
 import '../../../reminders/presentation/pages/add_reminder_screen.dart';
-import '../../../history/presentation/pages/add_prescription_screen.dart';
 import '../../../reminders/presentation/pages/reminders_screen.dart';
 import '../../../profile/presentation/pages/profile_screen.dart';
 import '../../../history/presentation/pages/medical_history_screen.dart';
@@ -30,6 +32,7 @@ class HomeScreen extends ConsumerWidget {
     final remindersAsync = ref.watch(remindersProvider);
     final activityAsync = ref.watch(recentActivityProvider);
     final prescriptionsAsync = ref.watch(prescriptionsProvider);
+    final summaryAsync = ref.watch(userSummaryProvider);
 
     final isFemale = ref.watch(genderProvider);
 
@@ -39,18 +42,48 @@ class HomeScreen extends ConsumerWidget {
           ? AppBar(
               title: Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      isFemale
-                          ? 'https://i.pravatar.cc/150?img=1'
-                          : 'https://i.pravatar.cc/150?img=11',
+                  // Avatar: use real API avatar if available
+                  summaryAsync.when(
+                    data: (summary) => CircleAvatar(
+                      backgroundImage: summary.avatarUrl != null
+                          ? NetworkImage(summary.avatarUrl!)
+                          : NetworkImage(
+                              isFemale
+                                  ? 'https://i.pravatar.cc/150?img=1'
+                                  : 'https://i.pravatar.cc/150?img=11',
+                            ),
+                    ),
+                    loading: () => CircleAvatar(
+                      backgroundImage: NetworkImage(
+                        isFemale
+                            ? 'https://i.pravatar.cc/150?img=1'
+                            : 'https://i.pravatar.cc/150?img=11',
+                      ),
+                    ),
+                    error: (_, __) => const CircleAvatar(
+                      child: Icon(Icons.person),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    "Hello, Micah",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  // Name: use real name from API
+                  summaryAsync.when(
+                    data: (summary) => Text(
+                      'Hello, ${summary.fullName.split(' ').first}',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    loading: () => Text(
+                      'Hello!',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    error: (_, __) => Text(
+                      'Hello!',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -83,61 +116,29 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  vitalsAsync.when(
-                    data: (vitals) => GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 1.1,
-                      children: vitals.map((vital) {
-                        if (vital.isFlow) {
-                          return FlowVitalCard(vital: vital);
-                        }
-                        return VitalsCard(
-                          title: vital.title,
-                          subtitle: vital.subtitle,
-                          icon: vital.icon,
-                          iconColor: vital.iconColor,
-                          iconBackgroundColor: vital.iconBackgroundColor,
-                          backgroundColor:
-                              vital.backgroundColor ?? Colors.white,
-                          showChevron: vital.showChevron,
-                          onTap: () {
-                            if (vital.subtitle == "Allergies") {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const AllergiesScreen(),
-                                ),
-                              );
-                            } else if (vital.subtitle == "Reminder") {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const AddReminderScreen(),
-                                ),
-                              );
-                            } else if (vital.subtitle == "Blood Group") {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const ProfileScreen(),
-                                ),
-                              );
-                            }
-                          },
-                          titleColor: vital.titleColor,
-                          secondaryTitle: vital.secondaryTitle,
-                          secondarySubtitle: vital.secondarySubtitle,
-                        );
-                      }).toList(),
+                  // Vitals: prefer live API data, fall back to Hive/mock
+                  summaryAsync.when(
+                    data: (summary) => _buildVitalsGrid(
+                      context,
+                      summary,
+                      isFemale,
+                      ref,
+                      vitalsAsync,
                     ),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Text('Error: $err'),
+                    loading: () => vitalsAsync.when(
+                      data: (vitals) =>
+                          _buildVitalsFromLocal(context, vitals),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
+                    error: (_, __) => vitalsAsync.when(
+                      data: (vitals) =>
+                          _buildVitalsFromLocal(context, vitals),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
                   ),
 
                   const SizedBox(height: 32),
@@ -252,62 +253,24 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   const SizedBox(height: 8),
-                  prescriptionsAsync.when(
-                    data: (prescriptions) {
-                      if (prescriptions.isEmpty) {
-                        return Container(
-                          padding: const EdgeInsets.all(32),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(
-                                Icons.medication_outlined,
-                                color: Colors.grey,
-                                size: 48,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "No prescription yet",
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      return ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: prescriptions.length,
-                        separatorBuilder: (context, index) =>
-                            const SizedBox(height: 16),
-                        itemBuilder: (context, index) {
-                          return PrescriptionCard(
-                            prescription: prescriptions[index],
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddPrescriptionScreen(
-                                    prescription: prescriptions[index],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (err, stack) => Text('Error: $err'),
+                  // Prescriptions: prefer live API data, fall back to local
+                  summaryAsync.when(
+                    data: (summary) => _buildApiPrescriptions(
+                      context,
+                      summary.activePrescriptions,
+                    ),
+                    loading: () => prescriptionsAsync.when(
+                      data: (list) => _buildLocalPrescriptions(context, list),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
+                    error: (_, __) => prescriptionsAsync.when(
+                      data: (list) => _buildLocalPrescriptions(context, list),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (e, _) => Text('Error: $e'),
+                    ),
                   ),
                   const SizedBox(height: 32),
 
@@ -406,4 +369,196 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+// ── Helper builders ───────────────────────────────────────────────────────────
+
+/// Builds the vitals grid from the live API summary, using the menstrual cycle
+/// vital from the local provider to preserve that flow-day logic.
+Widget _buildVitalsGrid(
+  BuildContext context,
+  UserSummaryModel summary,
+  bool isFemale,
+  WidgetRef ref,
+  AsyncValue<List<VitalModel>> vitalsAsync,
+) {
+  final vitals = summary.vitals;
+
+  // Build the list of VitalModel cards from the real API values
+  final apiVitals = <VitalModel>[
+    VitalModel(
+      title: vitals.bloodGroup ?? '—',
+      subtitle: 'Blood Group',
+      icon: Icons.water_drop_outlined,
+      iconColor: AppColors.primary,
+      iconBackgroundColor: AppColors.primaryVariant,
+      secondaryTitle: vitals.genotype,
+      secondarySubtitle: vitals.genotype != null ? 'Genotype' : null,
+    ),
+    if (vitals.genotype != null && vitals.bloodGroup != null)
+      VitalModel(
+        title: vitals.genotype!,
+        subtitle: 'Genotype',
+        icon: Icons.fingerprint,
+        iconColor: Colors.grey,
+        iconBackgroundColor: const Color(0xFFF5F5F5),
+      ),
+    VitalModel(
+      title: vitals.allergies.isNotEmpty
+          ? vitals.allergies.first
+          : 'None',
+      subtitle: 'Allergies',
+      icon: Icons.warning_amber_rounded,
+      iconColor: AppColors.redAccent,
+      iconBackgroundColor: Colors.white,
+      backgroundColor: AppColors.redBackground,
+      showChevron: true,
+      titleColor: AppColors.redAccent,
+    ),
+    const VitalModel(
+      title: 'Set',
+      subtitle: 'Reminder',
+      icon: Icons.medical_services_outlined,
+      iconColor: Color(0xFF009688),
+      iconBackgroundColor: Colors.white,
+      backgroundColor: Color(0xFFE0F2F1),
+      titleColor: Color(0xFF009688),
+    ),
+  ];
+
+  // If female, try to inject the flow card from the local provider
+  final displayVitals = isFemale
+      ? vitalsAsync.maybeWhen(
+          data: (localVitals) {
+            final flowCard = localVitals.where((v) => v.isFlow).firstOrNull;
+            if (flowCard != null) {
+              return [apiVitals[0], flowCard, apiVitals[2], apiVitals[3]];
+            }
+            return apiVitals;
+          },
+          orElse: () => apiVitals,
+        )
+      : apiVitals;
+
+  return _buildVitalsFromLocal(context, displayVitals);
+}
+
+Widget _buildVitalsFromLocal(BuildContext context, List<VitalModel> vitals) {
+  return GridView.count(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisCount: 2,
+    crossAxisSpacing: 16,
+    mainAxisSpacing: 16,
+    childAspectRatio: 1.1,
+    children: vitals.map((vital) {
+      if (vital.isFlow) return FlowVitalCard(vital: vital);
+      return VitalsCard(
+        title: vital.title,
+        subtitle: vital.subtitle,
+        icon: vital.icon,
+        iconColor: vital.iconColor,
+        iconBackgroundColor: vital.iconBackgroundColor,
+        backgroundColor: vital.backgroundColor ?? Colors.white,
+        showChevron: vital.showChevron,
+        onTap: () {
+          if (vital.subtitle == 'Allergies') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AllergiesScreen(),
+              ),
+            );
+          } else if (vital.subtitle == 'Reminder') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AddReminderScreen(),
+              ),
+            );
+          } else if (vital.subtitle == 'Blood Group') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
+              ),
+            );
+          }
+        },
+        titleColor: vital.titleColor,
+        secondaryTitle: vital.secondaryTitle,
+        secondarySubtitle: vital.secondarySubtitle,
+      );
+    }).toList(),
+  );
+}
+
+Widget _buildApiPrescriptions(
+  BuildContext context,
+  List<ActivePrescriptionModel> prescriptions,
+) {
+  if (prescriptions.isEmpty) {
+    return _emptyPrescriptions();
+  }
+  return ListView.separated(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: prescriptions.length,
+    separatorBuilder: (_, __) => const SizedBox(height: 16),
+    itemBuilder: (context, index) {
+      final p = prescriptions[index];
+      // Map to the existing PrescriptionModel widget shape
+      final localModel = PrescriptionModel(
+        id: p.id,
+        title: p.drugName,
+        subtitle: p.category ?? 'Medication',
+        dosage: p.dosage ?? '—',
+        schedule: p.schedule ?? '—',
+        icon: Icons.medication_outlined,
+      );
+      return PrescriptionCard(prescription: localModel, onTap: () {});
+    },
+  );
+}
+
+Widget _buildLocalPrescriptions(
+  BuildContext context,
+  List<PrescriptionModel> prescriptions,
+) {
+  if (prescriptions.isEmpty) return _emptyPrescriptions();
+  return ListView.separated(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: prescriptions.length,
+    separatorBuilder: (_, __) => const SizedBox(height: 16),
+    itemBuilder: (context, index) => PrescriptionCard(
+      prescription: prescriptions[index],
+      onTap: () {},
+    ),
+  );
+}
+
+Widget _emptyPrescriptions() {
+  return Container(
+    padding: const EdgeInsets.all(32),
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Column(
+      children: [
+        const Icon(Icons.medication_outlined, color: Colors.grey, size: 48),
+        const SizedBox(height: 16),
+        Text(
+          'No active prescriptions',
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
+  );
 }

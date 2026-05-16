@@ -1,47 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../providers/auth_provider.dart';
 
-class PatientLoginScreen extends StatefulWidget {
+class PatientLoginScreen extends ConsumerStatefulWidget {
   const PatientLoginScreen({super.key});
 
   @override
-  State<PatientLoginScreen> createState() => _PatientLoginScreenState();
+  ConsumerState<PatientLoginScreen> createState() => _PatientLoginScreenState();
 }
 
-class _PatientLoginScreenState extends State<PatientLoginScreen> {
-  final _idController = TextEditingController();
+class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {
-    _idController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_idController.text.isEmpty || _passwordController.text.isEmpty) {
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(email, password);
 
-    // Simulate login
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        Navigator.of(context).pushReplacementNamed('/welcome');
-      }
-    });
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      final errorMsg =
+          ref.read(authProvider).value?.errorMessage ??
+          'Login failed. Please try again.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg),
+          backgroundColor: const Color(0xFFDC2626),
+        ),
+      );
+    }
   }
 
   @override
@@ -50,6 +60,8 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
     const Color textDark = Color(0xFF0F172A);
     const Color textGray = Color(0xFF64748B);
     const Color inputBg = Color(0xFFF1F5F9);
+
+    final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -91,7 +103,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Input your medical ID Number',
+                'Sign in to your account',
                 style: TextStyle(
                   color: textDark,
                   fontSize: 14,
@@ -165,9 +177,9 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Identification Number Field
+                    // Email Field
                     const Text(
-                      'PATIENT IDENTIFICATION NUMBER',
+                      'EMAIL ADDRESS',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -177,14 +189,16 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _idController,
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      autocorrect: false,
                       style: const TextStyle(
                         fontSize: 15,
                         color: textDark,
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'ID-000-0000',
+                        hintText: 'you@example.com',
                         hintStyle: TextStyle(
                           color: textGray.withOpacity(0.5),
                           fontSize: 15,
@@ -206,7 +220,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
 
                     // Password Field
                     const Text(
-                      'SECRET PASSWORD',
+                      'PASSWORD',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -224,7 +238,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: InputDecoration(
-                        hintText: '********',
+                        hintText: '••••••••',
                         hintStyle: TextStyle(
                           color: textGray.withOpacity(0.5),
                           fontSize: 15,
@@ -239,6 +253,18 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                           horizontal: 16,
                           vertical: 18,
                         ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: textGray,
+                            size: 20,
+                          ),
+                          onPressed: () => setState(
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
+                        ),
                       ),
                     ),
 
@@ -249,7 +275,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
+                        onPressed: isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: brandGreen,
                           shape: RoundedRectangleBorder(
@@ -257,7 +283,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                           ),
                           elevation: 0,
                         ),
-                        child: _isLoading
+                        child: isLoading
                             ? const SizedBox(
                                 height: 24,
                                 width: 24,
@@ -284,7 +310,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
 
               const SizedBox(height: 80),
 
-              // Forgotten ID
+              // Forgotten password
               Center(
                 child: TextButton(
                   onPressed: () {},
@@ -294,7 +320,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: const Text(
-                    'Forgotten ID number?',
+                    'Forgot password?',
                     style: TextStyle(
                       color: brandGreen,
                       fontSize: 14,
@@ -304,7 +330,37 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 65),
+              const SizedBox(height: 24),
+
+              // Sign up link
+              Center(
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/sign_up'),
+                  child: RichText(
+                    text: const TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "Don't have an account? ",
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 14,
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Sign Up',
+                          style: TextStyle(
+                            color: brandGreen,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
 
               // Back to role selection
               Center(
@@ -312,11 +368,15 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                   onPressed: () {
                     Navigator.pushNamed(context, '/gender_selection');
                   },
-                  icon: const Icon(Icons.arrow_back, color: textGray, size: 16),
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Color(0xFF64748B),
+                    size: 16,
+                  ),
                   label: const Text(
                     'Back to role selection',
                     style: TextStyle(
-                      color: textGray,
+                      color: Color(0xFF64748B),
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
