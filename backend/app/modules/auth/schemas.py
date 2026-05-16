@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 
@@ -18,6 +19,11 @@ class SignupRequest(BaseModel):
 
 # ----- SignupResponse Schema -----
 class SignupResponse(BaseModel):
-    id: UUID
-    email: EmailStr
-    role: str
+    status: str
+    message: Optional[str] = None
+    user_id: Optional[UUID] = None
+
+# ----- LoginRequest Schema -----
+class LoginRequest(BaseModel):
+    email: str
+    password: str

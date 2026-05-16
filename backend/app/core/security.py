@@ -14,7 +14,7 @@ security = HTTPBearer()
 # ----- Get Current User -----
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-):
+) -> dict:
     """
     Validate Supabase JWT. Return the current user (id, email) and role (patient, doctor, clinician). 
     Reusable across all modules. Uses Supabase Tables as source of truth.
@@ -67,20 +67,70 @@ def get_current_user(
     # print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
 
     # ----- Return User Information  from supabase instance -----
+
+    # ----- Fetch ALL roles -----
+    role_query = (
+        supabase
+        .table("user_roles")
+        .select("organization_id, roles(name, role_type)")
+        .eq("user_id", user.id)
+        .execute()
+    )
+
+    roles_data = role_query.data or []
+
+    if not roles_data:
+        raise HTTPException(
+            status_code=403,
+            detail="User has no assigned roles"
+        )
+    
+    # ----- Normalize roles -----
+    roles = []
+    org_ids = set()
+
+    for r in roles_data:
+        role_name = r["roles"]["name"]
+        role_type = r["roles"]["role_type"]
+        org_id = r["organization_id"]
+
+        roles.append({
+            "name": role_name,
+            "role_type": role_type,
+            "organization_id": org_id
+        })
+
+        if org_id:
+            org_ids.add(org_id)
+
+    # ----- Derive flags (useful for frontend & permissions) -----
+    is_patient = any(r["name"] == "patient" for r in roles)
+    is_practitioner = any(r["name"] == "practitioner" for r in roles)
+    is_admin = any(r["name"] == "org_admin" for r in roles)
+    is_super_admin = any(r["role_type"] == "system" for r in roles)
+
+
+    # ----- Return User Information  from supabase instance-----
     return {
         "id": user.id,
         "email": user.email,
         "role": role,
+        "roles": roles,
+        "organization_ids": list(org_ids),
+        "is_patient": is_patient,
+        "is_practitioner": is_practitioner,
+        "is_admin": is_admin,
+        "is_super_admin": is_super_admin,
     }
 
 
 # ----- Role-Based Access Control -----
-def require_role(required_role: str):
+def require_role(required_role: str) -> callable:
     """
     Check if the current user has the required systen role.
 
     input: required_role (str)
-    Returns:ncy function that raises HTTPException if role is insufficient
+    Returns: function that raises HTTPException if role is insufficient
     """
     def checker(user=Depends(get_current_user)):
 
@@ -216,67 +266,34 @@ def require_org_role(required_role: str):
         user=Depends(get_current_user)
     ):
 
-        role = (
+        roles_resp = (
             supabase
-            .table("practitioner_roles")
-            .select("*")
-            .eq("practitioner_id", user["id"])
+            .table("user_roles")
+            .select("""
+                role:roles(name, role_type)
+            """)
+            .eq("user_id", user["id"])
             .eq("organization_id", organization_id)
-            .eq("role_code", required_role)
-            .eq("active", True)
             .execute()
         )
 
-        if not role.data:
+        if not roles_resp.data:
             raise HTTPException(
-                status_code=403,
-                detail="Organization access denied"
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User not assigned to organization"
+            )
+
+        role_names = [
+            r["role"]["name"]
+            for r in roles_resp.data
+        ]
+
+        if required_role not in role_names:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient organization permissions"
             )
 
         return user
-
-    return checker
-
-
-# ----- Patient Authorization -----
-def require_patient_access():
-
-    def checker(
-        patient_id: str,
-        organization_id: str,
-        user=Depends(get_current_user)
-    ):
-
-        consent = (
-            supabase
-            .table("consent_records")
-            .select("*")
-            .eq("patient_id", patient_id)
-            .eq("organization_id", organization_id)
-            .eq("status", "active")
-            .execute()
-        )
-
-        if consent.data:
-            return user
-
-        care_team = (
-            supabase
-            .table("patient_care_team")
-            .select("*")
-            .eq("patient_id", patient_id)
-            .eq("practitioner_id", user["id"])
-            .eq("organization_id", organization_id)
-            .eq("status", "active")
-            .execute()
-        )
-
-        if care_team.data:
-            return user
-
-        raise HTTPException(
-            status_code=403,
-            detail="Patient access denied"
-        )
 
     return checker

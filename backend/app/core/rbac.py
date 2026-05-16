@@ -15,6 +15,11 @@ ROLE_PERMISSIONS = {
         "read_patient_records"
     ],
 
+    "laboratory scientist": [
+        "create_observation",
+        "read_patient_records"
+    ],
+
     "doctor": [
         "create_observation",
         "create_condition",

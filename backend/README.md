@@ -1,8 +1,8 @@
+## **backend/**
+
 ---
 
-## **backend/app/**
-
-### 1️⃣ **main.py**
+### **main.py**
 
 * **Purpose:** The entry point of the FastAPI application.
 * Initializes the FastAPI app, includes routers from all modules, and starts the server.
