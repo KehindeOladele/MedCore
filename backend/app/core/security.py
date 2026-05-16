@@ -216,34 +216,67 @@ def require_org_role(required_role: str):
         user=Depends(get_current_user)
     ):
 
-        roles_resp = (
+        role = (
             supabase
-            .table("user_roles")
-            .select("""
-                role:roles(name, role_type)
-            """)
-            .eq("user_id", user["id"])
+            .table("practitioner_roles")
+            .select("*")
+            .eq("practitioner_id", user["id"])
             .eq("organization_id", organization_id)
+            .eq("role_code", required_role)
+            .eq("active", True)
             .execute()
         )
 
-        if not roles_resp.data:
+        if not role.data:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User not assigned to organization"
-            )
-
-        role_names = [
-            r["role"]["name"]
-            for r in roles_resp.data
-        ]
-
-        if required_role not in role_names:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient organization permissions"
+                status_code=403,
+                detail="Organization access denied"
             )
 
         return user
+
+    return checker
+
+
+# ----- Patient Authorization -----
+def require_patient_access():
+
+    def checker(
+        patient_id: str,
+        organization_id: str,
+        user=Depends(get_current_user)
+    ):
+
+        consent = (
+            supabase
+            .table("consent_records")
+            .select("*")
+            .eq("patient_id", patient_id)
+            .eq("organization_id", organization_id)
+            .eq("status", "active")
+            .execute()
+        )
+
+        if consent.data:
+            return user
+
+        care_team = (
+            supabase
+            .table("patient_care_team")
+            .select("*")
+            .eq("patient_id", patient_id)
+            .eq("practitioner_id", user["id"])
+            .eq("organization_id", organization_id)
+            .eq("status", "active")
+            .execute()
+        )
+
+        if care_team.data:
+            return user
+
+        raise HTTPException(
+            status_code=403,
+            detail="Patient access denied"
+        )
 
     return checker
