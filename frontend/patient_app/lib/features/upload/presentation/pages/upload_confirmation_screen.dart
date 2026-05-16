@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../patient_records/presentation/pages/clinical_notes_screen.dart';
 
-import '../../../../features/history/presentation/pages/lab_test_details_screen.dart';
-import '../../../../features/home/presentation/providers/home_controller.dart';
-
-class UploadConfirmationScreen extends ConsumerWidget {
+class UploadConfirmationScreen extends StatelessWidget {
   const UploadConfirmationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -19,17 +17,14 @@ class UploadConfirmationScreen extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "Upload Confirmation",
+          'Upload Confirmation',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // TODO: Navigate to Home/Dashboard
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
+            onPressed: () => context.go('/dashboard'),
             child: const Text(
-              "Cancel",
+              'Cancel',
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
             ),
           ),
@@ -40,39 +35,37 @@ class UploadConfirmationScreen extends ConsumerWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // Success Visual
+
+            // ── Success visual ─────────────────────────────────────────
             Center(
               child: Stack(
                 alignment: Alignment.center,
                 clipBehavior: Clip.none,
                 children: [
-                  // Glow effect
+                  // Glow
                   Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFF00C853).withOpacity(0.1),
+                      color: const Color(0xFF00C853).withValues(alpha: 0.1),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF00C853).withOpacity(0.2),
+                          color: const Color(0xFF00C853).withValues(alpha: 0.2),
                           blurRadius: 30,
                           spreadRadius: 10,
                         ),
                       ],
                     ),
                   ),
-                  // Checkmark Circle
+                  // Checkmark circle
                   Container(
                     width: 80,
                     height: 80,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [
-                          Color(0xFF69F0AE),
-                          Color(0xFF00C853),
-                        ], // Light green to Dark green
+                        colors: [Color(0xFF69F0AE), Color(0xFF00C853)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -81,10 +74,10 @@ class UploadConfirmationScreen extends ConsumerWidget {
                       Icons.check,
                       color: Colors.white,
                       size: 40,
-                      weight: 700, // Bold check
+                      weight: 700,
                     ),
                   ),
-                  // Secure Badge
+                  // SECURE badge
                   Positioned(
                     top: -12,
                     child: Container(
@@ -97,7 +90,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -113,7 +106,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            "SECURE",
+                            'SECURE',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -128,11 +121,12 @@ class UploadConfirmationScreen extends ConsumerWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 32),
 
-            // Title
+            // ── Title ──────────────────────────────────────────────────
             const Text(
-              "Upload Complete!",
+              'Upload Complete!',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -141,9 +135,9 @@ class UploadConfirmationScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            // Description
+            // ── Description ───────────────────────────────────────────
             Text(
-              "Your Comprehensive Metabolic Panel has been successfully encrypted and added to your records.",
+              'Ipsum dolor sit amet consectetur. Tempus vestibulum ac tristique urna ullamcorper senectus. Lectus consectetur',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -153,7 +147,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // Summary Card
+            // ── Summary card ──────────────────────────────────────────
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -162,7 +156,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  // Card Header
+                  // Card header
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
@@ -170,7 +164,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
                       vertical: 16,
                     ),
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF0FDF4), // Mint 50
+                      color: Color(0xFFF0FDF4),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(12),
                         topRight: Radius.circular(12),
@@ -183,12 +177,12 @@ class UploadConfirmationScreen extends ConsumerWidget {
                       children: [
                         const Icon(
                           Icons.description_outlined,
-                          color: Color(0xFF22C55E), // Green 500
+                          color: Color(0xFF22C55E),
                           size: 20,
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          "Upload Summary",
+                          'Upload Summary',
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 14,
@@ -199,20 +193,17 @@ class UploadConfirmationScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Card Content
+                  // Card content
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       children: [
-                        _buildSummaryRow(
-                          "FILE NAME",
-                          "CMP_Results_Oct2023.pdf",
-                        ),
+                        _buildSummaryRow('FILE NAME', 'LM__Note__Oct2023.pdf'),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Divider(height: 1, color: Color(0xFFF3F4F6)),
                         ),
-                        _buildSummaryRow("DATE", "Oct 24, 2023, 09:41 AM"),
+                        _buildSummaryRow('DATE', 'Oct 24, 2023, 09:41 AM'),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Divider(height: 1, color: Color(0xFFF3F4F6)),
@@ -227,7 +218,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
 
             const SizedBox(height: 32),
 
-            // Buttons
+            // ── View Clinical Note button ─────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -236,28 +227,28 @@ class UploadConfirmationScreen extends ConsumerWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LabTestDetailsScreen(),
+                      builder: (_) => const ClinicalNotesScreen(),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF009688), // Teal color
+                  backgroundColor: const Color(0xFF009688),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                   elevation: 0,
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.remove_red_eye_outlined,
                       color: Colors.white,
                       size: 20,
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "View Lab Test",
+                    SizedBox(width: 8),
+                    Text(
+                      'View Clinical Note',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -270,13 +261,12 @@ class UploadConfirmationScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
+            // ── Upload Another Record ─────────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 50,
               child: OutlinedButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Go back to create new upload
-                },
+                onPressed: () => Navigator.pop(context),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFE0E0E0)),
                   shape: RoundedRectangleBorder(
@@ -284,17 +274,17 @@ class UploadConfirmationScreen extends ConsumerWidget {
                   ),
                   backgroundColor: Colors.white,
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.upload_file_outlined,
                       color: Colors.black,
                       size: 20,
                     ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Upload Another Record",
+                    SizedBox(width: 8),
+                    Text(
+                      'Upload Another Record',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -307,14 +297,12 @@ class UploadConfirmationScreen extends ConsumerWidget {
             ),
 
             const SizedBox(height: 24),
+
+            // ── Go to Dashboard ───────────────────────────────────────
             TextButton(
-              onPressed: () {
-                // Reset to Dashboard (Index 0) and go to root
-                ref.read(homeIndexProvider.notifier).setIndex(0);
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
+              onPressed: () => context.go('/dashboard'),
               child: Text(
-                "Go to Dashboard",
+                'Go to Dashboard',
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: 14,
@@ -322,7 +310,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20), // Bottom padding
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -339,7 +327,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF8696A0), // Muted Green Gray
+              color: Color(0xFF8696A0),
               letterSpacing: 0.5,
             ),
           ),
@@ -351,7 +339,7 @@ class UploadConfirmationScreen extends ConsumerWidget {
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF111827), // Gray 900
+            color: Color(0xFF111827),
           ),
         ),
       ],
@@ -361,10 +349,10 @@ class UploadConfirmationScreen extends ConsumerWidget {
   Widget _buildStatusRow() {
     return Row(
       children: [
-        SizedBox(
+        const SizedBox(
           width: 80,
-          child: const Text(
-            "STATUS",
+          child: Text(
+            'STATUS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -381,13 +369,13 @@ class UploadConfirmationScreen extends ConsumerWidget {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFF22C55E), // Green 500
+                color: Color(0xFF22C55E),
                 shape: BoxShape.circle,
               ),
             ),
             const SizedBox(width: 8),
             const Text(
-              "Processing Complete",
+              'Processing Complete',
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
