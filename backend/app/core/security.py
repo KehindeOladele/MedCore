@@ -127,17 +127,35 @@ def get_current_user(
 # ----- Role-Based Access Control -----
 def require_role(required_role: str) -> callable:
     """
-    Check if the current user has the required role.
+    Check if the current user has the required systen role.
 
     input: required_role (str)
     Returns: function that raises HTTPException if role is insufficient
     """
     def checker(user=Depends(get_current_user)):
-        if user["role"] != required_role:
+
+        roles_resp = (
+            supabase
+            .table("user_roles")
+            .select("""
+                role:roles(name, role_type)
+            """)
+            .eq("user_id", user["id"])
+            .is_("organization_id", None)
+            .execute()
+        )
+
+        role_names = [
+            r["role"]["name"]
+            for r in roles_resp.data
+        ]
+
+        if required_role not in role_names:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Insufficient permissions",
+                detail="Insufficient permissions"
             )
+
         return user
 
     return checker
@@ -238,3 +256,44 @@ def require_patient_access(patient_id: str, current_user: dict) -> None:
 
     if not assign:
         raise HTTPException(status_code=403, detail="Patient not assigned")
+    
+
+# ----- Organization Role Authorization -----
+def require_org_role(required_role: str):
+
+    def checker(
+        organization_id: str,
+        user=Depends(get_current_user)
+    ):
+
+        roles_resp = (
+            supabase
+            .table("user_roles")
+            .select("""
+                role:roles(name, role_type)
+            """)
+            .eq("user_id", user["id"])
+            .eq("organization_id", organization_id)
+            .execute()
+        )
+
+        if not roles_resp.data:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User not assigned to organization"
+            )
+
+        role_names = [
+            r["role"]["name"]
+            for r in roles_resp.data
+        ]
+
+        if required_role not in role_names:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient organization permissions"
+            )
+
+        return user
+
+    return checker
