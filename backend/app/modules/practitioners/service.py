@@ -40,30 +40,6 @@ def create_practitioner(user_id: str, payload):
     return response.data[0]
 
 
-# ----- Grant Consent Service for Practitioners -----
-def grant_consent(
-    patient_id: str,
-    payload
-):
-
-    response = (
-        supabase_admin
-        .table("consent_records")
-        .insert({
-            "patient_id": patient_id,
-            "organization_id": payload.organization_id,
-            "practitioner_id": payload.practitioner_id,
-            "consent_type": payload.consent_type,
-            "access_level": payload.access_level,
-            "status": "active",
-            "expires_at": payload.expires_at,
-        })
-        .execute()
-    )
-
-    return response.data[0]
-
-
 # ----- Care Team Assignment Service ----
 def assign_care_team(
     practitioner_id: str,
