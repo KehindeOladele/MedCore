@@ -14,14 +14,6 @@ class PractitionerCreate(BaseModel):
     qualifications: Optional[list] = []
 
 
-# ----- Practitioners Role Assignment Model -----
-class PractitionerRoleAssign(BaseModel):
-    organization_id: str
-    role_code: str
-    specialty_code: Optional[str] = None
-    department: Optional[str] = None
-
-
 # ----- Grant Consent Model -----
 class ConsentGrant(BaseModel):
     organization_id: str
