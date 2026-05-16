@@ -14,15 +14,6 @@ class PractitionerCreate(BaseModel):
     qualifications: Optional[list] = []
 
 
-# ----- Grant Consent Model -----
-class ConsentGrant(BaseModel):
-    organization_id: str
-    practitioner_id: Optional[str] = None
-    consent_type: str
-    access_level: str
-    expires_at: Optional[str] = None
-
-
 # ----- Care Team Assignment Model -----
 class CareTeamAssign(BaseModel):
     patient_id: str
