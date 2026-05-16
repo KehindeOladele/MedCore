@@ -20,3 +20,12 @@ class PractitionerRoleAssign(BaseModel):
     role_code: str
     specialty_code: Optional[str] = None
     department: Optional[str] = None
+
+
+# ----- Grant Consent Model -----
+class ConsentGrant(BaseModel):
+    organization_id: str
+    practitioner_id: Optional[str] = None
+    consent_type: str
+    access_level: str
+    expires_at: Optional[str] = None
