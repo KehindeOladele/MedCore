@@ -12,3 +12,11 @@ class PractitionerCreate(BaseModel):
     email: Optional[str] = None
     specialties: Optional[list] = []
     qualifications: Optional[list] = []
+
+
+# ----- Practitioners Role Assignment Model -----
+class PractitionerRoleAssign(BaseModel):
+    organization_id: str
+    role_code: str
+    specialty_code: Optional[str] = None
+    department: Optional[str] = None
