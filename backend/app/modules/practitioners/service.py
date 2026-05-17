@@ -1,5 +1,8 @@
 from app.core.supabase_admin import supabase_admin
 from fastapi import HTTPException
+from app.modules.practitioners.schemas import (
+    PractitionerUpdate
+)
 
 
 # ----- Get Practitioner by ID -----
@@ -59,3 +62,39 @@ def create_practitioner(user_id: str, payload):
     return response.data[0]
 
 
+
+# ----- Update Practitioner Profile Service----- 
+def update_practitioner(
+    practitioner_id: str,
+    payload: PractitionerUpdate
+):
+
+    existing = get_practitioner_by_id(
+        practitioner_id
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Practitioner not found"
+        )
+
+    update_data = payload.model_dump(
+        exclude_unset=True
+    )
+
+    # Convert birth_date to string
+    if "birth_date" in update_data and update_data["birth_date"]:
+        update_data["birth_date"] = str(
+            update_data["birth_date"]
+        )
+
+    response = (
+        supabase_admin
+        .table("practitioners")
+        .update(update_data)
+        .eq("id", practitioner_id)
+        .execute()
+    )
+
+    return response.data[0]
