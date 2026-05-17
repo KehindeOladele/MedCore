@@ -1,18 +1,31 @@
 from app.core.supabase_admin import supabase_admin
 from fastapi import HTTPException
 
-# ----- Create Practitioner Service -----
-def create_practitioner(user_id: str, payload):
 
-    existing = (
+# ----- Get Practitioner by ID -----
+def get_practitioner_by_id(practitioner_id: str):
+
+    response = (
         supabase_admin
         .table("practitioners")
-        .select("id")
-        .eq("id", user_id)
+        .select("*")
+        .eq("id", practitioner_id)
+        .limit(1)
         .execute()
     )
 
-    if existing.data:
+    if not response.data:
+        return None
+
+    return response.data[0]
+
+
+# ----- Create Practitioner Service -----
+def create_practitioner(user_id: str, payload):
+
+    existing = get_practitioner_by_id(user_id)
+
+    if existing:
         raise HTTPException(
             status_code=400,
             detail="Practitioner already exists"
@@ -27,12 +40,18 @@ def create_practitioner(user_id: str, payload):
             "first_name": payload.first_name,
             "last_name": payload.last_name,
             "middle_name": payload.middle_name,
+
             "gender": payload.gender,
-            "birth_date": payload.birth_date,
+            "birth_date": str(payload.birth_date)
+            if payload.birth_date else None,
+
             "phone": payload.phone,
             "email": payload.email,
+
             "specialties": payload.specialties,
             "qualifications": payload.qualifications,
+
+            "active": True,
         })
         .execute()
     )
@@ -40,103 +59,3 @@ def create_practitioner(user_id: str, payload):
     return response.data[0]
 
 
-# ----- Practitioner Assignment Service -----
-def assign_practitioner_role(
-    practitioner_id: str,
-    payload
-):
-
-    existing = (
-        supabase_admin
-        .table("practitioner_roles")
-        .select("id")
-        .eq("practitioner_id", practitioner_id)
-        .eq("organization_id", payload.organization_id)
-        .eq("role_code", payload.role_code)
-        .execute()
-    )
-
-    if existing.data:
-        raise HTTPException(
-            status_code=400,
-            detail="Role already assigned"
-        )
-
-    response = (
-        supabase_admin
-        .table("practitioner_roles")
-        .insert({
-            "practitioner_id": practitioner_id,
-            "organization_id": payload.organization_id,
-            "role_code": payload.role_code,
-            "specialty_code": payload.specialty_code,
-            "department": payload.department,
-        })
-        .execute()
-    )
-
-    return response.data[0]
-
-
-# ----- Grant Consent Service for Practitioners -----
-def grant_consent(
-    patient_id: str,
-    payload
-):
-
-    response = (
-        supabase_admin
-        .table("consent_records")
-        .insert({
-            "patient_id": patient_id,
-            "organization_id": payload.organization_id,
-            "practitioner_id": payload.practitioner_id,
-            "consent_type": payload.consent_type,
-            "access_level": payload.access_level,
-            "status": "active",
-            "expires_at": payload.expires_at,
-        })
-        .execute()
-    )
-
-    return response.data[0]
-
-
-# ----- Care Team Assignment Service ----
-def assign_care_team(
-    practitioner_id: str,
-    payload,
-    assigned_by: str
-):
-
-    existing = (
-        supabase_admin
-        .table("patient_care_team")
-        .select("id")
-        .eq("patient_id", payload.patient_id)
-        .eq("practitioner_id", practitioner_id)
-        .eq("organization_id", payload.organization_id)
-        .execute()
-    )
-
-    if existing.data:
-        raise HTTPException(
-            status_code=400,
-            detail="Already assigned"
-        )
-
-    response = (
-        supabase_admin
-        .table("patient_care_team")
-        .insert({
-            "patient_id": payload.patient_id,
-            "practitioner_id": practitioner_id,
-            "organization_id": payload.organization_id,
-            "role": payload.role,
-            "notes": payload.notes,
-            "assigned_by": assigned_by,
-        })
-        .execute()
-    )
-
-    return response.data[0]
