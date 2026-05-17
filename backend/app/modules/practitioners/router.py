@@ -2,11 +2,13 @@ from fastapi import APIRouter, Depends
 from app.modules.practitioners.schemas import (
     PractitionerCreate,
     PractitionerUpdate,
+    PractitionerPhotoUpdate
 )
 from app.modules.practitioners.service import (
     create_practitioner,
     get_practitioner_by_id,
-    update_practitioner
+    update_practitioner,
+    update_practitioner_photo
 )
 from app.core.security import get_current_user
 
@@ -44,6 +46,19 @@ def update_my_practitioner_profile(
 ):
 
     return update_practitioner(
+        user["id"],
+        payload
+    )
+
+
+# ----- Practitioner Upload Profile Image -----
+@router.patch("/me/photo")
+def update_my_practitioner_photo(
+    payload: PractitionerPhotoUpdate,
+    user=Depends(get_current_user)
+):
+
+    return update_practitioner_photo(
         user["id"],
         payload
     )
