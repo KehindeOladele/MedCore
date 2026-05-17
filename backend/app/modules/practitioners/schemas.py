@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, HttpUrl
 from typing import Optional, List, Dict, Any
 from datetime import date
 
@@ -27,3 +27,9 @@ class PractitionerUpdate(BaseModel):
     email: Optional[EmailStr] = None
     specialties: Optional[List[Dict[str, Any]]] = None
     qualifications: Optional[List[Dict[str, Any]]] = None
+
+
+# ----- Upload Profile Image Model -----
+class PractitionerPhotoUpdate(BaseModel):
+    photo_url: HttpUrl
+    content_type: str

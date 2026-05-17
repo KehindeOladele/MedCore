@@ -98,3 +98,37 @@ def update_practitioner(
     )
 
     return response.data[0]
+
+
+# ----- Upload Profile Image Service -----
+def update_practitioner_photo(
+    practitioner_id: str,
+    payload
+):
+
+    existing = get_practitioner_by_id(
+        practitioner_id
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Practitioner not found"
+        )
+
+    photo_payload = {
+        "url": payload.photo_url,
+        "contentType": payload.content_type
+    }
+
+    response = (
+        supabase_admin
+        .table("practitioners")
+        .update({
+            "photo": photo_payload
+        })
+        .eq("id", practitioner_id)
+        .execute()
+    )
+
+    return response.data[0]
