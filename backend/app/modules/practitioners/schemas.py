@@ -1,5 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List, Dict, Any
+from datetime import date
+
 
 # ----- Create Practitioner Model ----- 
 class PractitionerCreate(BaseModel):
@@ -7,33 +9,21 @@ class PractitionerCreate(BaseModel):
     last_name: str
     middle_name: Optional[str] = None
     gender: Optional[str] = None
-    birth_date: Optional[str] = None
+    birth_date: Optional[date] = None
     phone: Optional[str] = None
-    email: Optional[str] = None
-    specialties: Optional[list] = []
-    qualifications: Optional[list] = []
+    email: Optional[EmailStr] = None
+    specialties: Optional[List[Dict[str, Any]]] = []
+    qualifications: Optional[List[Dict[str, Any]]] = []
 
 
-# ----- Practitioners Role Assignment Model -----
-class PractitionerRoleAssign(BaseModel):
-    organization_id: str
-    role_code: str
-    specialty_code: Optional[str] = None
-    department: Optional[str] = None
-
-
-# ----- Grant Consent Model -----
-class ConsentGrant(BaseModel):
-    organization_id: str
-    practitioner_id: Optional[str] = None
-    consent_type: str
-    access_level: str
-    expires_at: Optional[str] = None
-
-
-# ----- Care Team Assignment Model -----
-class CareTeamAssign(BaseModel):
-    patient_id: str
-    organization_id: str
-    role: str
-    notes: Optional[str] = None 
+# ----- Update Practitioner Model -----
+class PractitionerUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    gender: Optional[str] = None
+    birth_date: Optional[date] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    specialties: Optional[List[Dict[str, Any]]] = None
+    qualifications: Optional[List[Dict[str, Any]]] = None
