@@ -1,5 +1,7 @@
-from pydantic import BaseModel
-from typing import Optional, List
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List, Dict, Any
+from datetime import date
+
 
 # ----- Create Practitioner Model ----- 
 class PractitionerCreate(BaseModel):
@@ -7,8 +9,27 @@ class PractitionerCreate(BaseModel):
     last_name: str
     middle_name: Optional[str] = None
     gender: Optional[str] = None
-    birth_date: Optional[str] = None
+    birth_date: Optional[date] = None
     phone: Optional[str] = None
+<<<<<<< HEAD
     email: Optional[str] = None
     specialties: Optional[list] = []
     qualifications: Optional[list] = []
+=======
+    email: Optional[EmailStr] = None
+    specialties: Optional[List[Dict[str, Any]]] = []
+    qualifications: Optional[List[Dict[str, Any]]] = []
+
+
+# ----- Update Practitioner Model -----
+class PractitionerUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    middle_name: Optional[str] = None
+    gender: Optional[str] = None
+    birth_date: Optional[date] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    specialties: Optional[List[Dict[str, Any]]] = None
+    qualifications: Optional[List[Dict[str, Any]]] = None
+>>>>>>> practitioners
