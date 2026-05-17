@@ -11,11 +11,6 @@ class PractitionerCreate(BaseModel):
     gender: Optional[str] = None
     birth_date: Optional[date] = None
     phone: Optional[str] = None
-<<<<<<< HEAD
-    email: Optional[str] = None
-    specialties: Optional[list] = []
-    qualifications: Optional[list] = []
-=======
     email: Optional[EmailStr] = None
     specialties: Optional[List[Dict[str, Any]]] = []
     qualifications: Optional[List[Dict[str, Any]]] = []
@@ -32,4 +27,3 @@ class PractitionerUpdate(BaseModel):
     email: Optional[EmailStr] = None
     specialties: Optional[List[Dict[str, Any]]] = None
     qualifications: Optional[List[Dict[str, Any]]] = None
->>>>>>> practitioners

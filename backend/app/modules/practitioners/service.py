@@ -59,9 +59,6 @@ def create_practitioner(user_id: str, payload):
         .execute()
     )
 
-<<<<<<< HEAD
-    return response.data[0]
-=======
     return response.data[0]
 
 
@@ -101,4 +98,3 @@ def update_practitioner(
     )
 
     return response.data[0]
->>>>>>> practitioners
