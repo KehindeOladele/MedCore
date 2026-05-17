@@ -5,7 +5,8 @@ from app.modules.practitioners.schemas import (
 )
 from app.modules.practitioners.service import (
     create_practitioner,
-    get_practitioner_by_id
+    get_practitioner_by_id,
+    update_practitioner
 )
 from app.core.security import get_current_user
 
@@ -32,4 +33,17 @@ def get_my_practitioner_profile(
 
     return get_practitioner_by_id(
         user["id"]
+    )
+
+
+# ----- Update Practitioner Profile -----
+@router.patch("/me")
+def update_my_practitioner_profile(
+    payload: PractitionerUpdate,
+    user=Depends(get_current_user)
+):
+
+    return update_practitioner(
+        user["id"],
+        payload
     )
