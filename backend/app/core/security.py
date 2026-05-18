@@ -363,17 +363,19 @@ def require_org_role(
 
 
 # ----- Patient Access Authorizaton for Practitioners-----
-def require_patient_access(
-    patient_id: str,
-    organization_id: str,
-    practitioner=Depends(require_practitioner)
-):
+def require_patient_access():
+
+    def dependency(
+        patient_id: str,
+        organization_id: str,
+        practitioner=Depends(require_practitioner)
+    ):
 
         now = datetime.now(
             timezone.utc
         ).isoformat()
 
-        # CHECK CARE TEAM FOR ACCESS
+        # CHECK FOR CARE TEAM ACCESS
         care_team = (
             supabase_admin
             .table("patient_care_team")
@@ -388,7 +390,7 @@ def require_patient_access(
         if care_team.data:
             return practitioner
 
-        # CHECK CONSENT FOR ACCESS
+        # CHECK FOR CONSENT ACCESS
         consent = (
             supabase_admin
             .table("consent_records")
