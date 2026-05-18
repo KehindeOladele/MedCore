@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 from jose import jwt  
 from jose.exceptions import JWTError
 from app.core.config import settings
@@ -9,7 +10,6 @@ from fastapi import Depends, HTTPException
 from app.modules.practitioners.service import (
     get_practitioner_by_id
 )
-from app.core.security import get_current_user
 
 
 # ----- Security Dependencies -----
@@ -321,3 +321,41 @@ def require_practitioner(
         )
 
     return practitioner
+
+
+# ----- Organization Role Authorization -----
+def require_org_role(
+    organization_id: str,
+    allowed_roles: list[str] | None = None
+):
+
+    def dependency(
+        practitioner=Depends(require_practitioner)
+    ):
+
+        query = (
+            supabase_admin
+            .table("practitioner_roles")
+            .select("*")
+            .eq("practitioner_id", practitioner["id"])
+            .eq("organization_id", organization_id)
+            .eq("active", True)
+        )
+
+        if allowed_roles:
+            query = query.in_(
+                "role_code",
+                allowed_roles
+            )
+
+        response = query.execute()
+
+        if not response.data:
+            raise HTTPException(
+                status_code=403,
+                detail="Organization access denied"
+            )
+
+        return response.data[0]
+
+    return dependency
