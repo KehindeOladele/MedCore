@@ -365,12 +365,9 @@ def require_org_role(
 # ----- Patient Access Authorizaton for Practitioners-----
 def require_patient_access(
     patient_id: str,
-    organization_id: str
+    organization_id: str,
+    practitioner=Depends(require_practitioner)
 ):
-
-    def dependency(
-        practitioner=Depends(require_practitioner)
-    ):
 
         now = datetime.now(
             timezone.utc
