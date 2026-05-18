@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends
 from app.core.security import get_current_user
-from app.modules.care_teams.schemas import (
+from app.modules.care_team.schemas import (
     CareTeamCreate,
     CareTeamParticipantAdd,
     CareTeamParticipantUpdate,
     CareTeamAssign
 )
-from app.modules.care_teams.service import (
+from app.modules.care_team.service import (
     create_care_team,
     add_care_team_participant,
     get_patient_care_teams,
