@@ -1,10 +1,16 @@
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 from jose import jwt  
 from jose.exceptions import JWTError
 from app.core.config import settings
 from app.core.rbac import has_permission
+from fastapi import Depends, HTTPException
+from app.modules.practitioners.service import (
+    get_practitioner_by_id
+)
+from datetime import datetime, timezone
 
 
 # ----- Security Dependencies -----
@@ -298,3 +304,134 @@ def require_org_role(required_role: str):
         return user
 
     return checker
+
+
+# ----- Require Practitoners Authorization -----
+def require_practitioner(
+    user=Depends(get_current_user)
+):
+
+    practitioner = get_practitioner_by_id(
+        user["id"]
+    )
+
+    if not practitioner:
+        raise HTTPException(
+            status_code=403,
+            detail="Practitioner account required"
+        )
+
+    return practitioner
+
+
+# ----- Organization Role Authorization -----
+def require_org_role(
+    organization_id: str,
+    allowed_roles: list[str] | None = None
+):
+
+    def dependency(
+        practitioner=Depends(require_practitioner)
+    ):
+
+        query = (
+            supabase_admin
+            .table("practitioner_roles")
+            .select("*")
+            .eq("practitioner_id", practitioner["id"])
+            .eq("organization_id", organization_id)
+            .eq("active", True)
+        )
+
+        if allowed_roles:
+            query = query.in_(
+                "role_code",
+                allowed_roles
+            )
+
+        response = query.execute()
+
+        if not response.data:
+            raise HTTPException(
+                status_code=403,
+                detail="Organization access denied"
+            )
+
+        return response.data[0]
+
+    return dependency
+
+
+# ----- Patient Access Authorizaton for Practitioners-----
+def require_patient_access(
+    patient_id: str,
+    organization_id: str
+):
+
+    def dependency(
+        practitioner=Depends(require_practitioner)
+    ):
+
+        now = datetime.now(
+            timezone.utc
+        ).isoformat()
+
+        # CHECK CARE TEAM FOR ACCESS
+        care_team = (
+            supabase_admin
+            .table("patient_care_team")
+            .select("*")
+            .eq("patient_id", patient_id)
+            .eq("organization_id", organization_id)
+            .eq("practitioner_id", practitioner["id"])
+            .eq("active", True)
+            .execute()
+        )
+
+        if care_team.data:
+            return practitioner
+
+        # CHECK CONSENT FOR ACCESS
+        consent = (
+            supabase_admin
+            .table("consent_records")
+            .select("*")
+            .eq("patient_id", patient_id)
+            .eq("organization_id", organization_id)
+            .eq("status", "active")
+            .or_(
+                f"""
+                practitioner_id.eq.{practitioner["id"]},
+                practitioner_id.is.null
+                """
+            )
+            .execute()
+        )
+
+        if not consent.data:
+            raise HTTPException(
+                status_code=403,
+                detail="Patient access denied"
+            )
+
+        valid_consents = []
+
+        for item in consent.data:
+
+            if (
+                item.get("expires_at")
+                and item["expires_at"] < now
+            ):
+                continue
+
+            valid_consents.append(item)
+
+        if not valid_consents:
+            raise HTTPException(
+                status_code=403,
+                detail="Consent expired"
+            )
+
+        return practitioner
+
+    return dependency
