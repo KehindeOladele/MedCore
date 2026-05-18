@@ -10,6 +10,10 @@ from app.modules.dashboard.router import router as dashboard_router
 from app.modules.medical_history.router import router as medical_history_router
 from app.modules.laboratory.router import router as laboratory_router
 from app.modules.organizations.router import router as org_router
+from app.modules.care_team.router import router as care_team_router
+from app.modules.consents.router import router as consents_router
+from app.modules.practitioner_roles.router import router as practitioner_roles_router
+from app.modules.practitioners.router import router as practitioners_router
 
 
 # ===== Initialize FastAPI Application =====
@@ -53,6 +57,15 @@ app.include_router(patients_router)
 app.include_router(records_router)
 # Organization Router
 app.include_router(org_router)
+# Practitioners Router
+app.include_router(practitioners_router)
+# Practitioners Roles Router
+app.include_router(practitioner_roles_router)
+# Care Teams Router
+app.include_router(care_team_router)
+# Consents Router
+app.include_router(consents_router)
+
 
 
 # ===== Feature Modules =====
