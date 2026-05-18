@@ -5,6 +5,11 @@ from jose import jwt
 from jose.exceptions import JWTError
 from app.core.config import settings
 from app.core.rbac import has_permission
+from fastapi import Depends, HTTPException
+from app.modules.practitioners.service import (
+    get_practitioner_by_id
+)
+from app.core.security import get_current_user
 
 
 # ----- Security Dependencies -----
@@ -298,3 +303,21 @@ def require_org_role(required_role: str):
         return user
 
     return checker
+
+
+# ----- Require Practitoners Authorization -----
+def require_practitioner(
+    user=Depends(get_current_user)
+):
+
+    practitioner = get_practitioner_by_id(
+        user["id"]
+    )
+
+    if not practitioner:
+        raise HTTPException(
+            status_code=403,
+            detail="Practitioner account required"
+        )
+
+    return practitioner
