@@ -39,10 +39,7 @@ def patient_encounters(
     patient_id: str,
     organization_id: str,
     user=Depends(
-        require_patient_access(
-            patient_id,
-            organization_id
-        )
+        require_patient_access()
     )
 ):
 
