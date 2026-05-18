@@ -12,7 +12,8 @@ from app.modules.practitioners.service import (
 )
 from app.core.security import get_current_user
 
-router = APIRouter()
+#  ----- Router Setup -----
+router = APIRouter(prefix="/practitioners", tags=["Practitioners"])
 
 
 # ----- Onboard/Create Practitioner -----
