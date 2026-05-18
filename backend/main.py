@@ -14,6 +14,7 @@ from app.modules.care_team.router import router as care_team_router
 from app.modules.consents.router import router as consents_router
 from app.modules.practitioner_roles.router import router as practitioner_roles_router
 from app.modules.practitioners.router import router as practitioners_router
+from app.modules.encounters.router import router as encounter_router
 
 
 # ===== Initialize FastAPI Application =====
@@ -65,7 +66,8 @@ app.include_router(practitioner_roles_router)
 app.include_router(care_team_router)
 # Consents Router
 app.include_router(consents_router)
-
+# Encounters Rounter
+app.include_router(encounter_router)
 
 
 # ===== Feature Modules =====
