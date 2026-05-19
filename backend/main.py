@@ -18,6 +18,7 @@ from app.modules.encounters.router import router as encounter_router
 from app.modules.observations.router import router as observations_router
 from app.modules.conditions.router import router as conditions_router
 from app.modules.medications.router import router as medications_router
+from app.modules.appointments.router import router as appointments_router
 
 
 # ===== Initialize FastAPI Application =====
@@ -77,6 +78,8 @@ app.include_router(observations_router)
 app.include_router(conditions_router)
 # Medications Router
 app.include_router(medications_router)
+# Appointments Router
+app.include_router(appointments_router)
 
 
 # ===== Feature Modules =====
