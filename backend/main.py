@@ -16,6 +16,7 @@ from app.modules.practitioner_roles.router import router as practitioner_roles_r
 from app.modules.practitioners.router import router as practitioners_router
 from app.modules.encounters.router import router as encounter_router
 from app.modules.observations.router import router as observations_router
+from app.modules.conditions.router import router as conditions_router
 
 
 # ===== Initialize FastAPI Application =====
@@ -71,6 +72,9 @@ app.include_router(consents_router)
 app.include_router(encounter_router)
 # Observations Router
 app.include_router(observations_router)
+# Conditions Router
+app.include_router(conditions_router)
+
 
 # ===== Feature Modules =====
 # Medical History Router
