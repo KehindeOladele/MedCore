@@ -17,7 +17,7 @@ from app.modules.medications.service import (
     create_medication,
     get_patient_medication,
     get_encounter_medication,
-    update_medication_request
+    update_medication
 )
 from app.modules.observations.dependencies import (
     require_patient_access_manual
@@ -108,7 +108,7 @@ def update_medication_request_endpoint(
         user_id=user["id"]
     )
 
-    return update_medication_request(
+    return update_medication(
         medication_request_id=medication_request_id,
         payload=payload
     )
