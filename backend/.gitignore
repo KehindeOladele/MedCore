@@ -1,6 +1,7 @@
 .venv
 ../.venv
 .env
+../.env
 ../app/core/.env
 __pycache__/
 *.pyc
