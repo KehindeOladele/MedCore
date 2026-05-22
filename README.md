@@ -8,19 +8,6 @@ A starter static website for the MedCore project, implementing an introductory p
 - `styles.css` — responsive styling
 - `script.js` — mobile navigation toggle
 
-## Local preview
-
-Open `MedCore-Website/index.html` in your browser to preview the site.
-
-If you have a local static server installed, you can also serve the folder from the workspace root:
-
-```bash
-cd "c:\Users\ikeme\Documents\DTC Hackathon\MedCore-Website"
-python -m http.server 8000
-```
-
-Then open `http://localhost:8000`.
-
 ## GitHub Pages deployment
 
 This static website is deployed with the workflow in `.github/workflows/deploy-pages.yml`.
