@@ -37,7 +37,11 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: .
-
+          
+      - name: Set Node.js 24
+        run: echo "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true" >> $GITHUB_ENV
+      
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/upload-artifact@v4
+        
