@@ -4,14 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'medical_records_screen.dart';
 import 'lab_test_details_screen.dart';
 import '../../../../features/upload/presentation/pages/new_upload_screen.dart';
-import '../../../../features/home/presentation/providers/home_data_provider.dart';
+import '../providers/history_provider.dart';
 
 class MedicalHistoryScreen extends ConsumerWidget {
   const MedicalHistoryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final historyAsync = ref.watch(medicalHistoryProvider);
+    final historyAsync = ref.watch(historyProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,

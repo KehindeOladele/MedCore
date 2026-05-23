@@ -1,3 +1,8 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "editor.semanticHighlighting.enabled": true,
+    "dart.projectSearchDirs": [
+        "frontend/admin_app",
+        "frontend/patient_app"
+    ]
 }
