@@ -11,7 +11,10 @@ from app.core.security import (
     require_patient_access,
     require_permission
     )
-from app.core.supabase_client import supabase
+from app.core.supabase_client import (
+    supabase, 
+    supabase_admin
+)
 from app.modules.patients.service import (
     build_patient_timeline,
     get_or_create_patient_for_self,
@@ -175,4 +178,24 @@ async def upload_profile_picture(
     return {
         "message": "Profile image uploaded successfully",
         "profile_image_url": public_url
+    }
+
+
+# ---- Add Medical ID Endpoint -----
+@router.get("/medical-id")
+def get_medical_id(
+    current_user=Depends(get_current_user)
+):
+
+    patient = (
+        supabase_admin
+        .table("patients")
+        .select("medical_id")
+        .eq("id", current_user["id"])
+        .single()
+        .execute()
+    )
+
+    return {
+        "medical_id": patient.data["medical_id"]
     }
