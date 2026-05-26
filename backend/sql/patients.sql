@@ -99,3 +99,24 @@ with check (auth.uid() = patient_id);
 -- on public.patients
 -- for insert
 -- with check (auth.uid() = id);
+
+
+-- Create PostgreSQL Sequence for Medical_id
+CREATE SEQUENCE patient_medical_id_seq
+START 1
+INCREMENT 1;
+
+
+-- Create Medical Id function
+CREATE OR REPLACE FUNCTION generate_medical_id()
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    seq BIGINT;
+BEGIN
+    seq := nextval('patient_medical_id_seq');
+
+    RETURN 'MC-NG-' || LPAD(seq::TEXT, 10, '0');
+END;
+$$;
