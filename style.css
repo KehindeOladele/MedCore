@@ -124,9 +124,14 @@ button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 3.25rem;
   padding: 1rem 1.5rem;
+  border: 0;
   border-radius: 999px;
+  cursor: pointer;
   font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -142,6 +147,18 @@ button,
 .button--secondary {
   background: rgba(15, 111, 255, 0.12);
   color: #0f6fff;
+}
+
+.button--tertiary {
+  background: white;
+  color: #0f172a;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+}
+
+.button--ghost {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42);
 }
 
 .hero__visual {
@@ -289,9 +306,31 @@ button,
   margin: 0;
 }
 
+.cta-copy {
+  max-width: 760px;
+}
+
 .cta-copy h2 {
   font-size: clamp(2rem, 3vw, 2.8rem);
   margin: 0 0 1rem;
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.section--cta .button--primary {
+  background: white;
+  color: #0f6fff;
+}
+
+.section--cta .button--secondary {
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
 }
 
 .page-footer {
@@ -315,6 +354,11 @@ button,
 @media (max-width: 720px) {
   .page-header {
     flex-wrap: wrap;
+  }
+
+  .hero__actions .button,
+  .cta-actions .button {
+    width: 100%;
   }
 
   .page-nav {
