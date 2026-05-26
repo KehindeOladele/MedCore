@@ -108,6 +108,7 @@ INCREMENT 1;
 
 
 -- Create Medical Id function
+-- Generates Medical Id at the database level
 CREATE OR REPLACE FUNCTION generate_medical_id()
 RETURNS TEXT
 LANGUAGE plpgsql
@@ -124,3 +125,15 @@ $$;
 
 -- Test if sequence exists
 SELECT generate_medical_id();
+
+
+-- Set Default
+ALTER TABLE patients
+ALTER COLUMN medical_id
+SET DEFAULT generate_medical_id();
+
+
+-- Update Existing Patients
+UPDATE patients
+SET medical_id = generate_medical_id()
+WHERE medical_id IS NULL;
