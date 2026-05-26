@@ -120,3 +120,7 @@ BEGIN
     RETURN 'MC-NG-' || LPAD(seq::TEXT, 10, '0');
 END;
 $$;
+
+
+-- Test if sequence exists
+SELECT generate_medical_id();
