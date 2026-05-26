@@ -1,7 +1,9 @@
 -- PATIENTS TABLE (JSONB-ENABLED)
 -- Patients table with FHIR extensibility
 create table if not exists public.patients (
+    -- Identification
     id uuid primary key references auth.users(id) on delete cascade,
+    medical_id text UNIQUE,
 
     -- Core relational fields
     first_name text,
