@@ -1,7 +1,7 @@
 from app.core.supabase_admin import supabase_admin
 
 
-# Create and Insert Medical_id to Existing user
+# Create and Insert Medical_id to existing user
 def generate_medical_id():
 
     result = (
