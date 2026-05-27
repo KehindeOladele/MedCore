@@ -1,35 +1,86 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../home/presentation/providers/home_controller.dart';
 import 'menstrual_cycle_screen.dart';
 import 'log_period_screen.dart';
 
 import '../providers/menstrual_cycle_provider.dart';
 import '../providers/profile_provider.dart';
+import '../widgets/profile_setup_form.dart';
 import 'package:intl/intl.dart';
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   final bool isTab;
   const ProfileScreen({super.key, this.isTab = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _uploadingAvatar = false;
+
+  Future<void> _pickAndUploadAvatar(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context); // capture before await
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.postMultipart(
+        '/patients/profile/upload-avatar',
+        File(picked.path),
+        fieldName: 'file',
+      );
+      ref.invalidate(profileProvider);
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Profile photo updated!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profileState = ref.watch(profileProvider);
-    final isFemale = ref.watch(genderProvider);
+    final fallbackIsFemale = ref.watch(genderProvider);
+    final isFemale = profileState.maybeWhen(
+      data: (profile) => profile.gender?.toLowerCase() == 'female',
+      orElse: () => fallbackIsFemale,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: isTab
+        leading: widget.isTab
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
               ),
         title: const Text(
-          "Patient Profile",
+          'Patient Profile',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -38,16 +89,42 @@ class ProfileScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              "Edit",
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          profileState.when(
+            data: (profile) => TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(
+                        title: const Text(
+                          'Edit Profile',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        centerTitle: true,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        foregroundColor: Colors.black,
+                      ),
+                      backgroundColor: AppColors.background,
+                      body: SingleChildScrollView(
+                        child: ProfileSetupForm(profile: profile),
+                      ),
+                    ),
+                  ),
+                ).then((_) => ref.invalidate(profileProvider));
+              },
+              child: const Text(
+                'Edit',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -55,6 +132,15 @@ class ProfileScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text("Error: $err")),
         data: (profile) {
+          final needsSetup = profile.firstName.isEmpty || 
+                             profile.lastName.isEmpty || 
+                             profile.bloodGroup == null || 
+                             profile.gender == null;
+
+          if (needsSetup) {
+            return ProfileSetupForm(profile: profile);
+          }
+
           final dob = profile.dateOfBirth != null 
               ? DateFormat('dd MMM, yyyy').format(profile.dateOfBirth!) 
               : 'Not set';
@@ -84,22 +170,36 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFC5E1A5), // Light Green
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_outlined,
-                            color: Colors.white,
-                            size: 20,
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _uploadingAvatar
+                                ? null
+                                : () => _pickAndUploadAvatar(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFC5E1A5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: _uploadingAvatar
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),

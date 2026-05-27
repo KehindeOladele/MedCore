@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/api_service.dart';
@@ -25,6 +26,7 @@ class HistoryRepository {
 
   Future<List<MedicalHistoryItem>> fetchMedicalHistory() async {
     final box = await _getBox();
+    List<MedicalHistoryItem> backendItems = [];
 
     try {
       final response = await _apiService.get('/api/v1/medical-history');
@@ -37,17 +39,34 @@ class HistoryRepository {
       final jsonString = jsonEncode(data);
       await box.put(_cacheKey, jsonString);
 
-      return data.map((json) => MedicalHistoryItem.fromJson(json as Map<String, dynamic>)).toList();
+      backendItems = data.map((json) => MedicalHistoryItem.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       // If network fails, attempt to load from cache
       final cachedData = box.get(_cacheKey);
       if (cachedData != null) {
         final decoded = jsonDecode(cachedData) as List<dynamic>;
-        return decoded.map((json) => MedicalHistoryItem.fromJson(json as Map<String, dynamic>)).toList();
+        backendItems = decoded.map((json) => MedicalHistoryItem.fromJson(json as Map<String, dynamic>)).toList();
+      } else {
+        // If there's no cache and network fails, print error and proceed with empty backend list
+        debugPrint('Error fetching medical history: $e');
       }
-      
-      // If no cache exists, rethrow the original error
-      rethrow;
     }
+
+    // Get local medical history items
+    final localBox = Hive.box<MedicalHistoryItem>('local_history');
+    final List<MedicalHistoryItem> localItems = localBox.values.toList();
+
+    // Merge backend items and local items
+    final allItems = [...backendItems, ...localItems];
+
+    // Sort chronologically descending (newest first)
+    allItems.sort((a, b) => b.date.compareTo(a.date));
+
+    return allItems;
+  }
+
+  Future<void> addLocalMedicalHistory(MedicalHistoryItem item) async {
+    final localBox = Hive.box<MedicalHistoryItem>('local_history');
+    await localBox.add(item);
   }
 }

@@ -35,9 +35,9 @@ class ProfileNotifier extends AsyncNotifier<ProfileModel> {
     try {
       final updatedProfile = await _repository.updateProfile(payload);
       state = AsyncValue.data(updatedProfile);
-    } catch (e, stack) {
+    } catch (e) {
       state = previousState; // Revert on failure
-      throw e; // Rethrow to let UI handle the error (e.g. Snackbars)
+      rethrow;
     }
   }
 }

@@ -12,6 +12,7 @@ import '../../data/models/user_summary_model.dart';
 
 import '../providers/home_controller.dart';
 import '../providers/home_data_provider.dart';
+import '../../../profile/presentation/providers/profile_provider.dart';
 
 import '../../../allergies/presentation/pages/allergies_screen.dart';
 import '../../../reminders/presentation/pages/add_reminder_screen.dart';
@@ -33,8 +34,12 @@ class HomeScreen extends ConsumerWidget {
     final activityAsync = ref.watch(recentActivityProvider);
     final prescriptionsAsync = ref.watch(prescriptionsProvider);
     final summaryAsync = ref.watch(userSummaryProvider);
-
-    final isFemale = ref.watch(genderProvider);
+    final profileAsync = ref.watch(profileProvider);
+    final fallbackIsFemale = ref.watch(genderProvider);
+    final isFemale = profileAsync.maybeWhen(
+      data: (profile) => profile.gender?.toLowerCase() == 'female',
+      orElse: () => fallbackIsFemale,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,

@@ -54,7 +54,7 @@ final class AllergyRepositoryProvider
   }
 }
 
-String _$allergyRepositoryHash() => r'0adb757b678e32dfe41b66ee48a484bc2d3c7882';
+String _$allergyRepositoryHash() => r'8422d2a8f8fdfcef66113e4b26d8b185156b40b4';
 
 @ProviderFor(allergies)
 final allergiesProvider = AllergiesProvider._();

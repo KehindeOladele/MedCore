@@ -280,7 +280,9 @@ class MedicalHistoryScreen extends ConsumerWidget {
                                                           context,
                                                           MaterialPageRoute(
                                                             builder: (context) =>
-                                                                const LabTestDetailsScreen(),
+                                                                LabTestDetailsScreen(
+                                                              labId: item.relatedLabId ?? item.id,
+                                                            ),
                                                           ),
                                                         );
                                                       }

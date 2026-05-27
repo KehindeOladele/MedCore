@@ -5,7 +5,8 @@ class MedicalHistoryItem {
   final String subtitle; // Doctor name or Refill #
   final String description; // Diagnosis or Drug name
   final String? actionText;
-  final String type; // 'diagnosis', 'pharmacy', 'lab'
+  final String type; // 'diagnosis', 'pharmacy', 'lab', 'vaccine'
+  final String? relatedLabId; // Used to navigate to lab detail screen
 
   MedicalHistoryItem({
     this.id = '',
@@ -15,23 +16,35 @@ class MedicalHistoryItem {
     required this.description,
     this.actionText,
     required this.type,
+    this.relatedLabId,
   });
 
   factory MedicalHistoryItem.fromJson(Map<String, dynamic> json) {
+    final rawType = (json['eventType'] ?? '').toString().toLowerCase();
+    final String resolvedType;
+    if (rawType.contains('lab')) {
+      resolvedType = 'lab';
+    } else if (rawType.contains('pharmacy')) {
+      resolvedType = 'pharmacy';
+    } else if (rawType.contains('vaccine')) {
+      resolvedType = 'vaccine';
+    } else {
+      resolvedType = 'diagnosis';
+    }
+
     return MedicalHistoryItem(
       id: json['id'] ?? '',
-      date: json['eventDate'] != null 
-          ? DateTime.tryParse(json['eventDate']) ?? DateTime.now() 
+      date: json['eventDate'] != null
+          ? DateTime.tryParse(json['eventDate']) ?? DateTime.now()
           : DateTime.now(),
-      title: json['eventType'] ?? 'Medical Record',
-      subtitle: json['providerName'] ?? json['facilityName'] ?? 'Unknown Provider',
+      // Use facilityName as the primary card title; fallback to eventType
+      title: json['facilityName'] ?? json['eventType'] ?? 'Medical Visit',
+      // Use providerName as subtitle; fallback to facilityName
+      subtitle: json['providerName'] ?? json['facilityName'] ?? 'Unknown',
       description: json['description'] ?? '',
-      type: (json['eventType'] ?? '').toString().toLowerCase().contains('lab') 
-          ? 'lab' 
-          : 'diagnosis',
-      actionText: (json['eventType'] ?? '').toString().toLowerCase().contains('lab') 
-          ? 'VIEW LAB RESULT' 
-          : null,
+      type: resolvedType,
+      actionText: resolvedType == 'lab' ? 'VIEW LAB RESULT' : null,
+      relatedLabId: json['relatedLabId'] as String?,
     );
   }
 
@@ -39,9 +52,10 @@ class MedicalHistoryItem {
     return {
       'id': id,
       'eventDate': date.toIso8601String(),
-      'eventType': title,
+      'facilityName': title,
       'providerName': subtitle,
       'description': description,
+      'eventType': type,
     };
   }
 }

@@ -7,7 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import 'dart:ui' as ui;
 import 'upload_confirmation_screen.dart';
 import '../../../../features/history/data/models/medical_history_model.dart';
-import '../../../../features/home/presentation/providers/home_data_provider.dart';
+import '../../../../features/history/data/repositories/history_repository.dart';
+import '../../../../features/history/presentation/providers/history_provider.dart';
 
 class UploadResultScreen extends ConsumerStatefulWidget {
   const UploadResultScreen({super.key});
@@ -251,7 +252,7 @@ class _UploadResultScreenState extends ConsumerState<UploadResultScreen> {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Create new item
                   final newItem = MedicalHistoryItem(
                     date: DateTime.now(),
@@ -264,14 +265,14 @@ class _UploadResultScreenState extends ConsumerState<UploadResultScreen> {
                     description:
                         "Lab Result: ${_testNameController.text.isNotEmpty ? _testNameController.text : "Unnamed Test"}",
                     actionText: "VIEW LAB RESULTS (${_selectedImages.length})",
-                    type: "diagnosis",
+                    type: "lab",
                   );
 
                   // Add to repository
-                  ref.read(homeRepositoryProvider).addMedicalHistory(newItem);
+                  await ref.read(historyRepositoryProvider).addLocalMedicalHistory(newItem);
 
                   // Refresh provider
-                  ref.invalidate(medicalHistoryProvider);
+                  ref.invalidate(historyProvider);
 
                   Navigator.push(
                     context,
