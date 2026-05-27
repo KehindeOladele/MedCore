@@ -87,7 +87,7 @@ final class VitalsProvider
   }
 }
 
-String _$vitalsHash() => r'32a32a49271ef111405eead949c9c1129fbd3236';
+String _$vitalsHash() => r'5ed1c9660001f70152da6df21dcda2fb10e351d4';
 
 @ProviderFor(reminders)
 final remindersProvider = RemindersProvider._();
@@ -130,8 +130,14 @@ final class RemindersProvider
 
 String _$remindersHash() => r'c14fd901febae0744e2434960da73c3eaa16fd94';
 
+/// Maps the top 3 most recent MedicalHistoryItems from the live backend
+/// into ActivityModel entries for the home screen activity feed.
+
 @ProviderFor(recentActivity)
 final recentActivityProvider = RecentActivityProvider._();
+
+/// Maps the top 3 most recent MedicalHistoryItems from the live backend
+/// into ActivityModel entries for the home screen activity feed.
 
 final class RecentActivityProvider
     extends
@@ -143,6 +149,8 @@ final class RecentActivityProvider
     with
         $FutureModifier<List<ActivityModel>>,
         $FutureProvider<List<ActivityModel>> {
+  /// Maps the top 3 most recent MedicalHistoryItems from the live backend
+  /// into ActivityModel entries for the home screen activity feed.
   RecentActivityProvider._()
     : super(
         from: null,
@@ -169,7 +177,7 @@ final class RecentActivityProvider
   }
 }
 
-String _$recentActivityHash() => r'b2ec4c47ebe6c9e18db773d99970c6b457ea2b3c';
+String _$recentActivityHash() => r'6282a2b2f9737d08e79f05a024f0aa6051a692cf';
 
 @ProviderFor(prescriptions)
 final prescriptionsProvider = PrescriptionsProvider._();

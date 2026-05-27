@@ -15,6 +15,10 @@ import 'package:medcore/features/home/data/adapters/prescription_model_adapter.d
 import 'package:medcore/features/home/data/models/reminder_model.dart';
 import 'package:medcore/features/home/data/models/prescription_model.dart';
 import 'package:medcore/features/profile/data/adapters/menstrual_cycle_model_adapter.dart';
+import 'package:medcore/features/allergies/data/adapters/allergy_model_adapter.dart';
+import 'package:medcore/features/allergies/data/models/allergy_model.dart';
+import 'package:medcore/features/history/data/adapters/medical_history_item_adapter.dart';
+import 'package:medcore/features/history/data/models/medical_history_model.dart';
 import 'package:medcore/core/services/notification_service.dart';
 
 void main() async {
@@ -26,9 +30,13 @@ void main() async {
   Hive.registerAdapter(ReminderModelAdapter());
   Hive.registerAdapter(PrescriptionModelAdapter());
   Hive.registerAdapter(MenstrualCycleModelAdapter());
+  Hive.registerAdapter(AllergyModelAdapter());
+  Hive.registerAdapter(MedicalHistoryItemAdapter());
 
   await Hive.openBox<ReminderModel>('reminders');
   await Hive.openBox<PrescriptionModel>('prescriptions');
+  await Hive.openBox<AllergyModel>('local_allergies');
+  await Hive.openBox<MedicalHistoryItem>('local_history');
 
   // Initialize Notifications
   final notificationService = NotificationService();

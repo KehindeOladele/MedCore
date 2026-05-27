@@ -7,7 +7,7 @@ part 'allergy_provider.g.dart';
 
 @riverpod
 AllergyRepository allergyRepository(Ref ref) {
-  return AllergyRepository();
+  return AllergyRepository(ref);
 }
 
 @riverpod

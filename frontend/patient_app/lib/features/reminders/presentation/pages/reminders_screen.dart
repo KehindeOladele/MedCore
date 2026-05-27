@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../home/presentation/providers/home_data_provider.dart';
+import '../../../home/data/models/user_summary_model.dart';
 import 'add_reminder_screen.dart';
 
 class RemindersScreen extends ConsumerStatefulWidget {
@@ -48,21 +49,81 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                _buildFilterTab("All", _selectedFilter == 'All'),
+                _buildFilterTab('All', _selectedFilter == 'All'),
                 const SizedBox(width: 8),
-                _buildFilterTab("Daily", _selectedFilter == 'Daily'),
+                _buildFilterTab('Daily', _selectedFilter == 'Daily'),
                 const SizedBox(width: 8),
-                _buildFilterTab("Weekly", _selectedFilter == 'Weekly'),
+                _buildFilterTab('Weekly', _selectedFilter == 'Weekly'),
                 const SizedBox(width: 8),
-                _buildFilterTab("Monthly", _selectedFilter == 'Monthly'),
+                _buildFilterTab('Monthly', _selectedFilter == 'Monthly'),
                 const SizedBox(width: 8),
-                _buildFilterTab("Custom", _selectedFilter == 'Custom'),
+                _buildFilterTab('Custom', _selectedFilter == 'Custom'),
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
+
+          // ── Backend (care team) reminders ─────────────────────────────────
+          Consumer(
+            builder: (context, ref, _) {
+              final summaryAsync = ref.watch(userSummaryProvider);
+              return summaryAsync.when(
+                data: (summary) {
+                  if (summary.upcomingReminders.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 4),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.local_hospital_outlined,
+                                size: 16, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Text(
+                              'From Your Care Team',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: summary.upcomingReminders.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 12),
+                          itemBuilder: (context, i) {
+                            return _buildBackendReminderCard(
+                                summary.upcomingReminders[i]);
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Divider(height: 20, indent: 20, endIndent: 20),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
+
+          // ── Local (Hive) reminders ─────────────────────────────────────────
           Expanded(
             child: remindersAsync.when(
+
               data: (reminders) {
                 if (reminders.isEmpty) {
                   return const Center(child: Text("No reminders found."));
@@ -148,6 +209,73 @@ class _RemindersScreenState extends ConsumerState<RemindersScreen> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, stack) => Center(child: Text('Error: $err')),
+            ),
+          ), // Expanded (local reminders)
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendReminderCard(UpcomingReminderModel reminder) {
+    final IconData icon;
+    switch (reminder.type.toLowerCase()) {
+      case 'medication':
+        icon = Icons.medication_outlined;
+        break;
+      case 'lab':
+        icon = Icons.science_outlined;
+        break;
+      default:
+        icon = Icons.calendar_today_outlined;
+    }
+
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primaryVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 16, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  reminder.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          if (reminder.subtitle != null)
+            Text(
+              reminder.subtitle!,
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+              overflow: TextOverflow.ellipsis,
+            ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.primaryVariant,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'From care team',
+              style: TextStyle(
+                fontSize: 10,
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

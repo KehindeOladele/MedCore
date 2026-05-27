@@ -1,33 +1,86 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../home/presentation/providers/home_controller.dart';
 import 'menstrual_cycle_screen.dart';
 import 'log_period_screen.dart';
 
 import '../providers/menstrual_cycle_provider.dart';
-
-class ProfileScreen extends ConsumerWidget {
+import '../providers/profile_provider.dart';
+import '../widgets/profile_setup_form.dart';
+import 'package:intl/intl.dart';
+class ProfileScreen extends ConsumerStatefulWidget {
   final bool isTab;
   const ProfileScreen({super.key, this.isTab = false});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isFemale = ref.watch(genderProvider);
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _uploadingAvatar = false;
+
+  Future<void> _pickAndUploadAvatar(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context); // capture before await
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked == null) return;
+
+    setState(() => _uploadingAvatar = true);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.postMultipart(
+        '/patients/profile/upload-avatar',
+        File(picked.path),
+        fieldName: 'file',
+      );
+      ref.invalidate(profileProvider);
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Profile photo updated!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Upload failed: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileState = ref.watch(profileProvider);
+    final fallbackIsFemale = ref.watch(genderProvider);
+    final isFemale = profileState.maybeWhen(
+      data: (profile) => profile.gender?.toLowerCase() == 'female',
+      orElse: () => fallbackIsFemale,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: isTab
+        leading: widget.isTab
             ? null
             : IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.pop(context),
               ),
         title: const Text(
-          "Patient Profile",
+          'Patient Profile',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -36,282 +89,335 @@ class ProfileScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         actions: [
-          TextButton(
-            onPressed: () {},
-            child: const Text(
-              "Edit",
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          profileState.when(
+            data: (profile) => TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      appBar: AppBar(
+                        title: const Text(
+                          'Edit Profile',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        centerTitle: true,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        foregroundColor: Colors.black,
+                      ),
+                      backgroundColor: AppColors.background,
+                      body: SingleChildScrollView(
+                        child: ProfileSetupForm(profile: profile),
+                      ),
+                    ),
+                  ),
+                ).then((_) => ref.invalidate(profileProvider));
+              },
+              child: const Text(
+                'Edit',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
               ),
             ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          children: [
-            // Profile Image
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 2),
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          isFemale
-                              ? 'https://i.pravatar.cc/150?img=1'
-                              : 'https://i.pravatar.cc/150?img=11',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFC5E1A5), // Light Green
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Micah Chukwuemeka",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "ID: #MED-882190",
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
-            ),
-            const SizedBox(height: 32),
+      body: profileState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text("Error: $err")),
+        data: (profile) {
+          final needsSetup = profile.firstName.isEmpty || 
+                             profile.lastName.isEmpty || 
+                             profile.bloodGroup == null || 
+                             profile.gender == null;
 
-            // Vitals Grid
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5, // Adjusted aspect ratio for smaller cards
+          if (needsSetup) {
+            return ProfileSetupForm(profile: profile);
+          }
+
+          final dob = profile.dateOfBirth != null 
+              ? DateFormat('dd MMM, yyyy').format(profile.dateOfBirth!) 
+              : 'Not set';
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
               children: [
-                _buildVitalCard(
-                  title: isFemale ? "O+" : "A+",
-                  subtitle: "Blood Group",
-                  icon: Icons.water_drop_outlined,
-                  iconColor: AppColors.primary,
-                  backgroundColor: Colors.white,
+                // Profile Image
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primary, width: 2),
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              profile.profileImageUrl ??
+                              (isFemale
+                                  ? 'https://i.pravatar.cc/150?img=1'
+                                  : 'https://i.pravatar.cc/150?img=11'),
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: _uploadingAvatar
+                                ? null
+                                : () => _pickAndUploadAvatar(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFC5E1A5),
+                                shape: BoxShape.circle,
+                              ),
+                              child: _uploadingAvatar
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.camera_alt_outlined,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                _buildVitalCard(
-                  title: "AA",
-                  subtitle: "Genotype",
-                  icon: Icons.science_outlined,
-                  iconColor: AppColors.primary,
-                  backgroundColor: Colors.white,
+                const SizedBox(height: 16),
+                Text(
+                  profile.fullName.isEmpty ? "Unknown Patient" : profile.fullName,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                _buildVitalCard(
-                  title: isFemale ? "68 kg" : "75 kg",
-                  subtitle: "Weight",
-                  icon: Icons.monitor_weight_outlined,
-                  iconColor: AppColors.primary,
-                  backgroundColor: Colors.white,
+                const SizedBox(height: 8),
+                Text(
+                  "ID: #${profile.id.split('-').first.toUpperCase()}",
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
-                _buildVitalCard(
-                  title: isFemale ? "170 cm" : "180 cm",
-                  subtitle: "Height",
-                  icon: Icons.height,
-                  iconColor: AppColors.primary,
-                  backgroundColor: Colors.white,
+                const SizedBox(height: 32),
+
+                // Vitals Grid
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.5,
+                  children: [
+                    _buildVitalCard(
+                      title: profile.bloodGroup ?? "--",
+                      subtitle: "Blood Group",
+                      icon: Icons.water_drop_outlined,
+                      iconColor: AppColors.primary,
+                      backgroundColor: Colors.white,
+                    ),
+                    _buildVitalCard(
+                      title: profile.genotype ?? "--",
+                      subtitle: "Genotype",
+                      icon: Icons.science_outlined,
+                      iconColor: AppColors.primary,
+                      backgroundColor: Colors.white,
+                    ),
+                    _buildVitalCard(
+                      title: profile.weight != null ? "${profile.weight} kg" : "--",
+                      subtitle: "Weight",
+                      icon: Icons.monitor_weight_outlined,
+                      iconColor: AppColors.primary,
+                      backgroundColor: Colors.white,
+                    ),
+                    _buildVitalCard(
+                      title: profile.height != null ? "${profile.height} cm" : "--",
+                      subtitle: "Height",
+                      icon: Icons.height,
+                      iconColor: AppColors.primary,
+                      backgroundColor: Colors.white,
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 32),
+
+                // Menstrual Cycle Section (Conditional)
+                if (isFemale) ...[
+                  _buildMenstrualCycleSection(context, ref),
+                  const SizedBox(height: 32),
+                ],
+
+                // Personal Details
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildDetailRow("Date of Birth", dob),
+                      const Divider(height: 24, thickness: 0.5),
+                      _buildDetailRow("Gender", profile.gender ?? (isFemale ? "Female" : "Male")),
+                      const Divider(height: 24, thickness: 0.5),
+                      _buildDetailRow("Address", profile.address ?? "Not provided"),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Medical Alerts
+                _buildSectionHeader("Medical Alerts", Icons.warning_amber_rounded),
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "ALLERGIES",
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      profile.allergies.isNotEmpty
+                          ? Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: profile.allergies.map((allergy) {
+                                return _buildChip(
+                                  allergy,
+                                  AppColors.redBackground,
+                                  AppColors.redAccent,
+                                );
+                              }).toList(),
+                            )
+                          : Text("No known allergies", style: TextStyle(color: Colors.grey[600])),
+                      const SizedBox(height: 24),
+                      Text(
+                        "CHRONIC CONDITIONS",
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildChip(
+                            "None recorded",
+                            AppColors.primaryVariant,
+                            AppColors.primary,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Emergency Contact
+                _buildSectionHeader(
+                  "Emergency Contact",
+                  Icons.contact_phone_outlined,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                  ),
+                  child: profile.emergencyContactName != null
+                    ? Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE3E4E6),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                profile.emergencyContactName!.substring(0, 2).toUpperCase(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF5E6066),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  profile.emergencyContactName!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  profile.emergencyContactPhone ?? "No phone",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primaryVariant,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.phone, color: AppColors.primary),
+                          ),
+                        ],
+                      )
+                    : const Text("No emergency contact provided"),
+                ),
+                const SizedBox(height: 40),
               ],
             ),
-            const SizedBox(height: 32),
-
-            // Menstrual Cycle Section (Conditional)
-            if (isFemale) ...[
-              _buildMenstrualCycleSection(context, ref),
-              const SizedBox(height: 32),
-            ],
-            const SizedBox(height: 32),
-
-            // Personal Details
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
-              ),
-              child: Column(
-                children: [
-                  _buildDetailRow("Date of Birth", "30 May, 2000"),
-                  const Divider(height: 24, thickness: 0.5),
-                  _buildDetailRow("Gender", isFemale ? "Female" : "Male"),
-                  const Divider(height: 24, thickness: 0.5),
-                  _buildDetailRow("Address", "42 Ozubulu Street"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Medical Alerts
-            _buildSectionHeader("Medical Alerts", Icons.warning_amber_rounded),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "ALLERGIES",
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildChip(
-                        "Peanuts (High Risk)",
-                        AppColors.redBackground,
-                        AppColors.redAccent,
-                      ),
-                      _buildChip(
-                        "Penicillin",
-                        const Color(0xFFFFF3E0),
-                        Colors.orange,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    "CHRONIC CONDITIONS",
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _buildChip(
-                        "Asthma",
-                        AppColors.primaryVariant,
-                        AppColors.primary,
-                      ),
-                      _buildChip(
-                        "Hypertension",
-                        AppColors.primaryVariant,
-                        AppColors.primary,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Emergency Contact
-            _buildSectionHeader(
-              "Emergency Contact",
-              Icons.contact_phone_outlined,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE3E4E6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "MC",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF5E6066),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Mike Chukwuemeka",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          "Spouse",
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryVariant,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.phone, color: AppColors.primary),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
