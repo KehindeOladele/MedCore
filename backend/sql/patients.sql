@@ -101,15 +101,43 @@ with check (auth.uid() = patient_id);
 -- with check (auth.uid() = id);
 
 
--- Create PostgreSQL Sequence for Medical_id
-CREATE SEQUENCE patient_medical_id_seq
-START 1
-INCREMENT 1;
+-- Create PostgreSQL Sequence for Medical_id # DROPPED
+-- CREATE SEQUENCE patient_medical_id_seq
+-- START 1
+-- INCREMENT 1;
+
+
+
+-- National Scale Identifier System
+-- | Resource          | Prefix |
+-- | ----------------- | ------ |
+-- | Patient           | P      |
+-- | Practitioner      | PR     |
+-- | Organization      | O      |
+-- | Encounter         | E      |
+-- | Appointment       | A      |
+-- | Observation       | OBS    |
+-- | Condition         | C      |
+-- | MedicationRequest | MR     |
+-- | Device            | D      |
+-- | Claim             | CL     |
+-- | Invoice           | INV    |
+
+-- Example:
+-- MC-NG-P-0000000001   (Patient)
+-- MC-NG-O-0000000001   (Organization)
+-- MC-NG-PR-0000000001  (Practitioner)
+-- MC-NG-D-0000000001   (Device)
+
+-- Where:
+
+-- MC = MedCore
+-- NG = Nigeria
+-- P = Patient
 
 
 -- Create Medical Id function
--- Generates Medical Id at the database level
-CREATE OR REPLACE FUNCTION generate_medical_id()
+CREATE OR REPLACE FUNCTION generate_patient_medical_id()
 RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
@@ -118,7 +146,7 @@ DECLARE
 BEGIN
     seq := nextval('patient_medical_id_seq');
 
-    RETURN 'MC-NG-' || LPAD(seq::TEXT, 10, '0');
+    RETURN 'MC-NG-P-' || LPAD(seq::TEXT, 10, '0');
 END;
 $$;
 
@@ -133,7 +161,22 @@ ALTER COLUMN medical_id
 SET DEFAULT generate_medical_id();
 
 
+-- explicitly naming indexes is cleaner for large-scale systems.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_medical_id
+ON patients(medical_id);
+
+
 -- Update Existing Patients
 UPDATE patients
 SET medical_id = generate_medical_id()
 WHERE medical_id IS NULL;
+
+
+-- FHIR Serialization Support
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS identifier_system TEXT
+DEFAULT 'https://api.medcore.africa/fhir/identifier/patient';
+
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS identifier_use TEXT
+DEFAULT 'official';
