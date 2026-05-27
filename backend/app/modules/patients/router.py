@@ -11,10 +11,13 @@ from app.core.security import (
     require_patient_access,
     require_permission
     )
-from app.core.supabase_client import supabase
+from app.core.supabase_client import (
+    supabase, 
+    supabase_admin
+)
 from app.modules.patients.service import (
     build_patient_timeline,
-    get_or_create_patient,
+    get_or_create_patient_for_self,
     get_patient_with_records,
     assign_clinician_to_patient,
     get_patient_summary,
@@ -44,7 +47,7 @@ def get_my_patient_record(current_user=Depends(get_current_user)):
     if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients can access this endpoint")
 
-    return get_or_create_patient(current_user["id"])
+    return get_or_create_patient_for_self(current_user["id"])
 
 
 # ----- Get Patient FHIR Bundle -----
@@ -101,7 +104,7 @@ def get_patient_timeline(
 
 
 # ---- Assign Clinician to Patient -----
-@router.post("/patients/{patient_id}/assign")
+@router.post("/{patient_id}/assign")
 def assign_patient(
     patient_id: str,
     clinician_id: str,
@@ -118,7 +121,11 @@ def assign_patient(
 # ----- Get My Patients (for Clinicians) -----
 @router.get("/mine")
 def my_patients(current_user=Depends(get_current_user)):
+<<<<<<< HEAD
     if not current_user["is_practitioner"]:
+=======
+    if current_user["role"] != "clinician":
+>>>>>>> patients
         raise HTTPException(status_code=403, detail="Only clinicians allowed")
 
     return get_my_patients(current_user["id"])
@@ -162,7 +169,10 @@ async def upload_profile_picture(
     supabase.storage.from_("patient-avatars").upload(
         path=file_path,
         file=file_bytes,
-        file_options={"content-type": file.content_type}
+        file_options={
+            "content-type": file.content_type,
+            "upsert": True
+            }
     )
 
     public_url = supabase.storage.from_("patient-avatars").get_public_url(file_path)
@@ -172,4 +182,24 @@ async def upload_profile_picture(
     return {
         "message": "Profile image uploaded successfully",
         "profile_image_url": public_url
+    }
+
+
+# ---- Add Medical ID Endpoint -----
+@router.get("/medical-id")
+def get_medical_id(
+    current_user=Depends(get_current_user)
+):
+
+    patient = (
+        supabase_admin
+        .table("patients")
+        .select("medical_id")
+        .eq("id", current_user["id"])
+        .single()
+        .execute()
+    )
+
+    return {
+        "medical_id": patient.data["medical_id"]
     }

@@ -116,7 +116,7 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
 
 # ----- Get or Create Patient -----
-def get_or_create_patient(user_id: str):
+def get_or_create_patient_for_self(user_id: str):
     response = (
         supabase
         .table("patients")
@@ -187,11 +187,12 @@ def build_patient_timeline(patient_id: UUID):
 
     records = response.data or []
 
-    events = [
-        transform_record_to_event(record)
-        for record in records
-        if transform_record_to_event(record) is not None
-    ]
+    events = []
+    for record in records:
+        event= transform_record_to_event(record)
+        if event:
+            events.append(event)
+    
 
     events.sort(key=lambda e: e["date"], reverse=True)
 
@@ -233,7 +234,7 @@ def assign_clinician_to_patient(
     role: str,
     assigned_by: str
 ):
-    return (
+    response = (
         supabase
         .table("clinicians_patients")
         .upsert({
@@ -244,7 +245,12 @@ def assign_clinician_to_patient(
             "assigned_by": assigned_by
         })
         .execute()
-    ).data[0]
+    )
+
+    if not response.data:
+        raise Exception("Failed to assign clinician")
+
+    return response.data[0]
 
 
 # ---- Get My Patients for Clinician ----
@@ -308,7 +314,7 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
 
 
 # ---- Update Patient Info ----
-def update_patient_info(patient_id: str, payload: dict) -> Dict[str, Any]:
+def update_patient_info(patient_id: str, payload: dict):
     response = (
         supabase
         .table("patients")
@@ -332,5 +338,9 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
         .eq("id", patient_id)
         .execute()
     )
+
+    if not response.data:
+        raise Exception("Failed to update profile image")
+
 
     return response.data[0]

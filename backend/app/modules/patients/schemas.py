@@ -7,6 +7,7 @@ from datetime import date
 # ----- Patient Model -----
 class Patient(BaseModel):
     id: UUID
+    medical_id: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     middle_name: Optional[str] = None
