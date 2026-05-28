@@ -1,7 +1,9 @@
-from supabase import create_client
-import os
+from supabase import create_client, Client
+from app.core.config import settings
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY")
 
-supabase_admin = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
+# ---- Admin Supabase Client ----
+supabase_admin: Client = create_client(
+    settings.SUPABASE_URL,
+    settings.SUPABASE_SECRET_KEY
+)
