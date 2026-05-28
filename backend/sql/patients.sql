@@ -1,26 +1,49 @@
 -- PATIENTS TABLE (JSONB-ENABLED)
 -- Patients table with FHIR extensibility
+
+--- Create Patients Table with FHIR Metadata
 create table if not exists public.patients (
     -- Identification
     id uuid primary key references auth.users(id) on delete cascade,
-    medical_id text UNIQUE,
+    medical_id text not null unique,
 
-    -- Core relational fields
-    first_name text,
-    last_name text,
-    date_of_birth date,
-    gender text,
+    -- Core Relational Fields 
+    first_name text not null,
+    last_name text not null,
+    middle_name text,
+    profile_image_url text,
+    date_of_birth date not null,
+    gender text check (gender in ('male','female','other','unknown')),
     blood_group text,
+    marital_status text,
 
-    -- Contact info (basic)
+    -- Contant Information
     phone text,
+    email text,
+    address text,
 
-    -- FHIR extensibility
-    fhir_metadata jsonb default '{}'::jsonb,
+    -- Onboarding Status
+    onboarding_complete boolean default false,
+    onboarding_complete_at timestamp,
 
-    created_at timestamp with time zone default timezone('utc', now())
+    -- Emergence Information
+    emergency_contact_name text,
+    emergency_contact_phone text,
+
+    -- Reference Hospital
+    organization_id uuid references organizations(id),
+
+    -- Patient Activity Status
+    active boolean default true,
+    created_at timestamp with time zone default timezone('utc', now()),
+
+    -- FHIR  extensibility
+    fhir_metadata jsonb default '{}'
 );
 
+
+-- Enable RLS
+alter table public.patients enable row level security;
 
 -- Enable RLS
 alter table public.patients enable row level security;
@@ -180,3 +203,11 @@ DEFAULT 'https://api.medcore.africa/fhir/identifier/patient';
 ALTER TABLE patients
 ADD COLUMN IF NOT EXISTS identifier_use TEXT
 DEFAULT 'official';
+
+
+-- Add Onboaeding column
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP;
