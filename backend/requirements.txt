@@ -18,7 +18,7 @@ PyYAML==6.0.3
 
 # backend services
 resend==2.30.1
-supabase==2.4.0
+supabase==2.15.3
 
 # Optional but safe utilities
 typing_extensions==4.15.0
