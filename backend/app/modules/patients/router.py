@@ -24,11 +24,11 @@ from app.modules.patients.service import (
     update_patient_info,
     update_profile_image
     )
-from app.modules.patients.models import (
+from app.modules.patients.schemas import (
     Patient,
     PatientUpdate
 )
-from app.modules.records.models import MedicalRecordCreate
+from app.modules.records.schemas import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
 from uuid import UUID
