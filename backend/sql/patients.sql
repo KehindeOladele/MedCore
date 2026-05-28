@@ -1,26 +1,49 @@
 -- PATIENTS TABLE (JSONB-ENABLED)
 -- Patients table with FHIR extensibility
+
+--- Create Patients Table with FHIR Metadata
 create table if not exists public.patients (
     -- Identification
     id uuid primary key references auth.users(id) on delete cascade,
-    medical_id text UNIQUE,
+    medical_id text not null unique,
 
-    -- Core relational fields
-    first_name text,
-    last_name text,
-    date_of_birth date,
-    gender text,
+    -- Core Relational Fields 
+    first_name text not null,
+    last_name text not null,
+    middle_name text,
+    profile_image_url text,
+    date_of_birth date not null,
+    gender text check (gender in ('male','female','other','unknown')),
     blood_group text,
+    marital_status text,
 
-    -- Contact info (basic)
+    -- Contant Information
     phone text,
+    email text,
+    address text,
 
-    -- FHIR extensibility
-    fhir_metadata jsonb default '{}'::jsonb,
+    -- Onboarding Status
+    onboarding_complete boolean default false,
+    onboarding_complete_at timestamp,
 
-    created_at timestamp with time zone default timezone('utc', now())
+    -- Emergence Information
+    emergency_contact_name text,
+    emergency_contact_phone text,
+
+    -- Reference Hospital
+    organization_id uuid references organizations(id),
+
+    -- Patient Activity Status
+    active boolean default true,
+    created_at timestamp with time zone default timezone('utc', now()),
+
+    -- FHIR  extensibility
+    fhir_metadata jsonb default '{}'
 );
 
+
+-- Enable RLS
+alter table public.patients enable row level security;
 
 -- Enable RLS
 alter table public.patients enable row level security;
@@ -101,15 +124,43 @@ with check (auth.uid() = patient_id);
 -- with check (auth.uid() = id);
 
 
--- Create PostgreSQL Sequence for Medical_id
-CREATE SEQUENCE patient_medical_id_seq
-START 1
-INCREMENT 1;
+-- Create PostgreSQL Sequence for Medical_id # DROPPED
+-- CREATE SEQUENCE patient_medical_id_seq
+-- START 1
+-- INCREMENT 1;
+
+
+
+-- National Scale Identifier System
+-- | Resource          | Prefix |
+-- | ----------------- | ------ |
+-- | Patient           | P      |
+-- | Practitioner      | PR     |
+-- | Organization      | O      |
+-- | Encounter         | E      |
+-- | Appointment       | A      |
+-- | Observation       | OBS    |
+-- | Condition         | C      |
+-- | MedicationRequest | MR     |
+-- | Device            | D      |
+-- | Claim             | CL     |
+-- | Invoice           | INV    |
+
+-- Example:
+-- MC-NG-P-0000000001   (Patient)
+-- MC-NG-O-0000000001   (Organization)
+-- MC-NG-PR-0000000001  (Practitioner)
+-- MC-NG-D-0000000001   (Device)
+
+-- Where:
+
+-- MC = MedCore
+-- NG = Nigeria
+-- P = Patient
 
 
 -- Create Medical Id function
--- Generates Medical Id at the database level
-CREATE OR REPLACE FUNCTION generate_medical_id()
+CREATE OR REPLACE FUNCTION generate_patient_medical_id()
 RETURNS TEXT
 LANGUAGE plpgsql
 AS $$
@@ -118,7 +169,7 @@ DECLARE
 BEGIN
     seq := nextval('patient_medical_id_seq');
 
-    RETURN 'MC-NG-' || LPAD(seq::TEXT, 10, '0');
+    RETURN 'MC-NG-P-' || LPAD(seq::TEXT, 10, '0');
 END;
 $$;
 
@@ -133,7 +184,30 @@ ALTER COLUMN medical_id
 SET DEFAULT generate_medical_id();
 
 
+-- explicitly naming indexes is cleaner for large-scale systems.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_patients_medical_id
+ON patients(medical_id);
+
+
 -- Update Existing Patients
 UPDATE patients
 SET medical_id = generate_medical_id()
 WHERE medical_id IS NULL;
+
+
+-- FHIR Serialization Support
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS identifier_system TEXT
+DEFAULT 'https://api.medcore.africa/fhir/identifier/patient';
+
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS identifier_use TEXT
+DEFAULT 'official';
+
+
+-- Add Onboaeding column
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE patients
+ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMP;
