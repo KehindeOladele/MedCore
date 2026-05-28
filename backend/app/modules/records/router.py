@@ -1,14 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.core.security import get_current_user
-<<<<<<< HEAD
-from app.modules.records.service import (
-    create_record,
-=======
 from app.modules.records.service import create_record
 from app.modules.records.schemas import (
     MedicalRecordCreate, 
     MedicationInput, 
->>>>>>> patients
     resolve_condition_record
     )
 from app.modules.records.models import (
