@@ -11,10 +11,8 @@ from app.core.security import (
     require_patient_access,
     require_permission
     )
-from app.core.supabase_client import (
-    supabase, 
-    supabase_admin
-)
+from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 from app.modules.patients.service import (
     build_patient_timeline,
     get_or_create_patient_for_self,
