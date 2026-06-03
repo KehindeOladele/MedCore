@@ -4,7 +4,7 @@ from app.modules.records.service import (
     create_record,
     resolve_condition_record
     )
-from app.modules.records.models import (
+from app.modules.records.schemas import (
     MedicalRecordCreate, 
     MedicationInput
     )
