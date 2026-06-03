@@ -1,11 +1,8 @@
 import os
 from dotenv import load_dotenv
 from typing import Optional
-<<<<<<< HEAD
-=======
 from pydantic import EmailStr
 
->>>>>>> template
 
 load_dotenv()
 
@@ -15,15 +12,6 @@ class Settings:
     # Environment
     ENV: str = os.getenv("ENV", "development")
 
-<<<<<<< HEAD
-# ----- Supabase Configuration -----
-    # 1. Supabase PRoject URL
-    SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL")
-    # 2. Public/User-scoped
-    SUPABASE_PUBLISHABLE_KEY: Optional[str] = os.getenv("SUPABASE_PUBLISHABLE_KEY")# SUPABASE_KEY : Client-side (browser/mobile)
-    # 3. Backend/Admin-scoped
-    SUPABASE_SECRET_KEY: Optional[str] = os.getenv("SUPABASE_SECRET_KEY") # SUPABASE_SECRET_KEY: Server-side (Edge Functions / your backend only)
-=======
     # ----- Supabase Configuration -----
     # 1. Supabase PrRoject URL
     SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL")
@@ -43,7 +31,6 @@ class Settings:
     APP_NAME: Optional[str] = os.getenv("APP_NAME")
     # 8. App Frontend URL
     FRONTEND_URL: Optional[str] = os.getenv("FRONTEND_URL")
->>>>>>> template
 
     # ----- Security -----
     JWT_AUDIENCE: str = os.getenv("JWT_AUDIENCE", "authenticated")
