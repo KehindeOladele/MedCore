@@ -40,11 +40,10 @@ dependencies = [
     { name = "dotenv" },
     { name = "fastapi", extra = ["standard"] },
     { name = "jinja2" },
-    { name = "jose" },
     { name = "psycopg2" },
     { name = "python-dotenv" },
     { name = "python-dotenv-vault" },
-    { name = "python-jose" },
+    { name = "python-jose", extra = ["cryptography"] },
     { name = "qrcode", extra = ["pil"] },
     { name = "resend" },
     { name = "supabase" },
@@ -57,11 +56,10 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.128.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "jose", specifier = ">=1.0.0" },
     { name = "psycopg2", specifier = ">=2.9.11" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
     { name = "python-dotenv-vault", specifier = ">=0.7.0" },
-    { name = "python-jose", specifier = ">=3.5.0" },
+    { name = "python-jose", extras = ["cryptography"], specifier = ">=3.5.0" },
     { name = "qrcode", extras = ["pil"], specifier = ">=8.2" },
     { name = "resend", specifier = ">=2.30.1" },
     { name = "supabase", specifier = ">=2.27.1" },
@@ -550,12 +548,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/df/bf/f7da0350254c0ed7c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/62/a1/3d680cbfd5f4b8f15abc1d571870c5fc3e594bb582bc3b64ea099db13e56/jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67", size = 134899, upload-time = "2025-03-05T20:05:00.369Z" },
 ]
-
-[[package]]
-name = "jose"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/01/3d/832caa69cd0d3be2d608d8290be2221072669aa88e87690837f6b31c480f/jose-1.0.0.tar.gz", hash = "sha256:8436c3617cd94e1ba97828fbb1ce27c129f66c78fb855b4bb47e122b5f345fba", size = 9153, upload-time = "2015-11-13T10:52:21.506Z" }
 
 [[package]]
 name = "markdown-it-py"
@@ -1174,6 +1166,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c6/77/3a1c9039db7124eb039772b935f2244fbb73fc8ee65b9acf2375da1c07bf/python_jose-3.5.0.tar.gz", hash = "sha256:fb4eaa44dbeb1c26dcc69e4bd7ec54a1cb8dd64d3b4d81ef08d90ff453f2b01b", size = 92726, upload-time = "2025-05-28T17:31:54.288Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/c3/0bd11992072e6a1c513b16500a5d07f91a24017c5909b02c72c62d7ad024/python_jose-3.5.0-py2.py3-none-any.whl", hash = "sha256:abd1202f23d34dfad2c3d28cb8617b90acf34132c7afd60abd0b0b7d3cb55771", size = 34624, upload-time = "2025-05-28T17:31:52.802Z" },
+]
+
+[package.optional-dependencies]
+cryptography = [
+    { name = "cryptography" },
 ]
 
 [[package]]
