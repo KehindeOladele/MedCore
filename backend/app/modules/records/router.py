@@ -6,7 +6,7 @@ from app.modules.records.schemas import (
     MedicationInput, 
     resolve_condition_record
     )
-from app.modules.records.models import (
+from app.modules.records.schemas import (
     MedicalRecordCreate, 
     MedicationInput
     )
