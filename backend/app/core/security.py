@@ -3,7 +3,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.supabase_client import supabase
 from app.core.supabase_admin import supabase_admin
 # from jose import jwt 
-from jose.exceptions import JWTError
+# from jose.exceptions import JWTError
 from app.core.config import settings
 from app.core.rbac import has_permission
 from fastapi import Depends, HTTPException
