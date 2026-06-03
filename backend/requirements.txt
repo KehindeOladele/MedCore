@@ -2,6 +2,7 @@ fastapi==0.128.0
 starlette==0.50.0
 pydantic==2.12.5
 pydantic_core==2.41.5
+jose==1.0.0
 
 httpx>=0.26
 requests==2.32.5
