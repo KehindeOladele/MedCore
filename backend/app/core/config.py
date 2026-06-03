@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from typing import Optional
 
 load_dotenv()
 
@@ -11,11 +12,11 @@ class Settings:
 
 # ----- Supabase Configuration -----
     # 1. Supabase PRoject URL
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL").strip()
+    SUPABASE_URL: Optional[str] = os.getenv("SUPABASE_URL")
     # 2. Public/User-scoped
-    SUPABASE_KEY: str = os.getenv("SUPABASE_KEY").strip() # SUPABASE_KEY : Client-side (browser/mobile)
+    SUPABASE_PUBLISHABLE_KEY: Optional[str] = os.getenv("SUPABASE_PUBLISHABLE_KEY")# SUPABASE_KEY : Client-side (browser/mobile)
     # 3. Backend/Admin-scoped
-    SUPABASE_SECRET_KEY: str = os.getenv("SUPABASE_SECRET_KEY").strip() # SUPABASE_SECRET_KEY: Server-side (Edge Functions / your backend only)
+    SUPABASE_SECRET_KEY: Optional[str] = os.getenv("SUPABASE_SECRET_KEY") # SUPABASE_SECRET_KEY: Server-side (Edge Functions / your backend only)
 
     # ----- Security -----
     JWT_AUDIENCE: str = os.getenv("JWT_AUDIENCE", "authenticated")
@@ -26,7 +27,7 @@ class Settings:
 
         required = {
             "SUPABASE_URL": self.SUPABASE_URL,
-            "SUPABASE_KEY": self.SUPABASE_KEY,
+            "SUPABASE_PUBLISHABLE_KEY": self.SUPABASE_PUBLISHABLE_KEY,
             "SUPABASE_SECRET_KEY": self.SUPABASE_SECRET_KEY,
         }
 
