@@ -15,7 +15,7 @@ from app.core.supabase_client import supabase
 from app.core.supabase_admin import supabase_admin
 from app.modules.patients.service import (
     build_patient_timeline,
-    get_or_create_patient_for_self,
+    get_or_create_patient,
     get_patient_with_records,
     assign_clinician_to_patient,
     get_patient_summary,
@@ -45,7 +45,7 @@ def get_my_patient_record(current_user=Depends(get_current_user)):
     if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients can access this endpoint")
 
-    return get_or_create_patient_for_self(current_user["id"])
+    return get_or_create_patient(current_user["id"])
 
 
 # ----- Get Patient FHIR Bundle -----
