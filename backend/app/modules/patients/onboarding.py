@@ -3,6 +3,7 @@ from app.core.supabase_admin import supabase_admin
 from app.shared.email.email_service import send_email
 from app.shared.services.template_service import render_template
 from app.shared.schemas.email_service import EmailService
+from pydantic import EmailStr, ValidationError
 from app.modules.patients.exceptions import EmailDeliveryError
 import logging
 
@@ -25,6 +26,10 @@ def send_onboarding_email(patient_id: str):
         logger.warning(f"Patient not found: {patient_id}")
         return
 
+    if not isinstance(patient, dict):
+        logger.warning(f"Patient not found or invalid data: {patient_id}")
+        return {"status": "not_found"}
+    
     if not patient:
         return {"status": "not_found"}
     
@@ -46,9 +51,27 @@ def send_onboarding_email(patient_id: str):
             }
         )
 
+        try:
+            to_email = EmailStr(email)
+        except (ValidationError, TypeError) as ve:
+            logger.warning(f"Invalid patient email for {patient_id}: {email}")
+            (
+                supabase_admin
+                .table("patients")
+                .update({
+                    "onboarding_last_error": str(ve),
+                    "onboarding_failure_reason": "invalid_email",
+                    "onboarding_retry_count": int(patient.get("onboarding_retry_count") or 0) + 1,
+                    "onboarding_status": "failed"
+                })
+                .eq("id", patient_id)
+                .execute()
+            )
+            return {"status": "invalid_email"}
+
         response = send_email(
             EmailService(
-                to=email,
+                to=to_email,
                 subject="Welcome to MedCore",
                 html=html
             )
@@ -83,7 +106,7 @@ def send_onboarding_email(patient_id: str):
             .update({
                 "onboarding_last_error": str(e),
                 "onboarding_failure_reason": "email_delivery_failed",
-                "onboarding_retry_count": patient.get("onboarding_retry_count", 0) + 1,
+                "onboarding_retry_count": int(patient.get("onboarding_retry_count") or 0) + 1,
                 "onboarding_status": "failed"
             })
             .eq("id", patient_id)
