@@ -26,7 +26,7 @@ def send_onboarding_email(patient_id: str):
         return
 
     if not patient:
-        return
+        return {"status": "not_found"}
     
     if patient.get("onboarding_email_sent") and patient.get("onboarding_completed"):
         return
@@ -34,7 +34,7 @@ def send_onboarding_email(patient_id: str):
     email = patient.get("email")
 
     if not email:
-        return
+        return {"status": "missing_email"}
 
     try:
 
@@ -65,9 +65,8 @@ def send_onboarding_email(patient_id: str):
             .update({
                 "onboarding_email_sent": True,
                 "onboarding_email_sent_at": now,
-                "onboarding_completed": True,
-                "onboarding_completed_at": now,
-                "onboarding_retry_count": 0
+                "onboarding_retry_count": 0,
+                "onboarding_last_error": None
             })
             .eq("id", patient_id)
             .execute()
@@ -82,8 +81,10 @@ def send_onboarding_email(patient_id: str):
             supabase_admin
             .table("patients")
             .update({
-                "onboarding_retry_count":
-                    patient.get("onboarding_retry_count", 0) + 1
+                "onboarding_last_error": str(e),
+                "onboarding_failure_reason": "email_delivery_failed",
+                "onboarding_retry_count": patient.get("onboarding_retry_count", 0) + 1,
+                "onboarding_status": "failed"
             })
             .eq("id", patient_id)
             .execute()
