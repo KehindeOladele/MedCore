@@ -21,11 +21,14 @@
 
 --- Create Patients Table with FHIR Metadata
 create table if not exists public.patients (
+    -- Identification
     id uuid primary key references auth.users(id) on delete cascade,
+    medical_id text not null unique,
 
     first_name text not null,
     last_name text not null,
     middle_name text,
+    profile_image_url text,
 
     date_of_birth date not null,
     gender text check (gender in ('male','female','other','unknown')),
@@ -39,8 +42,18 @@ create table if not exists public.patients (
 
     emergency_contact_name text,
     emergency_contact_phone text,
+    
+    -- onboarding columns
+    onboarding_email_sent BOOLEAN DEFAULT FALSE,
+    onboarding_email_sent_at TIMESTAMPTZ,
+    onboarding_status TEXT DEFAULT 'pending',
+    onboarding_retry_count INT DEFAULT 0,
+    onboarding_failure_reason TEXT,
+    onboarding_last_error TEXT,
+    onboarding_last_attempt_at TIMESTAMPTZ,
+    onboarding_complete boolean default false,
+    onboarding_complete_at timestamp,
 
-    access_pin text, -- hashed
     organization_id uuid references organizations(id),
 
     active boolean default true,
