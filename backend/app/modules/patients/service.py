@@ -1,5 +1,10 @@
 from app.core.supabase_client import supabase
 from app.shared.utils.timeline_event_trans_helper import transform_record_to_event
+from app.core.events.emitter import emit_event
+from app.modules.patients.event_hanlders import (
+    handle_patient_created,
+    handle_onboarding_email_requested
+)
 from uuid import UUID
 from typing import List, Dict, Any
 
@@ -142,6 +147,22 @@ def get_or_create_patient(user_id: str):
 
     if not insert.data:
         raise Exception("Failed to create patient record")
+    
+    patient = insert.data[0]
+    
+    emit_event(
+    aggregate_type="patient",
+    aggregate_id=patient["id"],
+    event_type=EventTypes.PATIENT_CREATED,
+    payload={
+        "email": patient["email"]
+    }
+    )
+
+    handle_patient_created(
+        patient_id=patient["id"],
+        email=patient["email"]
+    )
 
     return insert.data[0]
 
