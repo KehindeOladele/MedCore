@@ -1,34 +1,31 @@
 from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
+from app.core.events.registry import register
+from app.core.events.emitter import emit_event
+from app.core.events.schemas import EventTypes
 from app.modules.patients.onboarding import send_onboarding_email
 
 
+
 # ----- Patient Create Hanlder ----- 
-def handle_patient_created(
-    patient_id: str,
-    email: str
-):
+@register(EventTypes.PATIENT_CREATED)
+def handle_patient_created(event):
 
     emit_event(
         aggregate_type="patient",
-        aggregate_id=patient_id,
+        aggregate_id=event["aggregate_id"],
         event_type=EventTypes.ONBOARDING_EMAIL_REQUESTED,
-        payload={
-            "email": email
-        }
+        payload=event.get("payload", {})
     )
 
-    handle_onboarding_email_requested(
-        patient_id=patient_id
-    )
+    handle_onboarding_email_requested(event)
 
 
 # ----- Onboarding Email Request Handler -----
-def handle_onboarding_email_requested(
-    patient_id: str
-):
+@register(EventTypes.ONBOARDING_EMAIL_REQUESTED)
+def handle_onboarding_email_requested(event):
 
-    # existing send_onboarding_email logic
+    patient_id = event["aggregate_id"]
 
     send_onboarding_email(patient_id)
 
