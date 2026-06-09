@@ -114,3 +114,4 @@ def send_onboarding_email(patient_id: str):
         )
 
         raise
+
