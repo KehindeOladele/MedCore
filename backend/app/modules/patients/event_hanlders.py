@@ -18,6 +18,10 @@ def handle_patient_created(
         }
     )
 
+    handle_onboarding_email_requested(
+        patient_id=patient_id
+    )
+
 
 # ----- Onboarding Email Request Handler -----
 def handle_onboarding_email_requested(
