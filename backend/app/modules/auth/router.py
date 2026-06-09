@@ -11,7 +11,7 @@ from app.modules.auth.service import (
     signup_user,
     login_user
 )
-from app.modules.patients.onboarding import send_patient_welcome_email
+from app.modules.patients.onboarding import send_onboarding_email
 # from app.core.supabase_client import supabase
 
 
@@ -53,7 +53,7 @@ def login(
     )
 
     background_tasks.add_task(
-        send_patient_welcome_email,
+        send_onboarding_email,
         response["user"]["id"]
     )
 
