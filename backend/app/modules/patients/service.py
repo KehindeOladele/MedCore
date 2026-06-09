@@ -150,19 +150,18 @@ def get_or_create_patient(user_id: str):
         raise Exception("Failed to create patient record")
     
     patient = insert.data[0]
+    
+    patient_id = str(patient.get("id", ""))
+    if not patient_id:
+        raise Exception("Failed to get patient ID from insert response")
 
     emit_event(
-    aggregate_type="patient",
-    aggregate_id=patient["id"],
-    event_type=EventTypes.PATIENT_CREATED,
-    payload={
-        "email": patient["email"]
-    }
-    )
-
-    handle_patient_created(
-        patient_id=patient["id"],
-        email=patient["email"]
+        aggregate_type="patient",
+        aggregate_id=patient_id,
+        event_type=EventTypes.PATIENT_CREATED,
+        payload={
+            "email": patient.get("email")
+        }
     )
 
     return insert.data[0]
