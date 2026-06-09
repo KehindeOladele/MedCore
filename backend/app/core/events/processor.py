@@ -34,13 +34,18 @@ def process_pending_events():
             )
 
         except Exception as e:
-
             (
                 supabase_admin
                 .table("events")
                 .update({
                     "status": "failed",
-                    "failure_reason": str(e)
+                    "failure_reason": str(e),
+                    "retry_count":
+                        event.get("retry_count", 0) + 1,
+                    "last_attempt_at":
+                        datetime.now(
+                            timezone.utc
+                        ).isoformat()
                 })
                 .eq("id", event["id"])
                 .execute()
