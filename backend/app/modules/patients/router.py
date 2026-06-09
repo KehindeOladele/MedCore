@@ -3,7 +3,8 @@ from fastapi import (
     Depends, 
     HTTPException,
     UploadFile,
-    File
+    File,
+    BackgroundTasks
 )
 from fastapi.responses import StreamingResponse
 from app.core.security import (
@@ -22,7 +23,7 @@ from app.modules.patients.service import (
     get_my_patients,
     get_patient_profile,
     update_patient_info,
-    update_profile_image
+    update_profile_image,
     )
 from app.modules.patients.schemas import (
     Patient,
@@ -31,6 +32,10 @@ from app.modules.patients.schemas import (
 from app.modules.records.schemas import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
+from app.shared.email.email_service import send_email
+from app.shared.schemas.email_service import EmailService
+from app.shared.services.template_service import render_template
+from app.modules.patients.onboarding import send_onboarding_email
 from uuid import UUID
 
 
@@ -196,4 +201,42 @@ def get_medical_id(
 
     return {
         "medical_id": patient.data["medical_id"]
+    }
+
+
+# ----- Onboarding Endpoint -----
+@router.post("/onboarding/complete")
+def complete_onboarding(
+    patient_id: str,
+    background_tasks: BackgroundTasks,
+    user=Depends(get_current_user)
+):
+
+    patient = (
+        supabase_admin
+        .table("patients")
+        .select("*")
+        .eq("id", patient_id)
+        .single()
+        .execute()
+    ).data
+
+    if not patient:
+        return {"error": "Patient not found"}
+
+    # IDENTITY GUARD
+    if patient.get("onboarding_completed"):
+        return {"message": "Already completed"}
+
+    # EMAIL GUARD
+    if not patient.get("email"):
+        return {"error": "Patient has no email"}
+    
+    background_tasks.add_task(
+    send_onboarding_email,
+    patient_id
+    )
+
+    return {
+        "message": "Onboarding started"
     }
