@@ -4,6 +4,8 @@ from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
 
 
+MAX_RETRIES = 3
+
 # ----- Event Processor -----
 def process_pending_events():
 
@@ -15,9 +17,24 @@ def process_pending_events():
         .order("created_at")
         .execute()
     ).data)
+    
 
     for event in events:
         try:
+            if event.get("retry_count", 0) >= MAX_RETRIES:
+                (
+                    supabase_admin
+                    .table("events")
+                    .update({
+                        "status": "failed",
+                        "failure_reason": "max_retries_exceeded"
+                    })
+                    .eq("id", event["id"])
+                    .execute()
+                )
+
+                continue
+            
             dispatch_event(event)
             (
                 supabase_admin
