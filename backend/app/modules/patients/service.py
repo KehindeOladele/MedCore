@@ -152,6 +152,7 @@ def get_or_create_patient(user_id: str):
     patient = insert.data[0]
     
     patient_id = str(patient.get("id", ""))
+
     if not patient_id:
         raise Exception("Failed to get patient ID from insert response")
 
@@ -164,7 +165,7 @@ def get_or_create_patient(user_id: str):
         }
     )
 
-    return insert.data[0]
+    return patient, True
 
 
 # ----- Get Patient with Records -----
