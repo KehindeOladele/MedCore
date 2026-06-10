@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.supabase_client import supabase
 from app.core.events import bootstrap
+from app.core.events.router import router as events_router
 from app.modules.auth.router import router as auth_router
 from app.modules.patients.router import router as patients_router
 from app.modules.records.router import router as records_router
@@ -92,6 +93,7 @@ app.include_router(laboratory_router)
 
 # ===== Aggregation Layer =====
 app.include_router(dashboard_router)
+app.include_router(events_router)
 
 
 # ===== Root Endpoint =====
