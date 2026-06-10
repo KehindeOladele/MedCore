@@ -36,21 +36,44 @@ from app.shared.email.email_service import send_email
 from app.shared.schemas.email_service import EmailService
 from app.shared.services.template_service import render_template
 from app.modules.patients.onboarding import send_onboarding_email
+from app.core.events.emitter import emit_event
+from app.core.events.schemas import EventTypes
+from app.shared.tasks.event_tasks import (
+    process_events_task
+)
 from uuid import UUID
 
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
 
-# ----- Get My Patient Record -----
+# ----- Create Patient Record -----
 @router.get("/me", response_model=Patient)
-def get_my_patient_record(current_user=Depends(get_current_user)):
+def get_create_patient(
+    background_tasks: BackgroundTasks,
+    current_user=Depends(get_current_user)
+    ):
     
     # Only patients can access this endpoint
     if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients can access this endpoint")
+    
+    result = get_or_create_patient(current_user["id"]) 
 
-    return get_or_create_patient(current_user["id"])
+    # get_or_create_patient may return None, a single patient, or (patient, created)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Patient not found or could not be created")
+
+    if isinstance(result, tuple):
+        patient, created = result
+    else:
+        patient = result
+        created = False
+
+    if created:
+        background_tasks.add_task(process_events_task)
+
+    return patient
 
 
 # ----- Get Patient FHIR Bundle -----
@@ -121,6 +144,7 @@ def assign_patient(
         assigned_by=current_user["id"]
     )
 
+
 # ----- Get My Patients (for Clinicians) -----
 @router.get("/mine")
 def my_patients(current_user=Depends(get_current_user)):
@@ -138,6 +162,7 @@ def my_profile(current_user=Depends(get_current_user)):
         raise HTTPException(403, "Only patients allowed")
 
     return get_patient_profile(current_user["id"])
+
 
 # --- Update My Patient Profile -----
 @router.put("/profile/me")
