@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.supabase_client import supabase
+from app.core.events import bootstrap
 from app.modules.auth.router import router as auth_router
 from app.modules.patients.router import router as patients_router
 from app.modules.records.router import router as records_router
