@@ -35,13 +35,13 @@ def handle_onboarding_email_requested(event):
         .execute()
     ).data
 
+    if patient.get("onboarding_email_sent"):
+        return
+
     EventService.onboarding_email_requested(
         patient_id=patient_id,
         email=event["payload"].get("email")
     )
-
-    if patient.get("onboarding_email_sent"):
-        return
 
     EventService.onboarding_email_sent(
         patient_id=patient_id
