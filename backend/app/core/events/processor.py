@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
+from app.core.events.locking import acquire_event_lock
 
 
 MAX_RETRIES = 3
@@ -20,50 +21,19 @@ def process_pending_events():
     
 
     for event in events:
-        try:
-            if event.get("retry_count", 0) >= MAX_RETRIES:
-                (
-                    supabase_admin
-                    .table("events")
-                    .update({
-                        "status": "failed",
-                        "failure_reason": "max_retries_exceeded"
-                    })
-                    .eq("id", event["id"])
-                    .execute()
-                )
+        locked = acquire_event_lock(
+            event["id"]
+        )
 
-                continue
+        if not locked:
+            continue
             
+        try:    
             dispatch_event(event)
-            (
-                supabase_admin
-                .table("events")
-                .update({
-                    "status": "processed",
-                    "processed_at":
-                        datetime.now(
-                            timezone.utc
-                        ).isoformat()
-                })
-                .eq("id", event["id"])
-                .execute()
-            )
+            mark_processed(event["id"])
 
         except Exception as e:
-            (
-                supabase_admin
-                .table("events")
-                .update({
-                    "status": "failed",
-                    "failure_reason": str(e),
-                    "retry_count":
-                        event.get("retry_count", 0) + 1,
-                    "last_attempt_at":
-                        datetime.now(
-                            timezone.utc
-                        ).isoformat()
-                })
-                .eq("id", event["id"])
-                .execute()
+            mark_failed(
+                event["id"],
+                str(e)
             )
