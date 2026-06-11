@@ -4,9 +4,8 @@ from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
 from app.core.events.locking import acquire_event_lock
 from app.core.events.state import mark_processed, mark_failed
+from app.core.events.constants import MAX_RETRIES
 
-
-MAX_RETRIES = 3
 
 # ----- Event Processor -----
 def process_pending_events():
@@ -22,6 +21,12 @@ def process_pending_events():
     
 
     for event in events:
+        if (
+            event.get("retry_count", 0)
+            >= MAX_RETRIES
+        ):
+            continue
+
         locked = acquire_event_lock(
             event["id"]
         )
@@ -36,5 +41,5 @@ def process_pending_events():
         except Exception as e:
             mark_failed(
                 event["id"],
-                str(e)
+                reason=str(e)
             )
