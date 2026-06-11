@@ -3,6 +3,7 @@ from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
 from app.core.events.locking import acquire_event_lock
+from app.core.events.state import mark_processed, mark_failed
 
 
 MAX_RETRIES = 3
