@@ -29,8 +29,8 @@ def handle_onboarding_email_requested(event):
     patient = (
         supabase_admin
         .table("patients")
-        .select("*")
-        .eq("id", event["aggregate_id"])
+        .select("onboarding_email_sent")
+        .eq("id", patient_id)
         .single()
         .execute()
     ).data
