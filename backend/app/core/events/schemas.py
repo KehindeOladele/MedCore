@@ -18,3 +18,4 @@ class EventStatus:
     PROCESSING = "processing"
     PROCESSED = "processed"
     FAILED = "failed"
+    DEAD = "dead"
