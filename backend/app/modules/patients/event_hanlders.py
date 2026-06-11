@@ -2,9 +2,9 @@ from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
 from app.core.events.registry import register
 from app.core.events.emitter import emit_event
-from app.core.events.schemas import EventTypes
 from app.modules.patients.onboarding import send_onboarding_email
 from app.core.supabase_admin import supabase_admin
+from app.core.events.service import EventService
 
 
 
@@ -12,11 +12,9 @@ from app.core.supabase_admin import supabase_admin
 @register(EventTypes.PATIENT_CREATED)
 def handle_patient_created(event):
 
-    emit_event(
-        aggregate_type="patient",
-        aggregate_id=event["aggregate_id"],
-        event_type=EventTypes.ONBOARDING_EMAIL_REQUESTED,
-        payload=event.get("payload", {})
+    EventService.patient_created(
+        patient_id=event["aggregate_id"],
+        email=event["payload"].get("email")
     )
 
     handle_onboarding_email_requested(event)
@@ -26,6 +24,8 @@ def handle_patient_created(event):
 @register(EventTypes.ONBOARDING_EMAIL_REQUESTED)
 def handle_onboarding_email_requested(event):
 
+    patient_id = event["aggregate_id"]
+    
     patient = (
         supabase_admin
         .table("patients")
@@ -35,13 +35,14 @@ def handle_onboarding_email_requested(event):
         .execute()
     ).data
 
+    EventService.onboarding_email_requested(
+        patient_id=patient_id,
+        email=event["payload"].get("email")
+    )
+
     if patient.get("onboarding_email_sent"):
         return
 
-    send_onboarding_email(event["aggregate_id"])
-
-    emit_event(
-        aggregate_type="patient",
-        aggregate_id=event["aggregate_id"],
-        event_type=EventTypes.ONBOARDING_EMAIL_SENT
-    )
+    EventService.onboarding_email_sent(
+        patient_id=patient_id
+        )
