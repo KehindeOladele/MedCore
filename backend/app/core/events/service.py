@@ -33,37 +33,38 @@ class EventService:
             .update({
                 "status": EventStatus.PENDING,
                 "failure_reason": None,
-                "locked_at": None
+                "locked_at": None,
+                "last_attempt_at": None
             })
             .eq("id", event_id)
             .execute()
         )
 
-# ----- Onboarding Email Request Event Service Layer -----
-@staticmethod
-def onboarding_email_requested(
-    patient_id: str,
-    email: str | None
-):
+    # ----- Onboarding Email Request Event Service Layer -----
+    @staticmethod
+    def onboarding_email_requested(
+        patient_id: str,
+        email: str | None
+    ):
 
-    emit_event(
-        aggregate_type="patient",
-        aggregate_id=patient_id,
-        event_type=EventTypes.ONBOARDING_EMAIL_REQUESTED,
-        payload={
-            "email": email
-        }
-    )
+        emit_event(
+            aggregate_type="patient",
+            aggregate_id=patient_id,
+            event_type=EventTypes.ONBOARDING_EMAIL_REQUESTED,
+            payload={
+                "email": email
+            }
+        )
 
 
-# ----- Onboarding Email Sent Event Service Layer -----
-@staticmethod
-def onboarding_email_sent(
-    patient_id: str
-):
+    # ----- Onboarding Email Sent Event Service Layer -----
+    @staticmethod
+    def onboarding_email_sent(
+        patient_id: str
+    ):
 
-    emit_event(
-        aggregate_type="patient",
-        aggregate_id=patient_id,
-        event_type=EventTypes.ONBOARDING_EMAIL_SENT
-    )
+        emit_event(
+            aggregate_type="patient",
+            aggregate_id=patient_id,
+            event_type=EventTypes.ONBOARDING_EMAIL_SENT
+        )
