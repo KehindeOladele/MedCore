@@ -4,9 +4,13 @@ from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
 from app.core.events.locking import (
     acquire_event_lock,
-    recover_stuck_events
+    recover_stuck_events,
+    requeue_failed_events
 )
-from app.core.events.state import mark_processed, mark_failed
+from app.core.events.state import (
+    mark_processed, 
+    mark_failed
+)
 from app.core.events.constants import (
     MAX_RETRIES,
     BATCH_SIZE
@@ -17,6 +21,8 @@ from app.core.events.constants import (
 def process_pending_events():
 
     recover_stuck_events()
+
+    requeue_failed_events()
 
     events = cast(list[dict[str, Any]], (
         supabase_admin
