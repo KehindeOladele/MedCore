@@ -35,10 +35,10 @@ def process_pending_events():
     
 
     for event in events:
-        if (
-            event.get("retry_count", 0)
-            >= MAX_RETRIES
-        ):
+        if event.get(
+            "retry_count", 0
+        ) >= MAX_RETRIES:
+
             continue
 
         locked = acquire_event_lock(
