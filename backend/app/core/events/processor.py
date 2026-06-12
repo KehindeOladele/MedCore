@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
