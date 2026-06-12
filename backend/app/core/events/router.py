@@ -43,25 +43,7 @@ def get_failed_events():
         .data
     )
 
-
-# ----- Get Events by ID Endpoint -----
-@router.get("/{event_id}")
-def get_event(
-    event_id: str
-):
-
-    return (
-        supabase_admin
-        .table("events")
-        .select("*")
-        .eq("id", event_id)
-        .single()
-        .execute()
-        .data
-    )
-
-
-# 
+# ----- Event Summary Endpoint -----
 @router.get("/metrics/summary")
 def event_metrics():
 
@@ -95,21 +77,21 @@ def event_metrics():
     return summary
 
 
-# ----- Event Retry Endpoint -----
-@router.post("/{event_id}/retry")
-def retry_event(
-    event_id: str
-):
-
-    EventService.retry_event(
-        event_id
+# ----- Onboarding Event Monitoring Endpoint -----
+@router.get("/onboarding")
+def onboarding_events():
+    return (
+        supabase_admin
+        .table("events")
+        .select("*")
+        .ilike(
+            "event_type",
+            "onboarding.%"
+        )
+        .order("created_at", desc=True)
+        .execute()
+        .data
     )
-
-    process_pending_events()
-
-    return {
-        "message": "Event queued for retry"
-    }
 
 
 # ----- All Failed Event Retry Endpoint ----- 
@@ -146,18 +128,35 @@ def retry_failed_events():
     }
 
 
-# ----- Onboarding Event Monitoring Endpoint -----
-@router.get("/onboarding")
-def onboarding_events():
+# ----- Get Events by ID Endpoint -----
+@router.get("/{event_id}")
+def get_event(
+    event_id: str
+):
+
     return (
         supabase_admin
         .table("events")
         .select("*")
-        .ilike(
-            "event_type",
-            "onboarding.%"
-        )
-        .order("created_at", desc=True)
+        .eq("id", event_id)
+        .single()
         .execute()
         .data
     )
+
+
+# ----- Event Retry Endpoint -----
+@router.post("/{event_id}/retry")
+def retry_event(
+    event_id: str
+):
+
+    EventService.retry_event(
+        event_id
+    )
+
+    process_pending_events()
+
+    return {
+        "message": "Event queued for retry"
+    }
