@@ -15,3 +15,8 @@ class EventHandlerError(
     EventProcessingError
 ):
     pass
+
+class EventHandlerNotFoundError(
+    EventProcessingError
+):
+    pass
