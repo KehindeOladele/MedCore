@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.core.supabase_admin import supabase_admin
 from app.core.events.service import EventService
 from app.core.events.processor import process_pending_events
+from app.core.events.constants import BATCH_SIZE
 
 router = APIRouter(
     prefix="/events",
@@ -11,7 +12,7 @@ router = APIRouter(
 # ----- Admin Event Monitoring Endpoint -----
 @router.get("/events")
 def get_events(
-    limit: int= 100
+    limit: int= BATCH_SIZE
 ):
 
     return (
