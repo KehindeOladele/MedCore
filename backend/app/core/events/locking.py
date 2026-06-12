@@ -22,4 +22,7 @@ def acquire_event_lock(event_id: str) -> bool:
         .execute()
     )
 
-    return bool(result.data)
+    return (
+        bool(result.data)
+        and len(result.data) == 1
+    )
