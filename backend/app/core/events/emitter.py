@@ -1,4 +1,8 @@
 from app.core.supabase_admin import supabase_admin
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 # ----- Event Based Emitter infrastructure -----
@@ -8,7 +12,7 @@ def emit_event(
     event_type: str,
     payload: dict | None = None
 ):
-    return (
+    result= (
         supabase_admin
         .table("events")
         .insert({
@@ -19,3 +23,11 @@ def emit_event(
         })
         .execute()
     )
+
+    logger.info(
+        "Emitted event %s (%s)",
+        event_type,
+        aggregate_id
+    )
+
+    return result
