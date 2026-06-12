@@ -68,3 +68,19 @@ class EventService:
             aggregate_id=patient_id,
             event_type=EventTypes.ONBOARDING_EMAIL_SENT
         )
+
+    #  ----- Onboarding Email Failed Event -----
+    @staticmethod
+    def onboarding_email_failed(
+        patient_id: str,
+        reason: str
+    ):
+
+        emit_event(
+            aggregate_type="patient",
+            aggregate_id=patient_id,
+            event_type=EventTypes.ONBOARDING_EMAIL_FAILED,
+            payload={
+                "reason": reason
+            }
+        )
