@@ -7,7 +7,10 @@ from app.core.events.locking import (
     recover_stuck_events
 )
 from app.core.events.state import mark_processed, mark_failed
-from app.core.events.constants import MAX_RETRIES
+from app.core.events.constants import (
+    MAX_RETRIES,
+    BATCH_SIZE
+)
 
 
 # ----- Event Processor -----
@@ -21,6 +24,7 @@ def process_pending_events():
         .select("*")
         .eq("status", "pending")
         .order("created_at")
+        .limit(BATCH_SIZE)
         .execute()
     ).data)
     
