@@ -50,5 +50,5 @@ def process_pending_events():
         except Exception as e:
             mark_failed(
                 event["id"],
-                reason=str(e)
+                reason= f"{type(e).__name__}: {str(e)}"
             )
