@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from app.core.supabase_admin import supabase_admin
 from app.core.events.schemas import EventStatus
+from app.core.events.constants import MAX_RETRIES
 
 
 # ----- Event Lock -----
@@ -51,6 +52,28 @@ def recover_stuck_events():
         .lt(
             "locked_at",
             cutoff
+        )
+        .execute()
+    )
+
+
+
+#  ----- Requeue Failed Event -----
+def requeue_failed_events():
+
+    (
+        supabase_admin
+        .table("events")
+        .update({
+            "status": EventStatus.PENDING
+        })
+        .eq(
+            "status",
+            EventStatus.FAILED
+        )
+        .lt(
+            "retry_count",
+            MAX_RETRIES
         )
         .execute()
     )
