@@ -25,11 +25,25 @@ def mark_processed(event_id: str):
 # ----- Event Processed Failed -----
 def mark_failed(
     event_id: str,
-    retry_count: int,
     reason: str
 ):
 
-    new_retry_count = retry_count + 1
+    event = (
+        supabase_admin
+        .table("events")
+        .select("retry_count")
+        .eq("id", event_id)
+        .single()
+        .execute()
+    ).data
+
+    current_retry_count = event.get(
+        "retry_count", 0
+    )
+
+    new_retry_count = (
+        current_retry_count + 1
+    )
 
     status = (
         EventStatus.DEAD
