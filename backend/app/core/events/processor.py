@@ -2,13 +2,18 @@ from datetime import datetime, timezone
 from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
-from app.core.events.locking import acquire_event_lock
+from app.core.events.locking import (
+    acquire_event_lock,
+    recover_stuck_events
+)
 from app.core.events.state import mark_processed, mark_failed
 from app.core.events.constants import MAX_RETRIES
 
 
 # ----- Event Processor -----
 def process_pending_events():
+
+    recover_stuck_events()
 
     events = cast(list[dict[str, Any]], (
         supabase_admin
