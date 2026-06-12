@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 # ----- Admin Event Monitoring Endpoint -----
-@router.get("/events")
+@router.get("/")
 def get_events(
     limit: int= BATCH_SIZE
 ):
