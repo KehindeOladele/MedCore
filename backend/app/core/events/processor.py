@@ -1,3 +1,4 @@
+import logging
 from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
@@ -16,6 +17,8 @@ from app.core.events.constants import (
 )
 
 
+logger = logging.getLogger(__name__)
+
 # ----- Event Processor -----
 def process_pending_events():
 
@@ -32,6 +35,11 @@ def process_pending_events():
         .limit(BATCH_SIZE)
         .execute()
     ).data)
+
+    logger.info(
+        "Found %s pending events",
+        len(events)
+    )
     
 
     for event in events:
@@ -47,12 +55,24 @@ def process_pending_events():
 
         if not locked:
             continue
+
+        logger.info(
+            "Processing event %s (%s)",
+            event["id"],
+            event["event_type"]
+        )
             
         try:    
             dispatch_event(event)
             mark_processed(event["id"])
 
         except Exception as e:
+            
+            logger.exception(
+                "Failed processing event %s",
+                event["id"]
+            )
+
             mark_failed(
                 event["id"],
                 reason= f"{type(e).__name__}: {str(e)}"
