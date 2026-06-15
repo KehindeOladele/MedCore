@@ -118,7 +118,9 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
 
 
 # ----- Get or Create Patient -----
-def get_or_create_patient(user_id: str):
+def get_or_create_patient(
+        user_id: str,
+        email: str):
     response = (
         supabase
         .table("patients")
@@ -128,7 +130,10 @@ def get_or_create_patient(user_id: str):
     )
 
     if response.data:
-        return response.data[0]
+        return {
+            "patient": response.data[0],
+            "created": False
+        }
 
     insert = (
         supabase
@@ -157,11 +162,14 @@ def get_or_create_patient(user_id: str):
         aggregate_id=patient_id,
         event_type=EventTypes.PATIENT_CREATED,
         payload={
-            "email": patient.get("email")
+            "email": email
         }
     )
 
-    return patient, True
+    return {
+        "patient": patient,
+        "created": True
+    }
 
 
 # ----- Get Patient with Records -----
