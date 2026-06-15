@@ -4,6 +4,13 @@ from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
 from uuid import UUID
 from typing import List, Dict, Any
+from app.modules.patients.exceptions import (
+    PatientCreationError,
+    PatientError,
+    PatientNotFoundError,
+    PatientUpdateError,
+    ClinicianAssignmentError
+)
 
 # ----- Get Patient Summary -----
 def get_patient_summary(patient_id: str) -> Dict[str, Any]:
@@ -25,7 +32,9 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
     )
 
     if not patient_resp.data:
-        raise ValueError("Patient not found")
+        raise PatientNotFoundError(
+        f"Patient {patient_id} not found"
+    )
 
     patient = patient_resp.data
 
@@ -148,7 +157,9 @@ def get_or_create_patient(
     )
 
     if not insert.data:
-        raise Exception("Failed to create patient record")
+        raise PatientCreationError(
+        "Failed to create patient record"
+    )
     
     patient = insert.data[0]
     
@@ -274,7 +285,9 @@ def assign_clinician_to_patient(
     )
 
     if not response.data:
-        raise Exception("Failed to assign clinician")
+        raise ClinicianAssignmentError(
+        "Failed to assign clinician"
+    )
 
     return response.data[0]
 
@@ -318,7 +331,9 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
     )
 
     if not response.data:
-        raise ValueError("Patient not found")
+        raise PatientNotFoundError(
+        f"Patient {patient_id} not found"
+    )
 
     patient = response.data
 
@@ -350,7 +365,9 @@ def update_patient_info(patient_id: str, payload: dict):
     )
 
     if not response.data:
-        raise Exception("Failed to update patient")
+        raise PatientUpdateError(
+        "Failed to update patient"
+    )
 
     return response.data[0]
 
@@ -366,7 +383,9 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
     )
 
     if not response.data:
-        raise Exception("Failed to update profile image")
+        raise PatientUpdateError(
+        "Failed to update profile image"
+    )
 
 
     return response.data[0]
