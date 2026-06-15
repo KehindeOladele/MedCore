@@ -2,10 +2,6 @@ from app.core.supabase_client import supabase
 from app.shared.utils.timeline_event_trans_helper import transform_record_to_event
 from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
-from app.modules.patients.event_handlers import (
-    handle_patient_created,
-    handle_onboarding_email_requested
-)
 from uuid import UUID
 from typing import List, Dict, Any
 
