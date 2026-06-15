@@ -58,7 +58,7 @@ def get_create_patient(
     if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients can access this endpoint")
     
-    result = get_or_create_patient(current_user["id"]) 
+    result = get_or_create_patient(current_user["id"], current_user["email"]) 
 
     # get_or_create_patient may return None, a single patient, or (patient, created)
     if result is None:
