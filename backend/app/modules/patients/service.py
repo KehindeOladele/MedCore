@@ -103,8 +103,17 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
     medication_list = []
     for m in medications:
         cd = m["clinical_data"]
+        medication_concept = (
+            cd.get("medicationCodeableConcept", {})
+        )
+
+        coding = medication_concept.get(
+            "coding",
+            [{}]
+        )
+
         medication_list.append({
-            "name": cd["medicationCodeableConcept"]["coding"][0]["display"],
+            "name": coding[0].get("display"),
             "authored_on": cd.get("authoredOn")
         })
 
@@ -385,7 +394,7 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
     if not response.data:
         raise PatientUpdateError(
         "Failed to update profile image"
-    )
+    )   
 
 
     return response.data[0]
