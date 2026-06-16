@@ -2,6 +2,7 @@ from app.core.supabase_client import supabase
 from app.shared.utils.timeline_event_trans_helper import transform_record_to_event
 from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
+from app.core.supabase_admin import supabase_admin
 from uuid import UUID
 from typing import List, Dict, Any
 from app.modules.patients.exceptions import (
@@ -398,3 +399,21 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
 
 
     return response.data[0]
+
+
+# ----- Get Patient Medical ID -----
+def get_patient_medical_id(patient_id: str) -> str:
+
+    patient = (
+        supabase_admin
+        .table("patients")
+        .select("medical_id")
+        .eq("id", patient_id)
+        .single()
+        .execute()
+    ).data
+
+    if not patient:
+        raise ValueError("Patient not found")
+
+    return patient["medical_id"]
