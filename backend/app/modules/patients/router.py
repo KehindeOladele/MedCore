@@ -13,7 +13,6 @@ from app.core.security import (
     require_permission
     )
 from app.core.supabase_client import supabase
-from app.core.supabase_admin import supabase_admin
 from app.modules.patients.service import (
     build_patient_timeline,
     get_or_create_patient,
@@ -24,27 +23,38 @@ from app.modules.patients.service import (
     get_patient_profile,
     update_patient_info,
     update_profile_image,
+    get_patient_medical_id
     )
 from app.modules.patients.schemas import (
     Patient,
     PatientUpdate
 )
-from app.modules.records.schemas import MedicalRecordCreate
 from app.shared.utils.fhir import build_patient_bundle
 from app.shared.utils.qr import generate_qr
-from app.shared.email.email_service import send_email
-from app.shared.schemas.email_service import EmailService
-from app.shared.services.template_service import render_template
-from app.modules.patients.onboarding import send_onboarding_email
-from app.core.events.emitter import emit_event
-from app.core.events.schemas import EventTypes
 from app.shared.tasks.event_tasks import (
     process_events_task
 )
 from uuid import UUID
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
+
+
+# ---- Add Medical ID Endpoint -----
+@router.get("/medical-id")
+def get_medical_id(
+    current_user=Depends(get_current_user)
+):
+
+    return {
+        "medical_id": get_patient_medical_id(
+            current_user["id"]
+        )
+    }
 
 
 # ----- Create Patient Record -----
@@ -76,6 +86,40 @@ def get_create_patient(
     return patient
 
 
+# ---- Get My Patient Profile -----
+@router.get("/profile/me")
+def my_profile(current_user=Depends(get_current_user)):
+
+    if not current_user["is_patient"]:
+        raise HTTPException(403, "Only patients allowed")
+
+    return get_patient_profile(current_user["id"])
+
+
+
+
+# ----- Get My Patients (for Clinicians) -----
+@router.get("/mine")
+def my_patients(current_user=Depends(get_current_user)):
+    if current_user["role"] != "clinician":
+        raise HTTPException(status_code=403, detail="Only clinicians allowed")
+
+    return get_my_patients(current_user["id"])
+
+
+# --- Update My Patient Profile -----
+@router.put("/profile/me")
+def update_my_profile(
+    payload: PatientUpdate,
+    current_user=Depends(get_current_user)
+):
+    if not current_user["is_patient"]:
+        raise HTTPException(403, "Only patients allowed")
+
+    return update_patient_info(current_user["id"], payload.model_dump(exclude_unset=True))
+
+
+
 # ----- Get Patient FHIR Bundle -----
 @router.get("/{patient_id}/fhir")
 def patient_fhir(
@@ -100,11 +144,13 @@ def patient_qr(
     # Patient level access control
     require_patient_access(patient_id, current_user)
 
-    patient, records = get_patient_with_records(patient_id)
-    bundle = build_patient_bundle(patient, records)
+    # Validate patient exists and access is allowed
+    get_patient_with_records(patient_id)
 
-    buffer = generate_qr(patient_id)
-    return StreamingResponse(buffer, media_type="image/png")
+    return StreamingResponse(
+        generate_qr(patient_id),
+        media_type="image/png"
+    )
 
 
 # ----- Get Patient Summary -----
@@ -145,37 +191,6 @@ def assign_patient(
     )
 
 
-# ----- Get My Patients (for Clinicians) -----
-@router.get("/mine")
-def my_patients(current_user=Depends(get_current_user)):
-    if current_user["role"] != "clinician":
-        raise HTTPException(status_code=403, detail="Only clinicians allowed")
-
-    return get_my_patients(current_user["id"])
-
-
-# ---- Get My Patient Profile -----
-@router.get("/profile/me")
-def my_profile(current_user=Depends(get_current_user)):
-
-    if not current_user["is_patient"]:
-        raise HTTPException(403, "Only patients allowed")
-
-    return get_patient_profile(current_user["id"])
-
-
-# --- Update My Patient Profile -----
-@router.put("/profile/me")
-def update_my_profile(
-    payload: PatientUpdate,
-    current_user=Depends(get_current_user)
-):
-    if not current_user["is_patient"]:
-        raise HTTPException(403, "Only patients allowed")
-
-    return update_patient_info(current_user["id"], payload.dict(exclude_unset=True))
-
-
 # ---- Upload Profile Picture -----
 @router.post("/profile/upload-avatar")
 async def upload_profile_picture(
@@ -185,83 +200,62 @@ async def upload_profile_picture(
     if not current_user["is_patient"]:
         raise HTTPException(403, "Only patients allowed")
 
-    file_ext = file.filename.split(".")[-1]
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="Missing filename"
+        )
+
+    file_ext = file.filename.rsplit(".", 1)[-1]
+
+    ALLOWED_EXTENSIONS = {
+        "jpg",
+        "jpeg",
+        "png",
+        "webp"
+    }
+
+    if file_ext.lower() not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type"
+        )
+    
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400,
+            detail="File must be an image"
+        )
+
     file_path = f"{current_user['id']}.{file_ext}"
 
     file_bytes = await file.read()
 
-    supabase.storage.from_("patient-avatars").upload(
-        path=file_path,
-        file=file_bytes,
-        file_options={
-            "content-type": file.content_type,
-            "upsert": True
-            }
-    )
+    try:
+        supabase.storage.from_("patient-avatars").upload(
+            path=file_path,
+            file=file_bytes,
+            file_options={
+                "content-type": file.content_type,
+                "upsert": True
+                }
+        )
 
-    public_url = supabase.storage.from_("patient-avatars").get_public_url(file_path)
+        public_url = supabase.storage.from_("patient-avatars").get_public_url(file_path)
 
-    update_profile_image(current_user["id"], public_url)
+        update_profile_image(current_user["id"], public_url)
 
-    return {
-        "message": "Profile image uploaded successfully",
-        "profile_image_url": public_url
-    }
+        return {
+            "message": "Profile image uploaded successfully",
+            "profile_image_url": public_url
+        }
+    except Exception:
+        logger.exception(
+            "Avatar upload failed for patient %s",
+            current_user["id"]
+        )
 
-
-# ---- Add Medical ID Endpoint -----
-@router.get("/medical-id")
-def get_medical_id(
-    current_user=Depends(get_current_user)
-):
-
-    patient = (
-        supabase_admin
-        .table("patients")
-        .select("medical_id")
-        .eq("id", current_user["id"])
-        .single()
-        .execute()
-    )
-
-    return {
-        "medical_id": patient.data["medical_id"]
-    }
-
-
-# ----- Onboarding Endpoint -----
-@router.post("/onboarding/complete")
-def complete_onboarding(
-    patient_id: str,
-    background_tasks: BackgroundTasks,
-    user=Depends(get_current_user)
-):
-
-    patient = (
-        supabase_admin
-        .table("patients")
-        .select("*")
-        .eq("id", patient_id)
-        .single()
-        .execute()
-    ).data
-
-    if not patient:
-        return {"error": "Patient not found"}
-
-    # IDENTITY GUARD
-    if patient.get("onboarding_completed"):
-        return {"message": "Already completed"}
-
-    # EMAIL GUARD
-    if not patient.get("email"):
-        return {"error": "Patient has no email"}
-    
-    background_tasks.add_task(
-    send_onboarding_email,
-    patient_id
-    )
-
-    return {
-        "message": "Onboarding started"
-    }
+        raise HTTPException(
+            status_code=500,
+            detail="Avatar upload failed"
+        )
