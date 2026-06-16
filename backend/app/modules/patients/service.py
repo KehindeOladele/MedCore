@@ -12,6 +12,11 @@ from app.modules.patients.exceptions import (
     PatientUpdateError,
     ClinicianAssignmentError
 )
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 # ----- Get Patient Summary -----
 def get_patient_summary(patient_id: str) -> Dict[str, Any]:
@@ -169,6 +174,10 @@ def get_or_create_patient(
     if not insert.data:
         raise PatientCreationError(
         "Failed to create patient record"
+    )
+
+    logger.info(
+        f"Creating patient for user {user_id}"
     )
     
     patient = insert.data[0]
