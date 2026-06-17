@@ -74,11 +74,8 @@ def get_create_patient(
     if result is None:
         raise HTTPException(status_code=404, detail="Patient not found or could not be created")
 
-    if isinstance(result, tuple):
-        patient, created = result
-    else:
-        patient = result
-        created = False
+    patient = result["patient"]
+    created = result["created"]
 
     if created:
         background_tasks.add_task(process_events_task)
