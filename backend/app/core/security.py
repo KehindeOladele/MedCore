@@ -75,13 +75,20 @@ def get_current_user(
     # ----- Return User Information  from supabase instance -----
 
     # ----- Fetch ALL roles -----
-    role_query = (
-        supabase
-        .table("user_roles")
-        .select("organization_id, roles(name, role_type)")
-        .eq("user_id", user.id)
-        .execute()
-    )
+    try:
+        role_query = (
+            supabase
+            .table("user_roles")
+            .select("roles(name)")
+            .eq("user_id", user.id)
+            .single()
+            .execute()
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=403,
+            detail="User role not configured"
+        )
 
     roles_data = role_query.data or []
 
