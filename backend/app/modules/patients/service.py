@@ -164,6 +164,7 @@ def get_or_create_patient(
         .table("patients")
         .insert({
             "id": user_id,
+            "email": email,
             "fhir_metadata": {
                 "resourceType": "Patient"
             }
