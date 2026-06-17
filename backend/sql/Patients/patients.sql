@@ -25,12 +25,12 @@ create table if not exists public.patients (
     id uuid primary key references auth.users(id) on delete cascade,
     medical_id text not null unique,
 
-    first_name text not null,
-    last_name text not null,
+    first_name text,
+    last_name text,
     middle_name text,
     profile_image_url text,
 
-    date_of_birth date not null,
+    date_of_birth date,
     gender text check (gender in ('male','female','other','unknown')),
 
     blood_group text,
