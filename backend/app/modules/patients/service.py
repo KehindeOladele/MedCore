@@ -33,7 +33,6 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
         .table("patients")
         .select("*")
         .eq("id", patient_id)
-        .single()
         .execute()
     )
 
@@ -42,7 +41,7 @@ def get_patient_summary(patient_id: str) -> Dict[str, Any]:
         f"Patient {patient_id} not found"
     )
 
-    patient = patient_resp.data
+    patient = patient_resp.data[0]
 
     # ---- Fetch all medical records ----
     records_resp = (
@@ -210,9 +209,10 @@ def get_patient_with_records(patient_id: str):
         .table("patients")
         .select("*")
         .eq("id", patient_id)
-        .single()
         .execute()
-    ).data
+    )
+
+    patient= patient.data[0]
 
     records = (
         supabase
@@ -346,7 +346,6 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
         .table("patients")
         .select("*")
         .eq("id", patient_id)
-        .single()
         .execute()
     )
 
@@ -355,10 +354,10 @@ def get_patient_profile(patient_id: str) -> Dict[str, Any]:
         f"Patient {patient_id} not found"
     )
 
-    patient = response.data
+    patient = response.data[0]
 
     return {
-        "id": patient["id"],
+        "id": patient.get("id"),
         "full_name": f"{patient.get('first_name','')} {patient.get('last_name','')}",
         "first_name": patient.get("first_name"),
         "last_name": patient.get("last_name"),
@@ -414,16 +413,15 @@ def update_profile_image(patient_id: str, image_url: str) -> Dict[str, Any]:
 # ----- Get Patient Medical ID -----
 def get_patient_medical_id(patient_id: str) -> str:
 
-    patient = (
+    response = (
         supabase_admin
         .table("patients")
         .select("medical_id")
         .eq("id", patient_id)
-        .single()
         .execute()
-    ).data
+    )
 
-    if not patient:
+    if not response.data or not isinstance(response.data, list) or len(response.data) == 0:
         raise ValueError("Patient not found")
 
-    return patient["medical_id"]
+    return str(response.data[0]["medical_id"])
