@@ -83,9 +83,8 @@ def get_current_user(
         role_query = (
             supabase
             .table("user_roles")
-            .select("roles(name)")
+            .select("organization_id, role_id")
             .eq("user_id", user.id)
-            .single()
             .execute()
         )
     except Exception:
@@ -96,44 +95,23 @@ def get_current_user(
 
     roles_data = role_query.data or []
 
-    if not roles_data:
-        raise HTTPException(
-            status_code=403,
-            detail="User has no assigned roles"
-        )
-
-    logger.info(f"roles_data = {roles_data}")
-    print(f"Logging Roles Data: {roles_data}")
-
-    # ----- Normalize roles -----
     roles = []
     org_ids = set()
 
     for r in roles_data:
-        role_data = r.get("roles")
+        role_id = r["role_id"]
 
-        logger.info(f"RAW ROLE DATA: {role_data}")
+        role_resp = (
+            supabase
+            .table("roles")
+            .select("name, role_type")
+            .eq("id", role_id)
+            .single()
+            .execute()
+        ).data
 
-        # CASE 1: dict (normal join)
-        if isinstance(role_data, dict):
-            role_name = role_data.get("name")
-            role_type = role_data.get("role_type", "unknown")
-
-        # CASE 2: list (sometimes PostgREST returns array)
-        elif isinstance(role_data, list) and len(role_data) > 0:
-            role_name = role_data[0].get("name")
-            role_type = role_data[0].get("role_type", "unknown")
-
-        # CASE 3: string fallback (bad join / degraded response)
-        elif isinstance(role_data, str):
-            role_name = role_data
-            role_type = "unknown"
-
-        else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Invalid role format: {role_data}"
-            )
+        role_name = role_resp["name"]
+        role_type = role_resp["role_type"]
 
         roles.append({
             "name": role_name,
@@ -143,12 +121,11 @@ def get_current_user(
 
         if r.get("organization_id"):
             org_ids.add(r["organization_id"])
-
-    # ----- Derive flags (useful for frontend & permissions) -----
-    is_patient = any(r["name"] == "patient" for r in roles)
-    is_practitioner = any(r["name"] == "practitioner" for r in roles)
-    is_admin = any(r["name"] == "org_admin" for r in roles)
-    is_super_admin = any(r["role_type"] == "system" for r in roles)
+        # ----- Derive flags (useful for frontend & permissions) -----
+        is_patient = any(r["name"] == "patient" for r in roles)
+        is_practitioner = any(r["name"] == "practitioner" for r in roles)
+        is_admin = any(r["name"] == "org_admin" for r in roles)
+        is_super_admin = any(r["role_type"] == "system" for r in roles)
 
 
     # ----- Return User Information  from supabase instance-----
