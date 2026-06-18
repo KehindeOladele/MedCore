@@ -197,14 +197,14 @@ def get_or_create_patient(
     if not patient_id:
         raise Exception("Failed to get patient ID from insert response")
     
-    emit_event(
-        aggregate_type="patient",
-        aggregate_id=patient_id,
-        event_type=EventTypes.PATIENT_CREATED,
-        payload={
-            "email": email
-        }
-    )
+    # emit_event(
+    #     aggregate_type="patient",
+    #     aggregate_id=patient_id,
+    #     event_type=EventTypes.PATIENT_CREATED,
+    #     payload={
+    #         "email": email
+    #     }
+    # )
 
     return {
         "patient": patient,
