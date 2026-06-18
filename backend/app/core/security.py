@@ -11,6 +11,11 @@ from app.modules.practitioners.service import (
     get_practitioner_by_id
 )
 from datetime import datetime, timezone
+import logging
+
+
+
+logger = logging.getLogger(__name__)
 
 
 # ----- Security Dependencies -----
@@ -67,30 +72,8 @@ def get_current_user(
             detail="User role not configured"
         )
     
-    # finally, assign role
-    role = role_query.data["roles"]["name"]
-    
-    # print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
-
-    # ----- Return User Information  from supabase instance -----
-
-    # ----- Fetch ALL roles -----
-    try:
-        role_query = (
-            supabase
-            .table("user_roles")
-            .select("roles(name)")
-            .eq("user_id", user.id)
-            .single()
-            .execute()
-        )
-    except Exception:
-        raise HTTPException(
-            status_code=403,
-            detail="User role not configured"
-        )
-
-    roles_data = role_query.data or []
+    # Get all roles data
+    roles_data = role_query.data if isinstance(role_query.data, list) else [role_query.data]
 
     if not roles_data:
         raise HTTPException(
@@ -101,6 +84,8 @@ def get_current_user(
     # ----- Normalize roles -----
     roles = []
     org_ids = set()
+
+    logger.info(f"roles_data = {roles_data}")
 
     for r in roles_data:
         role_name = r["roles"]["name"]
