@@ -103,6 +103,7 @@ def get_current_user(
         )
 
     logger.info(f"roles_data = {roles_data}")
+    print(f"Logging Roles Data: {roles_data}")
 
     # ----- Normalize roles -----
     roles = []
