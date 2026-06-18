@@ -14,14 +14,15 @@ logger = logging.getLogger(__name__)
 def send_onboarding_email(patient_id: str):
 
     try:
-        patient = (
+        result = (
             supabase_admin
             .table("patients")
             .select("*")
             .eq("id", patient_id)
-            .single()
+            .maybe_single()
             .execute()
-        ).data
+        )
+        patient = getattr(result, "data", None) if result is not None else None
     except Exception:
         logger.warning(f"Patient not found: {patient_id}")
         return
@@ -44,7 +45,7 @@ def send_onboarding_email(patient_id: str):
     try:
 
         html = render_template(
-            "emails/welcome_patient.html",
+            "welcome_patient.html",
             {
                 "first_name": patient.get("first_name"),
                 "medical_id": patient.get("medical_id")
@@ -62,7 +63,8 @@ def send_onboarding_email(patient_id: str):
                     "onboarding_last_error": str(ve),
                     "onboarding_failure_reason": "invalid_email",
                     "onboarding_retry_count": int(patient.get("onboarding_retry_count") or 0) + 1,
-                    "onboarding_status": "failed"
+                    "onboarding_status": "processing",
+                    "onboarding_last_attempt_at": datetime.now(timezone.utc).isoformat()
                 })
                 .eq("id", patient_id)
                 .execute()
@@ -89,7 +91,10 @@ def send_onboarding_email(patient_id: str):
                 "onboarding_email_sent": True,
                 "onboarding_email_sent_at": now,
                 "onboarding_retry_count": 0,
-                "onboarding_last_error": None
+                "onboarding_last_error": None,
+                "onboarding_status": "completed",
+                "onboarding_completed": True,
+                "onboarding_completed_at": now
             })
             .eq("id", patient_id)
             .execute()
@@ -100,16 +105,19 @@ def send_onboarding_email(patient_id: str):
             f"Failed loading patient {patient_id}: {str(e)}"
         )
 
-    return (
+        (
             supabase_admin
             .table("patients")
             .update({
                 "onboarding_last_error": str(e),
                 "onboarding_failure_reason": "email_delivery_failed",
                 "onboarding_retry_count": int(patient.get("onboarding_retry_count") or 0) + 1,
-                "onboarding_status": "failed"
+                "onboarding_status": "failed",
+                "onboarding_last_attempt_at": datetime.now(timezone.utc).isoformat()
             })
             .eq("id", patient_id)
             .execute()
         )
+
+        raise
 
