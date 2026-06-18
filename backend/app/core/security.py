@@ -110,18 +110,39 @@ def get_current_user(
     org_ids = set()
 
     for r in roles_data:
-        role_name = r["roles"]["name"]
-        role_type = r["roles"]["role_type"]
-        org_id = r["organization_id"]
+        role_data = r.get("roles")
+
+        logger.info(f"RAW ROLE DATA: {role_data}")
+
+        # CASE 1: dict (normal join)
+        if isinstance(role_data, dict):
+            role_name = role_data.get("name")
+            role_type = role_data.get("role_type", "unknown")
+
+        # CASE 2: list (sometimes PostgREST returns array)
+        elif isinstance(role_data, list) and len(role_data) > 0:
+            role_name = role_data[0].get("name")
+            role_type = role_data[0].get("role_type", "unknown")
+
+        # CASE 3: string fallback (bad join / degraded response)
+        elif isinstance(role_data, str):
+            role_name = role_data
+            role_type = "unknown"
+
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid role format: {role_data}"
+            )
 
         roles.append({
             "name": role_name,
             "role_type": role_type,
-            "organization_id": org_id
+            "organization_id": r.get("organization_id")
         })
 
-        if org_id:
-            org_ids.add(org_id)
+        if r.get("organization_id"):
+            org_ids.add(r["organization_id"])
 
     # ----- Derive flags (useful for frontend & permissions) -----
     is_patient = any(r["name"] == "patient" for r in roles)
