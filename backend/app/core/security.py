@@ -101,12 +101,12 @@ def get_current_user(
             status_code=403,
             detail="User has no assigned roles"
         )
-    
+
+    logger.info(f"roles_data = {roles_data}")
+
     # ----- Normalize roles -----
     roles = []
     org_ids = set()
-
-    logger.info(f"roles_data = {roles_data}")
 
     for r in roles_data:
         role_name = r["roles"]["name"]
