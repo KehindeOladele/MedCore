@@ -158,6 +158,9 @@ def get_or_create_patient(
             "created": False
         }
 
+    logger.info(f"PATIENT INSERT PAYLOAD: {user_id}")
+    print(f"PATIENT INSERT PAYLOAD: {user_id}")
+
     insert = (
         supabase
         .table("patients")
@@ -172,9 +175,10 @@ def get_or_create_patient(
     )
 
     if not insert.data:
+        logger.error(f"INSERT FAILED: {insert}")
         raise PatientCreationError(
-        "Failed to create patient record"
-    )
+            f"Patient insert failed: {insert}"
+        )
 
     logger.info(
         f"Creating patient for user {user_id}"
@@ -184,9 +188,15 @@ def get_or_create_patient(
     
     patient_id = str(patient.get("id", ""))
 
+    logger.info(
+        f"Creating Patient Insert: {patient_id}"
+    )
+
+    print(f"Creating Patient Insert: {patient_id}")
+
     if not patient_id:
         raise Exception("Failed to get patient ID from insert response")
-
+    
     emit_event(
         aggregate_type="patient",
         aggregate_id=patient_id,
