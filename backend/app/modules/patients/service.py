@@ -1,8 +1,8 @@
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 from app.shared.utils.timeline_event_trans_helper import transform_record_to_event
 from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
-from app.core.supabase_admin import supabase_admin
 from uuid import UUID
 from typing import List, Dict, Any
 from app.modules.patients.exceptions import (
@@ -158,11 +158,14 @@ def get_or_create_patient(
             "created": False
         }
 
+    # log Paitent data
     logger.info(f"PATIENT INSERT PAYLOAD: {user_id}")
     print(f"PATIENT INSERT PAYLOAD: {user_id}")
 
+
+    # Insert Patient data
     insert = (
-        supabase
+        supabase_admin
         .table("patients")
         .insert({
             "id": user_id,
@@ -173,6 +176,17 @@ def get_or_create_patient(
         })
         .execute()
     )
+
+    # Verify Insertions of Pateint data
+    verify = (
+        supabase_admin
+        .table("patients")
+        .select("id,email,medical_id")
+        .eq("id", user_id)
+        .execute()
+    )
+
+    logger.info(f"VERIFY PATIENT: {verify.data}")
 
     if not insert.data:
         logger.error(f"INSERT FAILED: {insert}")
