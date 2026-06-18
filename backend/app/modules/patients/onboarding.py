@@ -97,10 +97,10 @@ def send_onboarding_email(patient_id: str):
 
     except Exception as e:
         logger.exception(
-            f"Failed onboarding email for patient {patient_id}: {str(e)}"
+            f"Failed loading patient {patient_id}: {str(e)}"
         )
 
-        (
+    return (
             supabase_admin
             .table("patients")
             .update({
@@ -112,6 +112,4 @@ def send_onboarding_email(patient_id: str):
             .eq("id", patient_id)
             .execute()
         )
-
-        raise
 

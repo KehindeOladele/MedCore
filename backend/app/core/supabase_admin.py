@@ -17,7 +17,7 @@ supabase_admin: Client = create_client(
 print("SUPABASE_URL:", settings.SUPABASE_URL)
 
 print(
-    "PUBLISHABLE KEY PREFIX:",
+    "PUBLISHABLE ADMIN KEY PREFIX:",
     settings.SUPABASE_SECRET_KEY[:20]
     if settings.SUPABASE_SECRET_KEY
     else None
