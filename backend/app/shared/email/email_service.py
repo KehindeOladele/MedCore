@@ -34,8 +34,6 @@ def send_email(email_service: EmailService):
             response = resend.Emails.send(params)
             print("RESEND RESPONSE:", response) # print response
             return response
-
-        return resend.Emails.send(params)
     except Exception as e:
         raise Exception(
             f"Email delivery failed: {str(e)}"
