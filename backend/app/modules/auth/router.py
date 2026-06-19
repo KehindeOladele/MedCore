@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends
 from app.core.security import get_current_user
 from app.modules.auth.schemas import (
     UserMe, 
@@ -11,8 +11,6 @@ from app.modules.auth.service import (
     signup_user,
     login_user
 )
-from app.modules.patients.onboarding import send_onboarding_email
-# from app.core.supabase_client import supabase
 
 
 # ----- Auth Router -----
@@ -43,18 +41,11 @@ def signup(req: SignupRequest):
 # ----- Login Endpoint -----
 @router.post("/login")
 def login(
-    payload: LoginRequest,
-    background_tasks: BackgroundTasks
+    payload: LoginRequest
 ):
 
     response = login_user(
         payload.email,
         payload.password
     )
-
-    background_tasks.add_task(
-        send_onboarding_email,
-        response["user"]["id"]
-    )
-
     return response 
