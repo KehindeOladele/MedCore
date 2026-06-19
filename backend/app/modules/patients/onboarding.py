@@ -34,12 +34,10 @@ def send_onboarding_email(patient_id: str):
         logger.warning(f"Patient not found: {patient_id}")
         return
 
-    if not isinstance(patient, dict):
+    if not patient:
         logger.warning(f"Patient not found or invalid data: {patient_id}")
         return {"status": "not_found"}
     
-    if not patient:
-        return {"status": "not_found"}
     
     if patient.get("onboarding_email_sent") and patient.get("onboarding_completed"):
         return
