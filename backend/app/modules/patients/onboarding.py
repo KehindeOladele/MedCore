@@ -3,11 +3,7 @@ from app.core.supabase_admin import supabase_admin
 from app.shared.email.email_service import send_email
 from app.shared.services.template_service import render_template
 from app.shared.schemas.email_service import EmailService
-from pydantic import (
-    EmailStr, 
-    ValidationError,
-    TypeAdapter
-)
+from pydantic import ValidationError
 from app.modules.patients.exceptions import EmailDeliveryError
 import logging
 
@@ -56,10 +52,12 @@ def send_onboarding_email(patient_id: str):
             }
         )
 
-        email_adapter = TypeAdapter(EmailStr)
-
         try:
-            to_email = email_adapter.validate_python(email)
+            email_service = EmailService(
+            to=email,
+            subject="Welcome to MedCore",
+            html=html
+        )
         except (ValidationError, TypeError) as ve:
             logger.warning(f"Invalid patient email for {patient_id}: {email}")
             (
@@ -83,13 +81,8 @@ def send_onboarding_email(patient_id: str):
         )
         print(f"Attempting onboarding email to {email}")
 
-        response = send_email(
-            EmailService(
-                to=to_email,
-                subject="Welcome to MedCore",
-                html=html
-            )
-        )
+        # send the prepared EmailService instance
+        response = send_email(email_service)
 
         # log and print response
         logger.info(
