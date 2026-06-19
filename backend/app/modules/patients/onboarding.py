@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 # ----- Onboarding Patient Email Serivice -----
 def send_onboarding_email(patient_id: str):
 
+    logger.info(
+        f"ONBOARDING STARTED FOR {patient_id}"
+    )
+    print(
+        f"ONBOARDING STARTED FOR {patient_id}"
+    )
+
     try:
         result = (
             supabase_admin
@@ -43,6 +50,9 @@ def send_onboarding_email(patient_id: str):
         return {"status": "missing_email"}
 
     try:
+        #  verify start
+        logger.info("RENDER TEMPLATE START")
+        print("RENDER TEMPLATE START")
 
         html = render_template(
             "welcome_patient.html",
@@ -51,6 +61,10 @@ def send_onboarding_email(patient_id: str):
                 "medical_id": patient.get("medical_id")
             }
         )
+
+        # verify end
+        logger.info("RENDER TEMPLATE SUCCESS")
+        print("RENDER TEMPLATE SUCCESS")
 
         try:
             email_service = EmailService(
