@@ -6,6 +6,7 @@ from app.shared.schemas.email_service import EmailService
 from pydantic import ValidationError
 from app.modules.patients.exceptions import EmailDeliveryError
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +124,11 @@ def send_onboarding_email(patient_id: str):
             })
             .eq("id", patient_id)
             .execute()
+        )
+
+        logger.info(
+            "ONBOARDING CALL STACK:\n%s",
+            "".join(traceback.format_stack())
         )
 
     except Exception as e:
