@@ -39,7 +39,7 @@ def handle_onboarding_email_requested(event):
         .execute()
     ).data
 
-    if not patient:
+    if not patient or not isinstance(patient, dict):
         return
 
     if patient.get("onboarding_email_sent"):
@@ -50,6 +50,18 @@ def handle_onboarding_email_requested(event):
         email=event["payload"].get("email")
     )
 
-    EventService.onboarding_email_sent(
-        patient_id=patient_id
+    try:
+        send_onboarding_email(patient_id)
+
+        EventService.onboarding_email_sent(
+            patient_id=patient_id
         )
+
+    except Exception as e:
+
+        EventService.onboarding_email_failed(
+            patient_id=patient_id,
+            reason=str(e)
+        )
+
+        raise
