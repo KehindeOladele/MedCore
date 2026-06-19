@@ -30,6 +30,8 @@ def send_onboarding_email(patient_id: str):
             .execute()
         )
         patient = getattr(result, "data", None) if result is not None else None
+        logger.info(f"PATIENT QUERY RESULT: {patient}")
+        print(f"PATIENT QUERY RESULT: {patient}")
     except Exception:
         logger.warning(f"Patient not found: {patient_id}")
         return
