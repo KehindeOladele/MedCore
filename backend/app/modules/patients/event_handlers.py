@@ -28,6 +28,9 @@ def handle_patient_created(event):
         email=event["payload"].get("email")
     )
 
+    logger.info("ABOUT TO EMIT PATIENT_CREATED")
+    print("ABOUT TO EMIT PATIENT_CREATED")
+
     emit_event(
         aggregate_type="patient",
         aggregate_id=event["aggregate_id"],
@@ -35,6 +38,9 @@ def handle_patient_created(event):
         payload=event["payload"]
     )
 
+    logger.info("PATIENT_CREATED EMITTED")
+    print("PATIENT_CREATED EMITTED")
+    
 
 # ----- Onboarding Email Request Handler -----
 @register(EventTypes.ONBOARDING_EMAIL_REQUESTED)
@@ -42,14 +48,15 @@ def handle_onboarding_email_requested(event):
 
     patient_id = event["aggregate_id"]
     
-    patient = (
+    response = (
         supabase_admin
         .table("patients")
         .select("onboarding_email_sent")
         .eq("id", patient_id)
         .maybe_single()
         .execute()
-    ).data
+    )
+    patient = response.data if response else None
 
     logger.info(f"PATIENT LOOKUP RESULT: {patient}")
     print(f"PATIENT LOOKUP RESULT: {patient}")
