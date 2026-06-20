@@ -45,6 +45,10 @@ def handle_patient_created(event):
 # ----- Onboarding Email Request Handler -----
 @register(EventTypes.ONBOARDING_EMAIL_REQUESTED)
 def handle_onboarding_email_requested(event):
+    print(
+        f"HANDLER RECEIVED EVENT onboarding.email_requested "
+        f"FOR {event['aggregate_id']}"
+    )
 
     patient_id = event["aggregate_id"]
     
