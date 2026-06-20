@@ -14,6 +14,12 @@ logger= logging.getLogger(__name__)
 @register(EventTypes.PATIENT_CREATED)
 def handle_patient_created(event):
 
+    print("PATIENT CREATED HANDLER")
+
+    send_onboarding_email(
+        event["aggregate_id"]
+    )
+
     logger.info(
         f"HANDLER RECEIVED EVENT {event['event_type']} "
         f"FOR {event['aggregate_id']}"
