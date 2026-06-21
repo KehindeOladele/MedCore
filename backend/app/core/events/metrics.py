@@ -56,3 +56,50 @@ def get_event_metrics():
         metrics["avg_retries"] = total_retries / total
 
     return metrics
+
+
+# -----------------------------
+# ONBOARDING SPECIFIC METRICS
+# -----------------------------
+def get_onboarding_metrics():
+
+    events = (
+        supabase_admin
+        .table("events")
+        .select("event_type, status")
+        .in_("event_type", [
+            "patient.created",
+            "onboarding.email_requested",
+            "onboarding.email_sent"
+        ])
+        .execute()
+        .data
+    )
+
+    metrics = {
+        "patient_created": 0,
+        "email_requested": 0,
+        "email_sent": 0,
+        "dropoff_rate": 0.0,
+    }
+
+    for e in events:
+
+        if e["event_type"] == "patient.created":
+            metrics["patient_created"] += 1
+
+        elif e["event_type"] == "onboarding.email_requested":
+            metrics["email_requested"] += 1
+
+        elif e["event_type"] == "onboarding.email_sent":
+            metrics["email_sent"] += 1
+
+    # -----------------------------
+    # DROP-OFF ANALYSIS
+    # -----------------------------
+    if metrics["patient_created"] > 0:
+        metrics["dropoff_rate"] = (
+            1 - (metrics["email_sent"] / metrics["patient_created"])
+        ) * 100
+
+    return metrics
