@@ -96,3 +96,16 @@ def fetch_pending_events():
     )
 
     return response.data
+
+
+#  ----- Processor Safety Rule -----
+def should_process(event):
+    if event["status"] != "pending":
+        return False
+
+    next_retry_at = event.get("next_retry_at")
+
+    if not next_retry_at:
+        return True
+
+    return next_retry_at <= datetime.now(timezone.utc).isoformat()
