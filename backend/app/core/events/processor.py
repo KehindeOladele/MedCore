@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Any, cast
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
@@ -77,3 +78,21 @@ def process_pending_events():
                 event["id"],
                 reason= f"{type(e).__name__}: {str(e)}"
             )
+
+# ----- Retrive Pending Events -----
+def fetch_pending_events():
+    now = datetime.now(timezone.utc).isoformat()
+
+    response = (
+        supabase_admin
+        .table("events")
+        .select("*")
+        .eq("status", "pending")
+        .or_(
+            f"next_retry_at.is.null,next_retry_at.lte.{now}"
+        )
+        .limit(BATCH_SIZE)
+        .execute()
+    )
+
+    return response.data
