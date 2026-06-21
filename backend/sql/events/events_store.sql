@@ -1,4 +1,6 @@
 -- Event store for agreggate Actions 
+-- Event system 
+-- Events Table
 create table if not exists events (
     id uuid primary key default gen_random_uuid(),
 
@@ -15,7 +17,10 @@ create table if not exists events (
 
     retry_count INTEGER DEFAULT 0,
     last_attempt_at TIMESTAMPTZ,
+    last_error TEXT,
     failure_reason TEXT,
     processed_at TIMESTAMPTZ,
-    locked_at TIMESTAMPTZ
+    locked_at TIMESTAMPTZ,
+
+    next_retry_at TIMESTAMPTZ
 );
