@@ -12,6 +12,8 @@ from app.modules.patients.exceptions import (
     PatientUpdateError,
     ClinicianAssignmentError
 )
+from app.core.audit.service import log_audit_event
+from app.core.audit.actions import AuditActions
 import logging
 
 
@@ -218,6 +220,15 @@ def get_or_create_patient(
         payload={
             "email": email
         }
+    )
+
+    # Log Sucessful Patient Creation
+    log_audit_event(
+        actor_id=user_id,
+        actor_type="patient",
+        action=AuditActions.PATIENT_CREATED,
+        resource_type="patient",
+        resource_id=patient_id
     )
 
     return {
