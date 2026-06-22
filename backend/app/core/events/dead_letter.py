@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 from app.core.supabase_admin import supabase_admin
+from app.core.audit.service import log_audit_event
+from app.core.audit.actions import AuditActions
 
 
 # -----------------------------
@@ -20,3 +22,15 @@ def move_to_dead_letter(event: dict, reason: str):
 
         "failed_at": datetime.now(timezone.utc).isoformat()
     }).execute()
+
+    log_audit_event(
+        actor_id=None,
+        actor_type="system",
+        action=AuditActions.EVENT_DEAD_LETTERED,
+        resource_type="event",
+        resource_id=event_id,
+        metadata={
+            "reason": reason,
+            "retry_count": retry_count
+        }
+    )
