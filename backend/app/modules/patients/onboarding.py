@@ -5,6 +5,8 @@ from app.shared.services.template_service import render_template
 from app.shared.schemas.email_service import EmailService
 from pydantic import ValidationError
 from app.modules.patients.exceptions import EmailDeliveryError
+from app.core.audit.service import log_audit_event
+from app.core.audit.actions import AuditActions
 import logging
 import traceback
 
@@ -100,6 +102,14 @@ def send_onboarding_email(patient_id: str):
         response = send_email(email_service)
 
         # log and print response
+        log_audit_event(
+            actor_id=patient_id,
+            actor_type="patient",
+            action=AuditActions.ONBOARDING_EMAIL_SENT,
+            resource_type="patient",
+            resource_id=patient_id
+        )
+
         logger.info(
             f"Resend response: {response}"
         )
