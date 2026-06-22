@@ -98,10 +98,9 @@ def get_dead_letter_events(limit: int = 100):
 
     return (
         supabase_admin
-        .table("events")
+        .table("events_dead_letter")
         .select("*")
-        .eq("status", "dead")
-        .order("created_at", desc=True)
+        .order("failed_at", desc=True)
         .limit(limit)
         .execute()
         .data
