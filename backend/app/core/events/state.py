@@ -48,7 +48,13 @@ def mark_failed(event_id: str, reason: str):
         }).eq("id", event_id).execute()
 
         # move to DLQ
-        move_to_dead_letter(event, reason)
+        move_to_dead_letter(
+                    {
+            **event,
+            "retry_count": retry_count
+        }, 
+            reason
+            )
 
         return
 
