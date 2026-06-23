@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from fastapi import HTTPException
 from app.core.supabase_admin import supabase_admin
 
