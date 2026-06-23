@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from fastapi import HTTPException
 from app.core.supabase_admin import supabase_admin
 
 
@@ -105,3 +106,29 @@ def get_dead_letter_events(limit: int = 100):
         .execute()
         .data
     )
+
+
+# ------------------------
+# GET DEAD LETTER EVENT ID
+# ------------------------
+def get_dead_letter_event(
+    dead_event_id: str
+):
+
+    event = (
+        supabase_admin
+        .table("events_dead_letter")
+        .select("*")
+        .eq("id", dead_event_id)
+        .single()
+        .execute()
+        .data
+    )
+
+    if not event:
+        raise HTTPException(
+            status_code=404,
+            detail="Dead letter event not found"
+        )
+
+    return event
