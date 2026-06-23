@@ -27,7 +27,7 @@ def get_events(status: str | None = None, limit: int = 100):
 # -----------------------------
 def get_event(event_id: str):
 
-    return (
+    event= (
         supabase_admin
         .table("events")
         .select("*")
@@ -36,6 +36,14 @@ def get_event(event_id: str):
         .execute()
         .data
     )
+
+    if not event:
+        raise HTTPException(
+            status_code=404,
+            detail="Event not found"
+        )
+
+    return event
 
 
 # -----------------------------
