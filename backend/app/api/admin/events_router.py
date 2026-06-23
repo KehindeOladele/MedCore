@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import (
+    APIRouter, 
+    Depends,
+    HTTPException
+)
 from app.core.security import get_current_user
 from app.core.events.monitoring import (
     get_events,
     get_event,
     get_event_stats,
     get_failed_events,
-    get_dead_letter_events
+    get_dead_letter_events,
+    get_dead_letter_event
 )
 
 
@@ -22,17 +27,6 @@ def list_events(
     user=Depends(get_current_user)
 ):
     return get_events(status, limit)
-
-
-# -----------------------------
-# EVENT DETAIL
-# -----------------------------
-@router.get("/{event_id}")
-def event_detail(
-    event_id: str,
-    user=Depends(get_current_user)
-):
-    return get_event(event_id)
 
 
 # -----------------------------
@@ -57,3 +51,24 @@ def failed(user=Depends(get_current_user)):
 @router.get("/dead")
 def dead(user=Depends(get_current_user)):
     return get_dead_letter_events()
+
+
+# -----------------------------
+# EVENT DETAIL
+# -----------------------------
+@router.get("/{event_id}")
+def event_detail(
+    event_id: str,
+    user=Depends(get_current_user)
+):
+    return get_event(event_id)
+
+
+@router.get("/dead/{dead_event_id}")
+def dead_event_detail(
+    dead_event_id: str,
+    user=Depends(get_current_user)
+):
+    return get_dead_letter_event(
+        dead_event_id
+    )
