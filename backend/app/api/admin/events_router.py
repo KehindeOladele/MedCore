@@ -72,17 +72,6 @@ def dead(
     return get_dead_letter_events(limit)
 
 
-# -----------------------------
-# EVENT DETAIL
-# -----------------------------
-@router.get("/{event_id}")
-def event_detail(
-    event_id: str,
-    user=Depends(get_current_user)
-):
-    return get_event(event_id)
-
-
 # ------------------------------
 # GET DEAD EVENT DETAIL
 # ------------------------------
@@ -94,3 +83,14 @@ def dead_event_detail(
     return get_dead_letter_event(
         dead_event_id
     )
+
+
+# -----------------------------
+# EVENT DETAIL
+# -----------------------------
+@router.get("/{event_id}")
+def event_detail(
+    event_id: str,
+    user=Depends(get_current_user)
+):
+    return get_event(event_id)
