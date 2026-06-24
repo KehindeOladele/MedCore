@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
-from app.modules.organizations.models import (
+from app.modules.organizations.schemas import (
     OrganizationCreate,
     OrganizationUpdate,
     RoleAssignment,
