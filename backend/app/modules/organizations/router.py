@@ -46,7 +46,7 @@ def get_my_organization(current_user=Depends(get_current_user)):
     if not response.data:
         raise HTTPException(404, "User not assigned to any organization")
 
-    org_id = response.data[0]["organization_id"]
+    org_id = response.data["organization_id"]
 
     org = (
         supabase
