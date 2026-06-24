@@ -19,18 +19,23 @@ from app.core.security import (
 )
 from app.core.supabase_client import supabase
 
-
-# ----- Router Setup -----
+# ---------------------------------------
+# Router Setup 
+# ---------------------------------------
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
 
-#  ----- Organization Registration Endpoint -----
+#----------------------------------------- 
+# Organization Registration Endpoint
+# ----------------------------------------
 @router.post("/register")
 def register_organization(payload: OrganizationCreate):
     return create_organization(payload)
 
 
-# ----- Get My Organization Endpoint ----- 
+# -----------------------------------------
+# Get My Organization Endpoint 
+# -----------------------------------------
 @router.get("/me")
 def get_my_organization(current_user=Depends(get_current_user)):
 
@@ -61,7 +66,9 @@ def get_my_organization(current_user=Depends(get_current_user)):
 
 
 
-# ---- Upload Organization Logo Endpoint -----
+# --------------------------------------------
+# Upload Organization Logo Endpoint
+# --------------------------------------------
 @router.post("/upload-logo")
 async def upload_logo(
     file: UploadFile = File(...),
@@ -73,7 +80,7 @@ async def upload_logo(
         supabase
         .table("user_roles")
         .select("organization_id")
-        .eq("id", current_user["id"])
+        .eq("user_id", current_user["id"])
         .single()
         .execute()
     )
@@ -106,8 +113,9 @@ async def upload_logo(
     }
 
 
-
-# ---- Update Organization Endpoint -----
+# ---------------------------------------------
+# Update Organization Endpoint
+# ---------------------------------------------
 @router.put("/update")
 def update_my_organization(
     payload: OrganizationUpdate,
@@ -129,7 +137,9 @@ def update_my_organization(
     return update_organization(org_id, payload)
 
 
-# ----- Role Management Endpoints -----
+# -----------------------------------------------
+# Role Management Endpoints
+# -----------------------------------------------
 @router.post("/{org_id}/assign-role")
 def assign_role_to_user(
     org_id: str,
@@ -145,7 +155,9 @@ def assign_role_to_user(
     return assign_user_role(payload)
 
 
-# ---- Onboarding Invite Endpoint -----
+# ------------------------------------------------
+# Onboarding Invite Endpoint
+# ------------------------------------------------
 @router.post("/{org_id}/invite")
 def invite_user(
     org_id: str,
@@ -160,7 +172,9 @@ def invite_user(
     )
 
 
-# ---- Accept Invitation Endpoint -----
+# --------------------------------------------------
+# Accept Invitation Endpoint
+# --------------------------------------------------
 @router.post("/accept-invite")
 def accept_invite(payload: AcceptInviteRequest):
     return accept_invitation(payload)
