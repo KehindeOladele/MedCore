@@ -82,4 +82,7 @@ def replay_dead_event(
         }
     )
 
-    return new_event
+    return {
+        "message": "Event replayed successfully",
+        "new_event_id": new_event["id"]
+    }
