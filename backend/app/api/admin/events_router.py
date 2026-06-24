@@ -12,25 +12,12 @@ from app.core.events.monitoring import (
     get_dead_letter_events,
     get_dead_letter_event
 )
+from app.core.events.replay import (
+    replay_dead_event
+)
 
 
 router = APIRouter(prefix="/admin/events", tags=["Event Monitoring"])
-
-
-# -----------------------------
-# LIST EVENTS
-# -----------------------------
-@router.get("")
-def list_events(
-    status: str | None = None,
-    limit: int = Query(
-        default=100,
-        ge=1,
-        le=500
-    ),
-    user=Depends(get_current_user)
-):
-    return get_events(status, limit)
 
 
 # -----------------------------
@@ -83,6 +70,37 @@ def dead_event_detail(
     return get_dead_letter_event(
         dead_event_id
     )
+
+
+# -------------------------------
+# REPLAY DEAD EVENT
+# --------------------------------
+@router.post("/dead/{dead_event_id}/replay")
+def replay_dead(
+    dead_event_id: str,
+    user=Depends(get_current_user)
+):
+    return replay_dead_event(
+        dead_event_id=dead_event_id,
+        actor_id=user["id"]
+    )
+
+
+# -----------------------------
+# LIST EVENTS
+# -----------------------------
+@router.get("")
+def list_events(
+    status: str | None = None,
+    limit: int = Query(
+        default=100,
+        ge=1,
+        le=500
+    ),
+    user=Depends(get_current_user)
+):
+    return get_events(status, limit)
+
 
 
 # -----------------------------
