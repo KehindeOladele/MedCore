@@ -1,11 +1,20 @@
 from app.core.supabase_client import supabase
+from app.modules.organizations.schemas import (
+    OrganizationCreate,
+    OrganizationUpdate,
+    AcceptInviteRequest
+)
 from fastapi import HTTPException
 import uuid
 from datetime import datetime, timedelta
 
 
-#  ----- Organization Service -----
-def create_organization(payload):
+# ---------------------------------
+#  Organization Creation Service
+# ---------------------------------
+def create_organization(
+        payload: OrganizationCreate
+        ):
 
     # Create admin user in Supabase Auth
     auth_response = supabase.auth.admin.create_user({
@@ -77,8 +86,13 @@ def create_organization(payload):
     }
 
 
-# ---- Update Organization Service -----
-def update_organization(org_id: str, payload):
+# ---------------------------------
+# Update Organization Service
+# ---------------------------------
+def update_organization(
+        org_id: str, 
+        payload:OrganizationUpdate
+        ):
 
     update_data = payload.model_dump(exclude_unset=True)
 
@@ -99,7 +113,9 @@ def update_organization(org_id: str, payload):
     return response.data[0]
 
 
-# ---- Role Management Service -----
+# ----------------------------------
+# Role Management Service
+# ----------------------------------
 def assign_user_role(role_data: dict):
 
     # ---- Get Role ID ----
@@ -136,8 +152,15 @@ def assign_user_role(role_data: dict):
     return result.data[0]
 
 
-# ---- Onboarding Invite Service -----
-def create_invitation(org_id: str, email: str, role_name: str, invited_by: str):
+# ----------------------------------
+# Onboarding Invite Service
+# ----------------------------------
+def create_invitation(
+        org_id: str, 
+        email: str, 
+        role_name: str, 
+        invited_by: str
+        ):
 
     token = str(uuid.uuid4())
 
@@ -164,8 +187,12 @@ def create_invitation(org_id: str, email: str, role_name: str, invited_by: str):
     return result.data[0]
 
 
-# ----- Accept Invitation Service -----
-def accept_invitation(payload: dict):
+# ---------------------------------
+# Accept Invitation Service
+# ---------------------------------
+def accept_invitation(
+        payload: AcceptInviteRequest
+        ):
 
     # ---- Find invitation ----
     invite_resp = (
