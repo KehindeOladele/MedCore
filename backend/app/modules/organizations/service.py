@@ -116,7 +116,7 @@ def assign_user_role(role_data: dict):
     if not role_resp.data:
         raise Exception("Role not found")
 
-    role_id= role_resp.data[0]["id"]
+    role_id= role_resp.data["id"]
 
     # ---- Insert Mapping ----
     result = (
