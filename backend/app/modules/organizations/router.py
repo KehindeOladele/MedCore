@@ -19,6 +19,7 @@ from app.core.security import (
 )
 from app.core.supabase_client import supabase
 
+
 # ---------------------------------------
 # Router Setup 
 # ---------------------------------------
@@ -63,7 +64,6 @@ def get_my_organization(current_user=Depends(get_current_user)):
     )
 
     return org.data
-
 
 
 # --------------------------------------------
@@ -122,17 +122,17 @@ def update_my_organization(
     current_user=Depends(require_permission("manage_organization"))
 ):
 
-    # get org id from admin table
-    admin_record = (
+    # get org_id from user_roles table
+    records = (
         supabase
-        .table("admins")
+        .table("user_roles")
         .select("organization_id")
-        .eq("id", current_user["id"])
+        .eq("user_id", current_user["id"])
         .single()
         .execute()
     )
 
-    org_id = admin_record.data["organization_id"]
+    org_id = records.data["organization_id"]
 
     return update_organization(org_id, payload)
 
