@@ -125,7 +125,21 @@ def get_dead_letter_event(
     event = (
         supabase_admin
         .table("events_dead_letter")
-        .select("*")
+        .select(
+            """
+            id,
+            original_event_id,
+            aggregate_type,
+            aggregate_id,
+            event_type,
+            retry_count,
+            failure_reason,
+            failed_at,
+            replayed,
+            replayed_at,
+            replayed_by
+            """
+        )
         .eq("id", dead_event_id)
         .single()
         .execute()
