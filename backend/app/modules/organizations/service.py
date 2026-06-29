@@ -2,7 +2,8 @@ from app.core.supabase_client import supabase
 from app.modules.organizations.schemas import (
     OrganizationCreate,
     OrganizationUpdate,
-    AcceptInviteRequest
+    AcceptInviteRequest,
+    RoleAssignment
 )
 from fastapi import HTTPException
 import uuid
@@ -116,18 +117,20 @@ def update_organization(
 # ----------------------------------
 # Role Management Service
 # ----------------------------------
-def assign_user_role(role_data: dict):
+def assign_user_role(
+        role_data: RoleAssignment
+        ):
 
     # ---- Get Role ID ----
     role_resp = (
-    supabase
-    .table("roles")
-    .select("id")
-    .eq("name", role_data["role_name"])
-    .eq("organization_id", role_data["org_id"])
-    .single()
-    .execute()
-)
+        supabase
+        .table("roles")
+        .select("id")
+        .eq("name", role_data["role_name"])
+        .eq("organization_id", role_data["org_id"])
+        .single()
+        .execute()
+    )
 
     if not role_resp.data:
         raise Exception("Role not found")
