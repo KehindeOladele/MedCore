@@ -17,6 +17,10 @@ from app.core.security import (
     get_current_user,
     require_permission
 )
+from app.modules.organizations.queries import (
+    get_user_organization_id,
+    get_organization,
+)
 from app.core.supabase_client import supabase
 
 
@@ -38,32 +42,12 @@ def register_organization(payload: OrganizationCreate):
 # Get My Organization Endpoint 
 # -----------------------------------------
 @router.get("/me")
-def get_my_organization(current_user=Depends(get_current_user)):
+def get_my_organization(
+    current_user=Depends(get_current_user)
+):
+    org_id = get_user_organization_id(current_user["id"])
 
-    response = (
-        supabase
-        .table("user_roles")
-        .select("organization_id")
-        .eq("user_id", current_user["id"])
-        .single()
-        .execute()
-    )
-
-    if not response.data:
-        raise HTTPException(404, "User not assigned to any organization")
-
-    org_id = response.data["organization_id"]
-
-    org = (
-        supabase
-        .table("organizations")
-        .select("*")
-        .eq("id", org_id)
-        .single()
-        .execute()
-    )
-
-    return org.data
+    return get_organization(org_id)
 
 
 # --------------------------------------------
