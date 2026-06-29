@@ -94,17 +94,8 @@ def update_my_organization(
     current_user=Depends(require_permission("manage_organization"))
 ):
 
-    # get org_id from user_roles table
-    records = (
-        supabase
-        .table("user_roles")
-        .select("organization_id")
-        .eq("user_id", current_user["id"])
-        .single()
-        .execute()
-    )
-
-    org_id = records.data["organization_id"]
+    # get user org_id
+    org_id = get_user_organization_id(current_user["id"])
 
     return update_organization(org_id, payload)
 
