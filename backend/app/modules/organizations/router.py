@@ -127,6 +127,15 @@ def invite_user(
     invite_data: OnboardingInvite,
     current_user=Depends(require_permission("manage_organization"))
 ):
+    
+    current_org = get_user_organization_id(current_user["id"])
+
+    if current_org != org_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Cannot invite users to another organization."
+        )
+    
     return create_invitation(
         org_id,
         invite_data.email,
