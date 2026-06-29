@@ -1,10 +1,12 @@
-from app.core.events.dispatcher import register
+from app.core.events.registry import register
 from app.core.events.schemas import EventTypes
 from app.core.events.emitter import emit_event
-
 from app.modules.organizations.queries import (
     get_organization,
 )
+from app.modules.organizations.onboarding import (
+    send_organization_onboarding_email,
+    )
 
 
 # ---------------------------------------
@@ -31,8 +33,28 @@ def handle_organization_onboarding(event):
 
     organization_id = event["aggregate_id"]
 
-    organization = get_organization(
-        organization_id
-    )
+    try:
 
-    payload = event.get("payload", {})
+        send_organization_onboarding_email(
+            organization_id,
+            event.get("payload", {})
+        )
+
+        emit_event(
+            aggregate_type="organization",
+            aggregate_id=organization_id,
+            event_type=EventTypes.ORGANIZATION_ONBOARDING_COMPLETED
+        )
+
+    except Exception as exc:
+
+        emit_event(
+            aggregate_type="organization",
+            aggregate_id=organization_id,
+            event_type=EventTypes.ORGANIZATION_ONBOARDING_FAILED,
+            payload={
+                "error": str(exc)
+            }
+        )
+
+        raise
