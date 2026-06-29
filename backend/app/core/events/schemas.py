@@ -10,6 +10,15 @@ class EventTypes:
     ONBOARDING_EMAIL_FAILED = (
         "onboarding.email_failed"
     )
+    ORGANIZATION_CREATED = "organization.created"
+
+    ORGANIZATION_ONBOARDING_REQUESTED = (
+        "organization.onboarding.requested"
+    )
+
+    ORGANIZATION_ONBOARDING_COMPLETED = (
+        "organization.onboarding.completed"
+    )
 
 
 # ----- Event Status Model -----
