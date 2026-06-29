@@ -57,22 +57,10 @@ def get_my_organization(
 async def upload_logo(
     file: UploadFile = File(...),
     current_user=Depends(get_current_user)
-):
+) -> dict:
 
     # Get org id
-    admin_record = (
-        supabase
-        .table("user_roles")
-        .select("organization_id")
-        .eq("user_id", current_user["id"])
-        .single()
-        .execute()
-    )
-
-    if not admin_record.data:
-        raise HTTPException(404, "Admin record not found")
-
-    org_id = admin_record.data["organization_id"]
+    org_id = get_user_organization_id(current_user["id"])
 
     file_ext = file.filename.split(".")[-1]
     file_path = f"{org_id}.{file_ext}"
