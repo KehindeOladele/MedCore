@@ -19,6 +19,9 @@ class EventTypes:
     ORGANIZATION_ONBOARDING_COMPLETED = (
         "organization.onboarding.completed"
     )
+    ORGANIZATION_ONBOARDING_FAILED = (
+        "organization.onboarding.failed"
+    )
 
 
 # ----- Event Status Model -----
