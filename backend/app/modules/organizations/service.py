@@ -5,6 +5,8 @@ from app.modules.organizations.schemas import (
     AcceptInviteRequest,
     RoleAssignment
 )
+from app.core.events.emitter import emit_event
+from app.core.events.schemas import EventTypes
 from fastapi import HTTPException
 import uuid
 from datetime import datetime, timedelta
@@ -80,6 +82,18 @@ def create_organization(
         "role_id": role_id,
         "organization_id": org_id
     }).execute()
+
+    emit_event(
+        aggregate_type="organization",
+        aggregate_id=org_id,
+        event_type=EventTypes.ORGANIZATION_CREATED,
+        payload={
+            "organization_id": org_id,
+            "admin_user_id": admin_id,
+            "organization_name": org["name"],
+            "admin_email": payload.admin_email,
+        },
+    )
 
     return {
         "message": "Organization registered successfully",
