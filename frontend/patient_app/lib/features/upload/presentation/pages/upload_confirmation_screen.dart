@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import '../../../patient_records/presentation/pages/clinical_notes_screen.dart';
-
+import '../../../../features/history/presentation/pages/medical_records_screen.dart';
 class UploadConfirmationScreen extends StatelessWidget {
   const UploadConfirmationScreen({super.key});
 
@@ -22,7 +20,7 @@ class UploadConfirmationScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => context.go('/dashboard'),
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
             child: const Text(
               'Cancel',
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
@@ -227,7 +225,7 @@ class UploadConfirmationScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const ClinicalNotesScreen(),
+                      builder: (_) => const MedicalRecordsScreen(),
                     ),
                   );
                 },
@@ -248,7 +246,7 @@ class UploadConfirmationScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 8),
                     Text(
-                      'View Clinical Note',
+                      'View Medical Records',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -300,7 +298,7 @@ class UploadConfirmationScreen extends StatelessWidget {
 
             // ── Go to Dashboard ───────────────────────────────────────
             TextButton(
-              onPressed: () => context.go('/dashboard'),
+              onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false),
               child: Text(
                 'Go to Dashboard',
                 style: TextStyle(
