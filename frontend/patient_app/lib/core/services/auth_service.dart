@@ -67,9 +67,9 @@ class AuthService {
 
   /// Returns the access_token and user info, and persists the session.
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final data = await _api.post(
+    final data = await _api.postForm(
       '/auth/login',
-      {'email': email, 'password': password},
+      {'username': email, 'password': password},
       requiresAuth: false,
     );
 

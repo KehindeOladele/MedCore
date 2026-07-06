@@ -111,6 +111,32 @@ class ApiService {
     return _decode(response);
   }
 
+  Future<dynamic> postForm(
+    String path,
+    Map<String, String> body, {
+    bool requiresAuth = false,
+  }) async {
+    final headers = await _headers(requiresAuth: requiresAuth);
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+
+    final response = await http
+        .post(
+          Uri.parse('$_baseUrl$path'),
+          headers: headers,
+          body: body,
+        )
+        .timeout(
+          const Duration(seconds: 60),
+          onTimeout: () {
+            throw const ApiException(
+              statusCode: 408,
+              message: 'Connection timed out',
+            );
+          },
+        );
+    return _decode(response);
+  }
+
   Future<dynamic> put(
     String path,
     Map<String, dynamic> body, {
