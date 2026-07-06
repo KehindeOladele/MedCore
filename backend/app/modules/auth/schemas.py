@@ -22,8 +22,3 @@ class SignupResponse(BaseModel):
     status: str
     message: Optional[str] = None
     user_id: Optional[UUID] = None
-
-# ----- LoginRequest Schema -----
-class LoginRequest(BaseModel):
-    email: str
-    password: str
