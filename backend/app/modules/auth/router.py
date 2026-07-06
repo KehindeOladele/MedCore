@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import get_current_user
 from app.modules.auth.schemas import (
     UserMe, 
@@ -40,16 +41,27 @@ def signup(req: SignupRequest):
     return user
     
 
-# ----- Login Endpoint -----
+# --------------------------
+# Login Endpoint 
+# --------------------------
 @router.post("/login")
 def login(
-    payload: LoginRequest,
-    background_tasks: BackgroundTasks
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    background_tasks: BackgroundTasks = BackgroundTasks()
 ):
+    """
+    OAuth2 Password Flow login.
+
+    Expects:
+        Content-Type: application/x-www-form-urlencoded
+
+        username=<email>
+        password=<password>
+    """
 
     response = login_user(
-        payload.email,
-        payload.password
+        email=form_data.username,
+        password=form_data.password
     )
 
     background_tasks.add_task(
@@ -57,4 +69,4 @@ def login(
         response["user"]["id"]
     )
 
-    return response 
+    return response
