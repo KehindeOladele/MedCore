@@ -3,9 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.security import get_current_user
 from app.modules.auth.schemas import (
     UserMe, 
-    SignupRequest, 
-    SignupResponse,
-    LoginRequest
+    SignupRequest,
 )
 from app.modules.auth.service import (
     ensure_profile_exists, 
