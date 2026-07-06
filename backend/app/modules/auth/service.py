@@ -132,8 +132,11 @@ def login_user(email: str, password: str):
         "password": password
     })
 
-    if not response.user:
-        raise Exception(401, "Invalid credentials")
+    if not response.user or not response.session:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
     
     user_id = response.user.id
 
@@ -142,6 +145,7 @@ def login_user(email: str, password: str):
 
     return {
         "access_token": response.session.access_token,
+        "token_type": "bearer",
         "user": {
             "id": user_id,
             "email": response.user.email

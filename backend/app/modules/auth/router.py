@@ -1,10 +1,13 @@
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends
+=======
+from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi.security import OAuth2PasswordRequestForm
+>>>>>>> auth
 from app.core.security import get_current_user
 from app.modules.auth.schemas import (
     UserMe, 
-    SignupRequest, 
-    SignupResponse,
-    LoginRequest
+    SignupRequest,
 )
 from app.modules.auth.service import (
     ensure_profile_exists, 
@@ -38,14 +41,40 @@ def signup(req: SignupRequest):
     return user
     
 
-# ----- Login Endpoint -----
+# --------------------------
+# Login Endpoint 
+# --------------------------
 @router.post("/login")
 def login(
+<<<<<<< HEAD
     payload: LoginRequest
+=======
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    background_tasks: BackgroundTasks = BackgroundTasks()
+>>>>>>> auth
 ):
+    """
+    OAuth2 Password Flow login.
+
+    Expects:
+        Content-Type: application/x-www-form-urlencoded
+
+        username=<email>
+        password=<password>
+    """
 
     response = login_user(
-        payload.email,
-        payload.password
+        email=form_data.username,
+        password=form_data.password
     )
+<<<<<<< HEAD
     return response 
+=======
+
+    background_tasks.add_task(
+        send_patient_welcome_email,
+        response["user"]["id"]
+    )
+
+    return response
+>>>>>>> auth
