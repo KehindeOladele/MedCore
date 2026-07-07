@@ -77,3 +77,12 @@ def handle_onboarding_email_requested(event):
         )
 
         raise
+
+# ----- Onboarding Email Sent Handler -----
+@register(EventTypes.ONBOARDING_EMAIL_SENT)
+def handle_onboarding_email_sent(event):
+
+    logger.info(
+        "Onboarding email completed for %s",
+        event["aggregate_id"]
+    )
