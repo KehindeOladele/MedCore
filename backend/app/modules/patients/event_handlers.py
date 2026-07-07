@@ -17,18 +17,6 @@ def handle_patient_created(event):
         f"HANDLER RECEIVED EVENT {event['event_type']} "
         f"FOR {event['aggregate_id']}"
     )
-    print(
-        f"HANDLER RECEIVED EVENT {event['event_type']} "
-        f"FOR {event['aggregate_id']}"
-    )
-
-    EventService.patient_created(
-        patient_id=event["aggregate_id"],
-        email=event["payload"].get("email")
-    )
-
-    logger.info("ABOUT TO EMIT PATIENT_CREATED")
-    print("ABOUT TO EMIT PATIENT_CREATED")
 
     emit_event(
         aggregate_type="patient",
@@ -37,8 +25,7 @@ def handle_patient_created(event):
         payload=event["payload"]
     )
 
-    logger.info("PATIENT_CREATED EMITTED")
-    print("PATIENT_CREATED EMITTED")
+    logger.info("ONBOARDING EMAIL REQUESTED EMITTED")
     
 
 # ----- Onboarding Email Request Handler -----
