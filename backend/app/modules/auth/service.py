@@ -72,7 +72,7 @@ def ensure_profile_exists(user_id: str, user_email: str):
     """
 # ---- Check if profile exists ----
     profile = (
-        supabase
+        supabase_admin
         .table("profiles")
         .select("id")
         .eq("id", user_id)
@@ -80,14 +80,14 @@ def ensure_profile_exists(user_id: str, user_email: str):
     )
 
     if not profile.data:
-        supabase.table("profiles").insert({
+        supabase_admin.table("profiles").insert({
             "id": user_id,
             "email": user_email
         }).execute()
 
     # ---- Check if role already assigned ----
     role_check = (
-        supabase
+        supabase_admin
         .table("user_roles")
         .select("id")
         .eq("user_id", user_id)
@@ -100,26 +100,38 @@ def ensure_profile_exists(user_id: str, user_email: str):
 
     # ---- Get patient role ----
     role_resp = (
-        supabase
+        supabase_admin
         .table("roles")
         .select("id")
         .eq("name", "patient")
         .eq("role_type", "system")
-        .single()
         .execute()
     )
 
-    if not role_resp.data:
-        raise Exception("Patient role not configured")
-    
+    role_data = role_resp.data
+    if not isinstance(role_data, list) or not role_data:
+        raise HTTPException(
+            status_code=500,
+            detail="Patient role not configured"
+        )
+
+    role_item = role_data[0]
+    if not isinstance(role_item, dict) or "id" not in role_item:
+        raise HTTPException(
+            status_code=500,
+            detail="Patient role is missing identifier"
+        )
+
+    role_id = role_item["id"]
+
     # check Id and role of user
     print("User ID:", user_id)
-    print("Assigning role:", role_resp.data["id"])
+    print("Assigning role:", role_id)
 
     # ---- Assign role ----
-    supabase.table("user_roles").insert({
+    supabase_admin.table("user_roles").insert({
         "user_id": user_id,
-        "role_id": role_resp.data["id"],
+        "role_id": role_id,
         "organization_id": None
     }).execute()
 
