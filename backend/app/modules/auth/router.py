@@ -8,8 +8,9 @@ from app.modules.auth.schemas import (
 from app.modules.auth.service import (
     ensure_profile_exists, 
     signup_user,
-    login_user
+    login_user,
 )
+from app.modules.patients.onboarding import send_onboarding_email
 
 
 # ----- Auth Router -----
@@ -42,8 +43,8 @@ def signup(req: SignupRequest):
 # --------------------------
 @router.post("/login")
 def login(
+    background_tasks: BackgroundTasks,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    background_tasks: BackgroundTasks = BackgroundTasks()
 ):
     """
     OAuth2 Password Flow login.
@@ -61,7 +62,7 @@ def login(
     )
 
     background_tasks.add_task(
-        send_patient_welcome_email,
+        send_onboarding_email,
         response["user"]["id"]
     )
 
