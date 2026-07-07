@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 from typing import Any, cast
-
 from app.core.supabase_admin import supabase_admin
 from app.core.events.dispatcher import dispatch_event
 from app.core.events.locking import (
@@ -22,76 +21,103 @@ logger = logging.getLogger(__name__)
 # ----- MAIN EVENT PROCESSOR -----
 def process_pending_events():
 
-    # 1. Cleanup stuck events (processing -> pending fallback)
+    logger.info("Starting event processor")
+
+    # Recover abandoned work
     recover_stuck_events()
 
-    # 2. Retry failed events that are eligible again
+    # Requeue eligible failed events
     requeue_failed_events()
 
-    # 3. Fetch candidate events (DO NOT filter next_retry_at here)
-    events = cast(
-        list[dict[str, Any]],
-        (
-            supabase_admin
-            .table("events")
-            .select("*")
-            .in_("status", ["pending", "failed"])
-            .order("created_at")
-            .limit(BATCH_SIZE)
-            .execute()
-        ).data
-    )
+    while True:
 
-    logger.info("Found %s candidate events", len(events))
-
-    now = datetime.now(timezone.utc).isoformat()
-
-    # PROCESS LOOP
-    for event in events:
-
-        event_id = event["id"]
-
-        # 1. Skip retry-scheduled events
-        next_retry_at = event.get("next_retry_at")
-        if next_retry_at and next_retry_at > now:
-            continue
-
-        # 2. Skip maxed-out retries (safety net)
-        if event.get("retry_count", 0) >= event.get("max_retries", 3):
-            logger.warning("Event %s reached max retries", event_id)
-            continue
-
-        # 3. Acquire lock (critical for concurrency safety)
-        locked = acquire_event_lock(event_id)
-
-        if not locked:
-            continue
-
-        logger.info(
-            "Processing event %s (%s)",
-            event_id,
-            event.get("event_type"),
+        events = cast(
+            list[dict[str, Any]],
+            (
+                supabase_admin
+                .table("events")
+                .select("*")
+                .in_("status", ["pending", "failed"])
+                .order("created_at")
+                .limit(BATCH_SIZE)
+                .execute()
+            ).data
+            or []
         )
 
-        try:
-            # 4. Dispatch to handler
-            dispatch_event(event)
+        if not events:
+            logger.info("No pending events remaining.")
+            break
 
-            # 5. Mark success
-            mark_processed(event_id)
+        logger.info(
+            "Processing batch of %s event(s)",
+            len(events)
+        )
 
-        except Exception as e:
+        processed_this_batch = 0
 
-            logger.exception(
-                "Failed processing event %s",
+        now = datetime.now(timezone.utc).isoformat()
+
+        for event in events:
+
+            event_id = event["id"]
+
+            # Skip events waiting for retry
+            next_retry_at = event.get("next_retry_at")
+            if next_retry_at:
+                retry_time = datetime.fromisoformat(
+                    next_retry_at.replace("Z", "+00:00")
+                )
+
+                if retry_time > datetime.now(timezone.utc):
+                    continue
+
+            # Skip permanently exhausted retries
+            if event.get("retry_count", 0) >= event.get("max_retries", 3):
+                logger.warning(
+                    "Event %s reached max retries",
+                    event_id
+                )
+                continue
+
+            # Acquire processing lock
+            if not acquire_event_lock(event_id):
+                continue
+
+            logger.info(
+                "Processing event %s (%s)",
                 event_id,
+                event.get("event_type"),
             )
 
-            # 6. Mark failure + schedule retry/DLQ inside state layer
-            mark_failed(
-                event_id,
-                reason=f"{type(e).__name__}: {str(e)}",
+            try:
+
+                dispatch_event(event)
+
+                mark_processed(event_id)
+
+                processed_this_batch += 1
+
+            except Exception as e:
+
+                logger.exception(
+                    "Failed processing event %s",
+                    event_id,
+                )
+
+                mark_failed(
+                    event_id,
+                    reason=f"{type(e).__name__}: {str(e)}",
+                )
+
+        # Safety guard against infinite loops
+        if processed_this_batch == 0:
+            logger.warning(
+                "No events processed in this batch. Stopping processor."
             )
+            break
+
+    logger.info("Event processor finished.")
 
 
 # ----- OPTIONAL DEBUG QUERY HELPERS -----
