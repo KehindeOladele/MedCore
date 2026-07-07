@@ -4,7 +4,10 @@ from app.shared.email.email_service import send_email
 from app.shared.services.template_service import render_template
 from app.shared.schemas.email_service import EmailService
 from pydantic import ValidationError
-from app.modules.organizations.exceptions import EmailDeliveryError
+from app.modules.organizations.exceptions import (
+    EmailDeliveryError,
+    InvalidOrganizationEmailError
+)
 from app.core.audit.service import log_audit_event
 from app.core.audit.actions import AuditActions
 import logging
@@ -55,7 +58,9 @@ def send_organization_onboarding_email(
     email = organization.get("email")
 
     if not email:
-        return {"status": "missing_email"}
+        raise InvalidOrganizationEmailError(
+            f"Organization {organization_id} has no email address."
+        )
 
     try:
         #  verify start
@@ -65,8 +70,9 @@ def send_organization_onboarding_email(
         html = render_template(
             "welcome_organization.html",
             {
-                "first_name": organization.get("first_name"),
-                "medical_id": organization.get("medical_id")
+                "organization_name": organization.get("name"),
+                "organization_type": organization.get("type"),
+                "organization_email": organization.get("email"),
             }
         )
 
@@ -76,10 +82,11 @@ def send_organization_onboarding_email(
 
         try:
             email_service = EmailService(
-            to=email,
-            subject="Welcome to MedCore",
-            html=html
-        )
+                to=email,
+                subject="Welcome to MedCore",
+                html=html
+            )
+            
         except (ValidationError, TypeError) as ve:
             logger.warning(f"Invalid organization email for {organization_id}: {email}")
             (
