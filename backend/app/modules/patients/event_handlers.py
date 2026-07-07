@@ -31,52 +31,23 @@ def handle_patient_created(event):
 # ----- Onboarding Email Request Handler -----
 @register(EventTypes.ONBOARDING_EMAIL_REQUESTED)
 def handle_onboarding_email_requested(event):
-    print(
-        f"HANDLER RECEIVED EVENT onboarding.email_requested "
-        f"FOR {event['aggregate_id']}"
-    )
 
     patient_id = event["aggregate_id"]
-    
-    response = (
-        supabase_admin
-        .table("patients")
-        .select("onboarding_email_sent")
-        .eq("id", patient_id)
-        .maybe_single()
-        .execute()
-    )
-    patient = response.data if response else None
-
-    logger.info(f"PATIENT LOOKUP RESULT: {patient}")
-    print(f"PATIENT LOOKUP RESULT: {patient}")
-
-    if not patient or not isinstance(patient, dict):
-        return
-
-    if patient.get("onboarding_email_sent"):
-        return
-
-    EventService.onboarding_email_requested(
-        patient_id=patient_id,
-        email=event["payload"].get("email")
-    )
 
     try:
         send_onboarding_email(patient_id)
 
-        EventService.onboarding_email_sent(
-            patient_id=patient_id
-        )
+        EventService.onboarding_email_sent(patient_id)
 
     except Exception as e:
 
         EventService.onboarding_email_failed(
-            patient_id=patient_id,
-            reason=str(e)
+            patient_id,
+            str(e)
         )
 
         raise
+
 
 # ----- Onboarding Email Sent Handler -----
 @register(EventTypes.ONBOARDING_EMAIL_SENT)
