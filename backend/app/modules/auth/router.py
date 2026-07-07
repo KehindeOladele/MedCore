@@ -10,7 +10,6 @@ from app.modules.auth.service import (
     signup_user,
     login_user,
 )
-from app.modules.patients.onboarding import send_onboarding_email
 
 
 # ----- Auth Router -----
@@ -59,11 +58,6 @@ def login(
     response = login_user(
         email=form_data.username,
         password=form_data.password
-    )
-
-    background_tasks.add_task(
-        send_onboarding_email,
-        response["user"]["id"]
     )
 
     return response
