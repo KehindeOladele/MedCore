@@ -26,17 +26,23 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
     """
-    Validate Supabase JWT. Return the current user (id, email) and role (patient, doctor, clinician). 
-    Reusable across all modules. Uses Supabase Tables as source of truth.
-    
-    inpt: HTTPAuthorizationCredentials from FastAPI's HTTPBearer
-    Returns: dict with user info (id, email, role)
-    """
-    
-    # ----- Verify Token and Retrieve User -----
-    token = credentials.credentials # Extract token from credentials
+    Validate Supabase JWT and resolve the user's identity.
 
-    # ----- Verify Token with Supabase -----
+    Authentication:
+        - JWT validation uses the authenticated Supabase client.
+
+    Identity Resolution:
+        - Uses supabase_admin exclusively.
+        - Independent of RLS.
+        - Supports multiple roles.
+        - Supports organization memberships.
+    """
+
+    # -----------------------------
+    # Verify JWT
+    # -----------------------------
+    token = credentials.credentials
+
     try:
         response = supabase.auth.get_user(token)
         user = response.user
@@ -46,95 +52,135 @@ def get_current_user(
             detail="Invalid or expired token",
         )
 
-    # ----- Check if User Exists -----
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed",
         )
-    
-    # ----- Extract Role from User Metadata -----
-    # firstly, try to get role from user_roles table
-    role_query = (
-    supabase
-    .table("user_roles")
-    .select("roles(name)")
-    .eq("user_id", user.id)
-    .single()
-    .execute()
-    )
 
-    # secondly, if no role found in user_roles table, check user metadata
-    if not role_query.data:
+    # -----------------------------
+    # Fetch user role assignments
+    # -----------------------------
+    role_rows = (
+        supabase_admin
+        .table("user_roles")
+        .select("organization_id, role_id")
+        .eq("user_id", user.id)
+        .execute()
+    ).data or []
+
+    if not role_rows:
         raise HTTPException(
             status_code=403,
-            detail="User role not configured"
-        )
-    
-    # finally, assign role
-    role = role_query.data["roles"]["name"]
-    
-    # print("USER METADATA:", user.user_metadata) # Debugging line to check user metadata
-
-    # ----- Return User Information  from supabase instance -----
-
-    # ----- Fetch ALL roles -----
-    try:
-        role_query = (
-            supabase
-            .table("user_roles")
-            .select("organization_id, role_id")
-            .eq("user_id", user.id)
-            .execute()
-        )
-    except Exception:
-        raise HTTPException(
-            status_code=403,
-            detail="User role not configured"
+            detail="User has no assigned roles"
         )
 
-    roles_data = role_query.data or []
-
-    roles = []
-    org_ids = set()
-
-    for r in roles_data:
-        role_id = r["role_id"]
-
-        role_resp = (
-            supabase
-            .table("roles")
-            .select("name, role_type")
-            .eq("id", role_id)
-            .single()
-            .execute()
-        ).data
-
-        role_name = role_resp["name"]
-        role_type = role_resp["role_type"]
-
-        roles.append({
-            "name": role_name,
-            "role_type": role_type,
-            "organization_id": r.get("organization_id")
+    # -----------------------------
+    # Fetch all referenced roles
+    # -----------------------------
+    role_ids = list({
+        row["role_id"]
+        for row in role_rows
+            if row.get("role_id")
         })
 
-        if r.get("organization_id"):
-            org_ids.add(r["organization_id"])
-        # ----- Derive flags (useful for frontend & permissions) -----
-        is_patient = any(r["name"] == "patient" for r in roles)
-        is_practitioner = any(r["name"] == "practitioner" for r in roles)
-        is_admin = any(r["name"] == "org_admin" for r in roles)
-        is_super_admin = any(r["role_type"] == "system" for r in roles)
+    role_lookup_rows = (
+        supabase_admin
+        .table("roles")
+        .select("id, name, role_type")
+        .in_("id", role_ids)
+        .execute()
+    ).data or []
 
+    role_lookup = {
+        role["id"]: role
+        for role in role_lookup_rows
+    }
 
-    # ----- Return User Information  from supabase instance-----
+    # -----------------------------
+    # Build role objects
+    # -----------------------------
+    roles = []
+    organization_ids = set()
+
+    for assignment in role_rows:
+
+        role_info = role_lookup.get(
+            assignment["role_id"]
+        )
+
+        if not role_info:
+            continue
+
+        roles.append({
+            "name": role_info["name"],
+            "role_type": role_info["role_type"],
+            "organization_id": assignment["organization_id"]
+        })
+
+        if assignment.get("organization_id"):
+            organization_ids.add(
+                assignment["organization_id"]
+            )
+
+    if not roles:
+        raise HTTPException(
+            status_code=403,
+            detail="No valid roles found for user"
+        )
+
+    # -----------------------------
+    # Primary Role
+    # -----------------------------
+    system_roles = [
+        r for r in roles
+        if r["role_type"] == "system"
+    ]
+
+    if system_roles:
+        primary_role = system_roles[0]["name"]
+    else:
+        primary_role = roles[0]["name"]
+
+    # -----------------------------
+    # Derived Flags
+    # -----------------------------
+    role_names = {
+        r["name"]
+        for r in roles
+    }
+
+    is_patient = "patient" in role_names
+
+    is_practitioner = bool(
+        role_names.intersection({
+            "doctor",
+            "clinician",
+            "practitioner"
+        })
+    )
+
+    is_admin = bool(
+        role_names.intersection({
+            "admin",
+            "org_admin"
+        })
+    )
+
+    is_super_admin = any(
+        r["name"] == "super_admin"
+        for r in roles
+    )
+
+    # -----------------------------
+    # Return Current User
+    # -----------------------------
     return {
         "id": user.id,
         "email": user.email,
-        "role": role,
+        "role": primary_role,
         "roles": roles,
-        "organization_ids": list(org_ids),
+        "organization_ids": list(organization_ids),
         "is_patient": is_patient,
         "is_practitioner": is_practitioner,
         "is_admin": is_admin,
