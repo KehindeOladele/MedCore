@@ -101,6 +101,12 @@ def send_onboarding_email(patient_id: str):
         # send the prepared EmailService instance
         response = send_email(email_service)
 
+        logger.info("SEND_EMAIL RETURN TYPE: %s", type(response))
+        logger.info("SEND_EMAIL RETURN VALUE: %r", response)
+
+        print("SEND_EMAIL RETURN TYPE:", type(response))
+        print("SEND_EMAIL RETURN VALUE:", repr(response))
+
         # log and print response
         log_audit_event(
             actor_id=patient_id,
