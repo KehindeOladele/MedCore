@@ -93,7 +93,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
               const SizedBox(height: 16),
 
               // App Title & Subtitle
-              const Text(
+              Text(
                 'MedCore',
                 style: TextStyle(
                   color: textDark,
@@ -103,7 +103,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Sign in to your account',
                 style: TextStyle(
                   color: textDark,
@@ -155,7 +155,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Patient Login',
                               style: TextStyle(
                                 color: textDark,
@@ -179,7 +179,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                     const SizedBox(height: 32),
 
                     // Email Field
-                    const Text(
+                    Text(
                       'EMAIL ADDRESS',
                       style: TextStyle(
                         fontSize: 12,
@@ -193,7 +193,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         color: textDark,
                         fontWeight: FontWeight.w500,
@@ -220,7 +220,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                     const SizedBox(height: 24),
 
                     // Password Field
-                    const Text(
+                    Text(
                       'PASSWORD',
                       style: TextStyle(
                         fontSize: 12,
@@ -233,7 +233,7 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                     TextField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         color: textDark,
                         fontWeight: FontWeight.w500,

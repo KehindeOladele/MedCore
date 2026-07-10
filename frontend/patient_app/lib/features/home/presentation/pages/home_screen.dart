@@ -503,7 +503,7 @@ Widget _buildApiPrescriptions(
   List<ActivePrescriptionModel> prescriptions,
 ) {
   if (prescriptions.isEmpty) {
-    return _emptyPrescriptions();
+    return _emptyPrescriptions(context);
   }
   return ListView.separated(
     shrinkWrap: true,
@@ -530,7 +530,7 @@ Widget _buildLocalPrescriptions(
   BuildContext context,
   List<PrescriptionModel> prescriptions,
 ) {
-  if (prescriptions.isEmpty) return _emptyPrescriptions();
+  if (prescriptions.isEmpty) return _emptyPrescriptions(context);
   return ListView.separated(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
@@ -543,7 +543,7 @@ Widget _buildLocalPrescriptions(
   );
 }
 
-Widget _emptyPrescriptions() {
+Widget _emptyPrescriptions(BuildContext context) {
   return Container(
     padding: const EdgeInsets.all(32),
     alignment: Alignment.center,

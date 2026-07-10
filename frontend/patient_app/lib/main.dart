@@ -38,6 +38,7 @@ void main() async {
   await Hive.openBox<PrescriptionModel>('prescriptions');
   await Hive.openBox<AllergyModel>('local_allergies');
   await Hive.openBox<MedicalHistoryItem>('local_history');
+  await Hive.openBox('settings');
 
   // Initialize Notifications
   final notificationService = NotificationService();

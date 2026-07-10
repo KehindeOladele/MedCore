@@ -2,43 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
-  return ThemeNotifier();
-});
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
 
-class ThemeNotifier extends StateNotifier<ThemeMode> {
+class ThemeNotifier extends Notifier<ThemeMode> {
   static const _boxName = 'settings';
   static const _key = 'themeMode';
 
-  ThemeNotifier() : super(ThemeMode.system) {
-    _loadTheme();
-  }
-
-  Future<void> _loadTheme() async {
-    final box = await Hive.openBox(_boxName);
+  @override
+  ThemeMode build() {
+    final box = Hive.box(_boxName);
     final savedTheme = box.get(_key, defaultValue: 'system');
-    
     switch (savedTheme) {
       case 'light':
-        state = ThemeMode.light;
-        break;
+        return ThemeMode.light;
       case 'dark':
-        state = ThemeMode.dark;
-        break;
+        return ThemeMode.dark;
       default:
-        state = ThemeMode.system;
-        break;
+        return ThemeMode.system;
     }
   }
 
-  Future<void> setTheme(ThemeMode mode) async {
+  void setTheme(ThemeMode mode) {
     state = mode;
-    final box = await Hive.openBox(_boxName);
-    
+    final box = Hive.box(_boxName);
     String value = 'system';
     if (mode == ThemeMode.light) value = 'light';
     if (mode == ThemeMode.dark) value = 'dark';
-    
-    await box.put(_key, value);
+    box.put(_key, value);
   }
 }
