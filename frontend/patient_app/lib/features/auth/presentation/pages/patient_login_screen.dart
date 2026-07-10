@@ -56,15 +56,16 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     const Color brandGreen = Color(0xFF059669);
-    const Color textDark = Color(0xFF0F172A);
-    const Color textGray = Color(0xFF64748B);
-    const Color inputBg = Color(0xFFF1F5F9);
+    final Color textDark = Theme.of(context).textTheme.bodyLarge?.color ?? const Color(0xFF0F172A);
+    final Color textGray = isDark ? Colors.grey[400]! : const Color(0xFF64748B);
+    final Color inputBg = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFF1F5F9);
 
     final isLoading = ref.watch(authProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -118,12 +119,12 @@ class _PatientLoginScreenState extends ConsumerState<PatientLoginScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
+                      color: Colors.black.withValues(alpha: 0.02),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),

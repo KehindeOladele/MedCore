@@ -12,6 +12,7 @@ import '../providers/menstrual_cycle_provider.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_setup_form.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/theme/theme_provider.dart';
 class ProfileScreen extends ConsumerStatefulWidget {
   final bool isTab;
   const ProfileScreen({super.key, this.isTab = false});
@@ -69,7 +70,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -102,7 +103,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         centerTitle: true,
-                        backgroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         elevation: 0,
                         foregroundColor: Colors.black,
                       ),
@@ -229,28 +230,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       subtitle: "Blood Group",
                       icon: Icons.water_drop_outlined,
                       iconColor: AppColors.primary,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
                     _buildVitalCard(
                       title: profile.genotype ?? "--",
                       subtitle: "Genotype",
                       icon: Icons.science_outlined,
                       iconColor: AppColors.primary,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
                     _buildVitalCard(
                       title: profile.weight != null ? "${profile.weight} kg" : "--",
                       subtitle: "Weight",
                       icon: Icons.monitor_weight_outlined,
                       iconColor: AppColors.primary,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
                     _buildVitalCard(
                       title: profile.height != null ? "${profile.height} cm" : "--",
                       subtitle: "Height",
                       icon: Icons.height,
                       iconColor: AppColors.primary,
-                      backgroundColor: Colors.white,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                     ),
                   ],
                 ),
@@ -262,11 +263,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: 32),
                 ],
 
+                // App Settings
+                _buildSectionHeader("App Settings", Icons.settings_outlined),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Theme Mode", style: TextStyle(color: Colors.grey[600], fontSize: 15)),
+                      DropdownButton<ThemeMode>(
+                        value: ref.watch(themeProvider),
+                        underline: const SizedBox(),
+                        icon: const Icon(Icons.arrow_drop_down),
+                        items: const [
+                          DropdownMenuItem(
+                            value: ThemeMode.system,
+                            child: Text("System Default"),
+                          ),
+                          DropdownMenuItem(
+                            value: ThemeMode.light,
+                            child: Text("Light Mode"),
+                          ),
+                          DropdownMenuItem(
+                            value: ThemeMode.dark,
+                            child: Text("Dark Mode"),
+                          ),
+                        ],
+                        onChanged: (mode) {
+                          if (mode != null) {
+                            ref.read(themeProvider.notifier).setTheme(mode);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+
                 // Personal Details
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
                   ),
@@ -289,7 +333,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
                   ),
@@ -355,7 +399,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.withOpacity(0.1)),
                   ),
@@ -608,7 +652,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.grey.withOpacity(0.2)),
                   ),
