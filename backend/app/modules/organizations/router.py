@@ -1,4 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import (
+    APIRouter, 
+    Depends, 
+    HTTPException, 
+    UploadFile, 
+    File,
+    BackgroundTasks
+)
 from app.modules.organizations.schemas import (
     OrganizationCreate,
     OrganizationUpdate,
@@ -22,6 +29,7 @@ from app.modules.organizations.queries import (
     get_organization,
 )
 from app.core.supabase_client import supabase
+from app.core.events.processor import process_pending_events
 
 
 # ---------------------------------------
@@ -34,8 +42,15 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 # Organization Registration Endpoint
 # ----------------------------------------
 @router.post("/register")
-def register_organization(payload: OrganizationCreate):
-    return create_organization(payload)
+def register_organization(
+    payload: OrganizationCreate,
+    background_tasks: BackgroundTasks
+):
+    result = create_organization(payload)
+
+    background_tasks.add_task(process_pending_events)
+
+    return result
 
 
 # -----------------------------------------
