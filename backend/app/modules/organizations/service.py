@@ -1,4 +1,5 @@
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
 from app.modules.organizations.schemas import (
     OrganizationCreate,
     OrganizationUpdate,
@@ -20,7 +21,7 @@ def create_organization(
         ):
 
     # Create admin user in Supabase Auth
-    auth_response = supabase.auth.admin.create_user({
+    auth_response = supabase_admin.auth.admin.create_user({
         "email": payload.admin_email,
         "password": payload.admin_password,
         "email_confirm": True
@@ -33,7 +34,7 @@ def create_organization(
 
     # ----- Create Organization -----
     org_response = (
-        supabase
+        supabase_admin
         .table("organizations")
         .insert(payload.model_dump(exclude={"admin_email", "admin_password"}))
         .execute()
@@ -58,11 +59,11 @@ def create_organization(
         for role in default_roles
     ]
 
-    supabase.table("roles").insert(roles_to_insert).execute()
+    supabase_admin.table("roles").insert(roles_to_insert).execute()
 
     # Get org_admin role id
     role_resp = (
-        supabase
+        supabase_admin
         .table("roles")
         .select("id")
         .eq("name", "org_admin")
@@ -77,7 +78,7 @@ def create_organization(
     role_id = role_resp.data["id"]
 
     # Assign role to admin
-    supabase.table("user_roles").insert({
+    supabase_admin.table("user_roles").insert({
         "user_id": admin_id,
         "role_id": role_id,
         "organization_id": org_id
