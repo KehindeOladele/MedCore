@@ -57,21 +57,19 @@ class AuthService {
   /// Returns `{'status': 'success', 'access_token': ..., 'user': {...}}`
   /// or `{'status': 'pending_verification', 'message': ...}`
   Future<Map<String, dynamic>> signup(String email, String password) async {
-    final data = await _api.post(
-      '/auth/signup',
-      {'email': email, 'password': password},
-      requiresAuth: false,
-    );
+    final data = await _api.post('/auth/signup', {
+      'email': email,
+      'password': password,
+    }, requiresAuth: false);
     return Map<String, dynamic>.from(data as Map);
   }
 
   /// Returns the access_token and user info, and persists the session.
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final data = await _api.postForm(
-      '/auth/login',
-      {'username': email, 'password': password},
-      requiresAuth: false,
-    );
+    final data = await _api.postForm('/auth/login', {
+      'username': email,
+      'password': password,
+    }, requiresAuth: false);
 
     final result = Map<String, dynamic>.from(data as Map);
     final token = result['access_token'] as String;

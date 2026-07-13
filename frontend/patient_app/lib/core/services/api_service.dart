@@ -22,7 +22,7 @@ class ApiService {
   // Use http://10.0.2.2:8000 for Android emulator
   // Use http://localhost:8000 for iOS simulator / Web
   // Use https://medcore-api.onrender.com for production
-  static const String _baseUrl = 'http://10.67.168.224:8000';
+  static const String _baseUrl = 'https://medcore-0qgd.onrender.com';
   // ─────────────────────────────────────────────────────────────────────────
 
   final AuthService _authService;

@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: currentIndex == 0
           ? AppBar(
               title: Row(
@@ -185,7 +185,7 @@ class HomeScreen extends ConsumerWidget {
                           height: 140,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
@@ -294,7 +294,7 @@ class HomeScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(32),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
@@ -503,7 +503,7 @@ Widget _buildApiPrescriptions(
   List<ActivePrescriptionModel> prescriptions,
 ) {
   if (prescriptions.isEmpty) {
-    return _emptyPrescriptions();
+    return _emptyPrescriptions(context);
   }
   return ListView.separated(
     shrinkWrap: true,
@@ -530,7 +530,7 @@ Widget _buildLocalPrescriptions(
   BuildContext context,
   List<PrescriptionModel> prescriptions,
 ) {
-  if (prescriptions.isEmpty) return _emptyPrescriptions();
+  if (prescriptions.isEmpty) return _emptyPrescriptions(context);
   return ListView.separated(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
@@ -543,12 +543,12 @@ Widget _buildLocalPrescriptions(
   );
 }
 
-Widget _emptyPrescriptions() {
+Widget _emptyPrescriptions(BuildContext context) {
   return Container(
     padding: const EdgeInsets.all(32),
     alignment: Alignment.center,
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
     ),
     child: Column(
