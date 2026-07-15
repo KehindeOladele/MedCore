@@ -1,33 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Welcome to MedCore</title>
 </head>
-<body>
 
-<h2>Welcome to MedCore!</h2>
+<body style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f8; margin:0; padding:40px;">
 
-<p>Hello,</p>
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+<td align="center">
 
-<p>Your organization <strong>{{ organization_name }}</strong> has been successfully created.</p>
+<table width="650" cellpadding="0" cellspacing="0"
+style="background:#ffffff;border-radius:10px;padding:40px;">
 
-<p>Your administrator account:</p>
+<tr>
+<td align="center">
 
-<ul>
-    <li>{{ admin_email }}</li>
+<h1 style="color:#0F6CBD;">
+Welcome to MedCore
+</h1>
+
+<p style="font-size:16px;color:#444;">
+Hello <strong>{{ organization_name }}</strong>,
+</p>
+
+<p style="font-size:16px;color:#444;">
+Congratulations! Your organization has been successfully registered on MedCore.
+</p>
+
+<p style="font-size:16px;color:#444;">
+Your administrator account has been created and is ready to begin setting up your healthcare organization.
+</p>
+
+<hr>
+
+<h3 style="color:#0F6CBD;">
+Administrator Account
+</h3>
+
+<table width="100%" cellpadding="8">
+
+<tr>
+<td width="180"><strong>Organization</strong></td>
+<td>{{ organization_name }}</td>
+</tr>
+
+<tr>
+<td><strong>Administrator Email</strong></td>
+<td>{{ admin_email }}</td>
+</tr>
+
+</table>
+
+<hr>
+
+<h3 style="color:#0F6CBD;">
+Next Steps
+</h3>
+
+<ul style="font-size:15px; line-height:28px; color:#444;">
+
+<li>Complete your organization profile</li>
+
+<li>Configure departments and medical services</li>
+
+<li>Set operating hours</li>
+
+<li>Upload your organization logo</li>
+
+<li>Invite practitioners</li>
+
+<li>Invite nurses and administrative staff</li>
+
+<li>Configure roles and permissions</li>
+
+<li>Begin patient onboarding</li>
+
 </ul>
 
-<p>You can now:</p>
+<p align="center" style="margin-top:40px;">
 
-<ul>
-    <li>Complete your organization profile</li>
-    <li>Invite practitioners</li>
-    <li>Invite staff members</li>
-    <li>Configure departments</li>
-    <li>Assign organization roles</li>
-</ul>
+<a href="{{ login_url }}"
+style="
+background:#0F6CBD;
+color:white;
+padding:15px 35px;
+text-decoration:none;
+border-radius:6px;
+font-size:16px;
+font-weight:bold;
+">
 
-<p>Thank you for choosing MedCore.</p>
+Login to MedCore
+
+</a>
+
+</p>
+
+<hr>
+
+<h3 style="color:#0F6CBD;">
+Need Help?
+</h3>
+
+<p style="color:#555;">
+
+Our support team is here to help you get started.
+
+</p>
+
+<p>
+
+📧 support@medcore.com<br>
+
+🌐 https://medcore.com 
+
+</p>
+
+<p style="margin-top:40px;font-size:13px;color:#888;">
+
+You're receiving this email because an organization was registered using this email address.
+
+</p>
+
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
 
 </body>
 </html>
