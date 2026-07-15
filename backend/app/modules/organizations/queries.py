@@ -33,7 +33,7 @@ def get_organization(org_id: str):
         .table("organizations")
         .select("*")
         .eq("id", org_id)
-        .single()
+        .maybe_single()
         .execute()
     )
 
