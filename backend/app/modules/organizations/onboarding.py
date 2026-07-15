@@ -124,9 +124,9 @@ def send_organization_onboarding_email(
         
         # log and print onboarding email
         logger.info(
-            f"Attempting onboarding email to {email}"
+            f"Attempting onboarding email to {recipient}"
         )
-        print(f"Attempting onboarding email to {email}")
+        print(f"Attempting onboarding email to {recipient}")
 
         # --- send the prepared EmailService instance ---
         response = send_email(email_service)
