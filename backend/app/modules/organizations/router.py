@@ -29,7 +29,7 @@ from app.modules.organizations.queries import (
     get_organization,
 )
 from app.core.supabase_client import supabase
-from app.core.events.processor import process_pending_events
+from app.shared.tasks.event_tasks import process_events_task
 
 
 # ---------------------------------------
@@ -48,7 +48,7 @@ def register_organization(
 ):
     result = create_organization(payload)
 
-    background_tasks.add_task(process_pending_events)
+    background_tasks.add_task(process_events_task)
 
     return result
 
