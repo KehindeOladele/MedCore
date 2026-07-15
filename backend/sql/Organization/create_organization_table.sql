@@ -8,10 +8,10 @@ create table if not exists public.organizations (
             'tertiary_hospital',
             'secondary_hospital',
             'private_hospital',
-            'primary_health_center',
             'clinic',
             'pharmacy',
-            'private_laboratory',
+            'laboratory',
+            'phc',
             'pmv'
         )
     ),
@@ -28,4 +28,15 @@ create table if not exists public.organizations (
 
     active boolean default true,
     created_at timestamp default now()
+
+    -- Onboarding columns
+    onboarding_status text DEFAULT 'pending',
+    onboarding_email_sent boolean DEFAULT false,
+    onboarding_email_sent_at timestamptz,
+    onboarding_completed boolean DEFAULT false,
+    onboarding_completed_at timestamptz,
+    onboarding_retry_count integer DEFAULT 0,
+    onboarding_last_attempt_at timestamptz,
+    onboarding_last_error text,
+    onboarding_failure_reason text;
 );
