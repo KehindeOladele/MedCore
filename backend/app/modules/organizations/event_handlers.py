@@ -1,17 +1,16 @@
 from app.core.events.registry import register
 from app.core.events.schemas import EventTypes
 from app.core.events.emitter import emit_event
-from app.modules.organizations.queries import (
-    get_organization,
-)
 from app.modules.organizations.onboarding import (
     send_organization_onboarding_email,
     )
+import logging
 
+logger= logging.getLogger(__name__)
 
-# ---------------------------------------
-# Organization Created Handler
-# ---------------------------------------
+# --------------------------------------------------------
+#           Organization Created Handler
+# --------------------------------------------------------
 @register(EventTypes.ORGANIZATION_CREATED)
 def handle_organization_created(event):
 
@@ -25,9 +24,9 @@ def handle_organization_created(event):
     )
 
 
-# ------------------------------------------
-# Organization Onboarding Handler
-# ------------------------------------------
+# ------------------------------------------------------------
+#           Organization Onboarding Handler
+# ------------------------------------------------------------
 @register(EventTypes.ORGANIZATION_ONBOARDING_REQUESTED)
 def handle_organization_onboarding(event):
 
@@ -58,3 +57,14 @@ def handle_organization_onboarding(event):
         )
 
         raise
+
+
+# ----------------------------------------------------
+#           Onboarding Complete Handler
+# -----------------------------------------------------
+@register(EventTypes.ORGANIZATION_ONBOARDING_COMPLETED)
+def handle_organization_onboarding_completed(event):
+    logger.info(
+        "Organization onboarding completed: %s",
+        event["aggregate_id"]
+    )
