@@ -31,6 +31,8 @@ class Settings:
     APP_NAME: Optional[str] = os.getenv("APP_NAME")
     # 8. App Frontend URL
     FRONTEND_URL: Optional[str] = os.getenv("FRONTEND_URL")
+        # 8. App Frontend URL
+    SUPPORT_EMAIL: Optional[str] = os.getenv("SUPPORT_EMAIL")
 
     # ----- Security -----
     JWT_AUDIENCE: str = os.getenv("JWT_AUDIENCE", "authenticated")
@@ -46,7 +48,8 @@ class Settings:
             "RESEND_API_KEY": self.RESEND_API_KEY,
             "EMAIL_FROM": self.EMAIL_FROM,
             "APP_NAME": self.APP_NAME,
-            "FRONTEND_URL": self.FRONTEND_URL
+            "FRONTEND_URL": self.FRONTEND_URL,
+            "SUPPORT_EMAIL": self.SUPPORT_EMAIL
         }
 
         for key, value in required.items():
