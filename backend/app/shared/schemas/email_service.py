@@ -7,4 +7,3 @@ class EmailService(BaseModel):
     to: EmailStr
     subject: str
     html: str
-    text: str

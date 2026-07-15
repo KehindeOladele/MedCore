@@ -92,12 +92,6 @@ def send_organization_onboarding_email(
             context
         )
 
-        # Render text template
-        text = render_template(
-            "welcome_organization.txt",
-            context,
-        )
-
         # verify end
         logger.info("RENDER TEMPLATE SUCCESS")
         print("RENDER TEMPLATE SUCCESS")
@@ -107,7 +101,6 @@ def send_organization_onboarding_email(
                 to=recipient,
                 subject= f"Welcome to MedCore, {organization.get('name')}",
                 html=html,
-                text=text,
             )
             
         except (ValidationError, TypeError) as ve:
