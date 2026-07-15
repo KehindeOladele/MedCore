@@ -1,5 +1,7 @@
 from fastapi import HTTPException
 from app.core.supabase_client import supabase
+from app.core.supabase_admin import supabase_admin
+from app.modules.organizations.exceptions import OrganizationNotFoundError
 
 
 # ------------------------------------
@@ -29,7 +31,7 @@ def get_user_organization_id(user_id: str) -> str:
 # ------------------------------------
 def get_organization(org_id: str):
     response = (
-        supabase
+        supabase_admin
         .table("organizations")
         .select("*")
         .eq("id", org_id)
@@ -38,9 +40,8 @@ def get_organization(org_id: str):
     )
 
     if not response.data:
-        raise HTTPException(
-            status_code=404,
-            detail="Organization not found."
+        raise OrganizationNotFoundError(
+            f"Organization {org_id} not found."
         )
 
     return response.data
