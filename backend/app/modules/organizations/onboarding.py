@@ -34,24 +34,17 @@ def send_organization_onboarding_email(
     )
 
     # Get and check if organizaition
-    try:
-        organization = get_organization(organization_id)
-        organization = getattr(organization, "data", None) if organization is not None else None
-        logger.info(f"ORGANIZATION QUERY RESULT: {organization}")
-        print(f"organization QUERY RESULT: {organization}")
-    except Exception:
-        logger.warning(f"organization not found: {organization_id}")
-        return
 
-    if not organization:
-        logger.warning(f"organization not found or invalid data: {organization_id}")
-        return {"status": "not_found"}
-    
-    
+    organization = get_organization(organization_id)
+    logger.info(f"ORGANIZATION QUERY RESULT: {organization}")
+    print(f"organization QUERY RESULT: {organization}")
+
     if organization.get("onboarding_email_sent") and organization.get("onboarding_completed"):
+        logger.info(
+            "Organization %s already onboarded.",
+            organization_id
+        )
         return
-
-    email = organization.get("email")
 
     # Email Template context
     context = {
@@ -59,13 +52,19 @@ def send_organization_onboarding_email(
         "organization_type": organization.get("type"),
         "organization_email": organization.get("email"),
         "admin_email": payload.get("admin_email"),
-        "login_url": login_url,
+        "login_url": settings.FRONTEND_URL + "/login",
         "support_email": settings.SUPPORT_EMAIL,
-        "support_url": settings.FRONTEND_URL + "/login",
+        "support_email": settings.SUPPORT_EMAIL,
         "current_year": datetime.now().year,
     }
 
-    if not email:
+    # Get and check for Recipient email
+    recipient = (
+        payload.get("admin_email")
+        or organization.get("email")
+    )
+
+    if not recipient:
         raise InvalidOrganizationEmailError(
             f"Organization {organization_id} has no email address."
         )
@@ -87,11 +86,13 @@ def send_organization_onboarding_email(
         logger.info("RENDER TEMPLATE START")
         print("RENDER TEMPLATE START")
 
+        # Render html template
         html = render_template(
             "welcome_organization.html",
             context
         )
 
+        # Render text template
         text = render_template(
             "welcome_organization.txt",
             context,
@@ -103,7 +104,7 @@ def send_organization_onboarding_email(
 
         try:
             email_service = EmailService(
-                to=email,
+                to=recipient,
                 subject= f"Welcome to MedCore, {organization.get('name')}",
                 html=html,
                 text=text,
