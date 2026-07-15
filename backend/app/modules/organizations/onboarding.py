@@ -1,15 +1,17 @@
-from datetime import datetime, timezone
+from app.core.audit.actions import AuditActions
+from app.core.audit.service import log_audit_event
 from app.core.supabase_admin import supabase_admin
+from app.core.config import settings
 from app.shared.email.email_service import send_email
 from app.shared.services.template_service import render_template
 from app.shared.schemas.email_service import EmailService
+from datetime import datetime, timezone
 from pydantic import ValidationError
 from app.modules.organizations.exceptions import (
     EmailDeliveryError,
     InvalidOrganizationEmailError
 )
-from app.core.audit.service import log_audit_event
-from app.core.audit.actions import AuditActions
+from app.modules.organizations.queries import get_organization
 import logging
 import traceback
 
@@ -32,15 +34,8 @@ def send_organization_onboarding_email(
     )
 
     try:
-        result = (
-            supabase_admin
-            .table("organizations")
-            .select("*")
-            .eq("id", organization_id)
-            .maybe_single()
-            .execute()
-        )
-        organization = getattr(result, "data", None) if result is not None else None
+        organization = get_organization(organization_id)
+        organization = getattr(organization, "data", None) if organization is not None else None
         logger.info(f"ORGANIZATION QUERY RESULT: {organization}")
         print(f"organization QUERY RESULT: {organization}")
     except Exception:
@@ -56,6 +51,8 @@ def send_organization_onboarding_email(
         return
 
     email = organization.get("email")
+    admin_email = payload.get("admin_email")
+    login_url = settings.FRONTEND_URL + "/login"
 
     if not email:
         raise InvalidOrganizationEmailError(
@@ -73,6 +70,8 @@ def send_organization_onboarding_email(
                 "organization_name": organization.get("name"),
                 "organization_type": organization.get("type"),
                 "organization_email": organization.get("email"),
+                "admin_email": admin_email,
+                "login_url": login_url,
             }
         )
 
@@ -110,7 +109,7 @@ def send_organization_onboarding_email(
         )
         print(f"Attempting onboarding email to {email}")
 
-        # send the prepared EmailService instance
+        # --- send the prepared EmailService instance ---
         response = send_email(email_service)
 
         # log and print response
