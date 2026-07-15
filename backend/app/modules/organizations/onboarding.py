@@ -33,6 +33,7 @@ def send_organization_onboarding_email(
         f"ONBOARDING STARTED FOR {organization_id}"
     )
 
+    # Get and check if organizaition
     try:
         organization = get_organization(organization_id)
         organization = getattr(organization, "data", None) if organization is not None else None
@@ -51,13 +52,35 @@ def send_organization_onboarding_email(
         return
 
     email = organization.get("email")
-    admin_email = payload.get("admin_email")
-    login_url = settings.FRONTEND_URL + "/login"
+
+    # Email Template context
+    context = {
+        "organization_name": organization.get("name"),
+        "organization_type": organization.get("type"),
+        "organization_email": organization.get("email"),
+        "admin_email": payload.get("admin_email"),
+        "login_url": login_url,
+        "support_email": settings.SUPPORT_EMAIL,
+        "support_url": settings.FRONTEND_URL + "/login",
+        "current_year": datetime.now().year,
+    }
 
     if not email:
         raise InvalidOrganizationEmailError(
             f"Organization {organization_id} has no email address."
         )
+    
+    # Onboarding status as processing before rendering template
+    (
+        supabase_admin
+        .table("organizations")
+        .update({
+            "onboarding_status": "processing",
+            "onboarding_last_attempt_at": datetime.now(timezone.utc).isoformat()
+        })
+        .eq("id", organization_id)
+        .execute()
+    )
 
     try:
         #  verify start
@@ -66,13 +89,12 @@ def send_organization_onboarding_email(
 
         html = render_template(
             "welcome_organization.html",
-            {
-                "organization_name": organization.get("name"),
-                "organization_type": organization.get("type"),
-                "organization_email": organization.get("email"),
-                "admin_email": admin_email,
-                "login_url": login_url,
-            }
+            context
+        )
+
+        text = render_template(
+            "welcome_organization.txt",
+            context,
         )
 
         # verify end
@@ -82,12 +104,15 @@ def send_organization_onboarding_email(
         try:
             email_service = EmailService(
                 to=email,
-                subject="Welcome to MedCore",
-                html=html
+                subject= f"Welcome to MedCore, {organization.get('name')}",
+                html=html,
+                text=text,
             )
             
         except (ValidationError, TypeError) as ve:
             logger.warning(f"Invalid organization email for {organization_id}: {email}")
+
+            # Onboarding status Processig after rending for in invalid email
             (
                 supabase_admin
                 .table("organizations")
@@ -131,6 +156,7 @@ def send_organization_onboarding_email(
         
         now = datetime.now(timezone.utc).isoformat()
 
+        # Onboarding status as Completed 
         (
             supabase_admin
             .table("organizations")
@@ -157,6 +183,7 @@ def send_organization_onboarding_email(
             f"Failed loading organization {organization_id}: {str(e)}"
         )
 
+        #  Onboarding status as failed
         (
             supabase_admin
             .table("organizations")
