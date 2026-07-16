@@ -15,6 +15,7 @@ from app.modules.organizations.queries import get_organization
 import logging
 import traceback
 
+#  Instantiating Logger
 logger = logging.getLogger(__name__)
 
 
@@ -34,10 +35,7 @@ def send_organization_onboarding_email(
     )
 
     # Get and check if organizaition
-
     organization = get_organization(organization_id)
-    logger.info(f"ORGANIZATION QUERY RESULT: {organization}")
-    print(f"organization QUERY RESULT: {organization}")
 
     if organization.get("onboarding_email_sent") and organization.get("onboarding_completed"):
         logger.info(
@@ -131,12 +129,6 @@ def send_organization_onboarding_email(
         # --- send the prepared EmailService instance ---
         response = send_email(email_service)
 
-        logger.info("EMAIL RESPONSE TYPE: %s", type(response))
-        logger.info("EMAIL RESPONSE: %r", response)
-
-        print("EMAIL RESPONSE TYPE:", type(response))
-        print("EMAIL RESPONSE:", repr(response))
-
         # log and print response
         log_audit_event(
             actor_id=organization_id,
@@ -145,11 +137,6 @@ def send_organization_onboarding_email(
             resource_type="organization",
             resource_id=organization_id
         )
-
-        logger.info(
-            f"Resend response: {response}"
-        )
-        print(f"Resend response: {response}")
 
         if not response:
             raise EmailDeliveryError("Email send failed")
