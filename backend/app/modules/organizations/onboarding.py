@@ -131,6 +131,12 @@ def send_organization_onboarding_email(
         # --- send the prepared EmailService instance ---
         response = send_email(email_service)
 
+        logger.info("EMAIL RESPONSE TYPE: %s", type(response))
+        logger.info("EMAIL RESPONSE: %r", response)
+
+        print("EMAIL RESPONSE TYPE:", type(response))
+        print("EMAIL RESPONSE:", repr(response))
+
         # log and print response
         log_audit_event(
             actor_id=organization_id,
