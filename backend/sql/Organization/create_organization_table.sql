@@ -16,18 +16,28 @@ create table if not exists public.organizations (
         )
     ),
 
+    -- License information
     license_number text,
     phone text,
     email text,
     address text,
 
+    -- Demograpghic information
+    city TEXT,
     state text,
     country text default 'Nigeria',
+    postal_code TEXT,
+    timezone TEXT DEFAULT 'Africa/Lagos',
 
+    -- Business information
     logo_url text,
+    website TEXT,
+    description TEXT,
 
+    -- Registration information
     active boolean default true,
-    created_at timestamp default now()
+    created_at timestamp default now(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
 
     -- Onboarding columns
     onboarding_status text DEFAULT 'pending',
