@@ -61,7 +61,7 @@ class OrganizationProfileResponse(BaseModel):
     address: OrganizationAddress
     description: Optional[str] = None
     logo_url: Optional[str] = None
-    timezone: str
+    timezone: str | None = None
     setup_completed: bool
 
 
