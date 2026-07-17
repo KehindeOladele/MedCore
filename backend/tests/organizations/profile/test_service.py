@@ -6,6 +6,9 @@ from app.modules.organizations.profile.service import (
 from app.modules.organizations.exceptions import (
     OrganizationNotFoundError,
 )
+from app.modules.organizations.profile.schemas import (
+    OrganizationProfileUpdate,
+)
 
 
 # ------------------
