@@ -8,6 +8,11 @@ class OrganizationError(Exception):
     pass
 
 
+class UserOrganizationNotFoundError(OrganizationError):
+    """Raised when an user organization cannot be found"""
+    pass
+
+
 class OrganizationNotFoundError(OrganizationError):
     """Raised when an organization cannot be found."""
     pass
@@ -25,4 +30,19 @@ class EmailDeliveryError(OrganizationOnboardingError):
 
 class InvalidOrganizationEmailError(OrganizationOnboardingError):
     """Raised when the organization's email is missing or invalid."""
+    pass
+
+
+class OrganizationProfileError(OrganizationError):
+    """Base exception for organization profile operations."""
+    pass
+
+
+class OrganizationProfileValidationError(OrganizationProfileError):
+    """Raised when organization profile validation fails."""
+    pass
+
+
+class OrganizationProfileUpdateError(OrganizationProfileError):
+    """Raised when updating the organization profile fails."""
     pass
