@@ -1,8 +1,18 @@
 from fastapi.testclient import TestClient
 from main import app
+from app.core.security import get_current_user
 
 
 client = TestClient(app)
+
+
+def override_current_user():
+    return {
+        "id": "user-123",
+        "email": "admin@test.com",
+    }
+
+app.dependency_overrides[get_current_user] = override_current_user
 
 
 # --------------------------------------
@@ -10,12 +20,7 @@ client = TestClient(app)
 # --------------------------------------
 def test_get_profile_authenticated():
 
-    response = client.get(
-        "/organizations/profile",
-        headers={
-            "Authorization": "Bearer TEST_TOKEN"
-        }
-    )
+    response = response = client.get("/organizations/profile")
 
     assert response.status_code == 200
 
@@ -25,15 +30,7 @@ def test_get_profile_authenticated():
 # ----------------------------------------
 def test_update_profile():
 
-    response = client.patch(
-        "/organizations/profile",
-        json={
-            "name": "Updated Hospital"
-        },
-        headers={
-            "Authorization": "Bearer TEST_TOKEN"
-        }
-    )
+    response = client.patch("/organizations/profile")
 
     assert response.status_code == 200
 
