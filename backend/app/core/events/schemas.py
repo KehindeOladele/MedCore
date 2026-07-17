@@ -1,16 +1,24 @@
 # ----- Event Type Models -----
 class EventTypes:
-    PATIENT_CREATED = "patient.created"
+    
+    PATIENT_CREATED = (
+        "patient.created"
+        )
+    
     ONBOARDING_EMAIL_REQUESTED = (
         "onboarding.email_requested"
     )
+
     ONBOARDING_EMAIL_SENT = (
         "onboarding.email_sent"
     )
+
     ONBOARDING_EMAIL_FAILED = (
         "onboarding.email_failed"
     )
-    ORGANIZATION_CREATED = "organization.created"
+    ORGANIZATION_CREATED = (
+        "organization.created"
+    )
 
     ORGANIZATION_ONBOARDING_REQUESTED = (
         "organization.onboarding.requested"
@@ -19,8 +27,13 @@ class EventTypes:
     ORGANIZATION_ONBOARDING_COMPLETED = (
         "organization.onboarding.completed"
     )
+
     ORGANIZATION_ONBOARDING_FAILED = (
         "organization.onboarding.failed"
+    )
+
+    ORGANIZATION_PROFILE_UPDATED = (
+        "organization.profile.updated"
     )
 
 
