@@ -30,12 +30,21 @@ from app.modules.organizations.queries import (
 )
 from app.core.supabase_client import supabase
 from app.shared.tasks.event_tasks import process_events_task
+from app.modules.organizations.profile.router import (
+    router as profile_router,
+)
 
 
 # ---------------------------------------
 # Router Setup 
 # ---------------------------------------
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
+
+
+# ---------------------------------------
+# MONITOR ORGANIZATION PROFILE ROUTER 
+# ---------------------------------------
+router.include_router(profile_router)
 
 
 #----------------------------------------- 
