@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch
 from app.modules.organizations.profile.service import (
     get_profile,
+    update_profile
 )
 from app.modules.organizations.exceptions import (
     OrganizationNotFoundError,
@@ -9,6 +10,7 @@ from app.modules.organizations.exceptions import (
 from app.modules.organizations.profile.schemas import (
     OrganizationProfileUpdate,
 )
+from tests.conftest import organization_data
 
 
 # ------------------
@@ -63,21 +65,14 @@ def test_update_profile(
     mock_get,
     mock_update,
     mock_audit,
+    organization_data,
 ):
 
-    mock_get.return_value = {
-        "id": "org1",
-        "name": "Old Name",
-        "active": True,
-        "type": "Hospital",
-    }
+    updated_org = organization_data.copy()
+    updated_org["name"] = "New Name"
 
-    mock_update.return_value = {
-        "id": "org1",
-        "name": "New Name",
-        "active": True,
-        "type": "Hospital",
-    }
+    mock_get.return_value = organization_data
+    mock_update.return_value = updated_org
 
     payload = OrganizationProfileUpdate(
         name="New Name"
@@ -90,5 +85,8 @@ def test_update_profile(
     )
 
     assert result.name == "New Name"
+    mock_get.assert_called_once_with("org1")
+    mock_update.assert_called_once()
+    mock_audit.assert_called_once()
 
     mock_audit.assert_called_once()
