@@ -84,9 +84,12 @@ def test_update_profile(
         actor_id="user1",
     )
 
-    assert result.name == "New Name"
-    mock_get.assert_called_once_with("org1")
     mock_update.assert_called_once()
-    mock_audit.assert_called_once()
+
+    args = mock_update.call_args.args
+
+    assert args[0] == "org1"
+    assert args[1]["name"] == "New Name"
+    assert "updated_at" in args[1]
 
     mock_audit.assert_called_once()
