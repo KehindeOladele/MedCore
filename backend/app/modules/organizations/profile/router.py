@@ -52,7 +52,7 @@ def get_organization_profile(
     "",
     response_model=OrganizationProfileResponse,
 )
-def update_organization_profile_route(
+def update_organization_profile(
     payload: OrganizationProfileUpdate,
     current_user=Depends(get_current_user),
 ):
