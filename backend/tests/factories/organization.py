@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 
-_ORGANIZATION = {
+_DEFAULT_ORGANIZATION = {
     "id": "org1",
     "active": True,
     "name": "Test Hospital",
@@ -20,11 +20,12 @@ _ORGANIZATION = {
     "description": None,
     "logo_url": None,
     "timezone": "Africa/Lagos",
+
     "setup_completed": False,
 }
 
 
 def organization_factory(**overrides):
-    org = deepcopy(_ORGANIZATION)
-    org.update(overrides)
-    return org
+    organization = deepcopy(_DEFAULT_ORGANIZATION)
+    organization.update(overrides)
+    return organization
