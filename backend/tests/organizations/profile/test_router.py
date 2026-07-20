@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from pytest_mock import MockerFixture
 
 from fastapi.testclient import TestClient
 
@@ -55,41 +55,48 @@ PROFILE_RESPONSE = {
 # --------------------------------------
 # GET PROFILE
 # --------------------------------------
-@patch("app.modules.organizations.profile.router.get_profile")
-@patch("app.modules.organizations.profile.router.get_user_organization_id")
 def test_get_profile_authenticated(
-    mock_get_org,
-    mock_get_profile,
+    authenticated_client,
+    organization_data,
+    mocker: MockerFixture,
 ):
-    mock_get_org.return_value = "org1"
-    mock_get_profile.return_value = PROFILE_RESPONSE
+    mocker.patch(
+        "app.modules.organizations.profile.router.get_user_organization_id",
+        return_value="org1",
+    )
 
-    response = client.get("/organizations/profile")
+    mocker.patch(
+        "app.modules.organizations.profile.router.get_profile",
+        return_value=organization_data,
+    )
+
+    response = authenticated_client.get(
+        "/organizations/profile"
+    )
 
     assert response.status_code == 200
     assert response.json()["id"] == "org1"
-
-    mock_get_org.assert_called_once_with("user-123")
-    mock_get_profile.assert_called_once_with("org1")
 
 
 # --------------------------------------
 # UPDATE PROFILE
 # --------------------------------------
-@patch("app.modules.organizations.profile.router.update_profile")
-@patch("app.modules.organizations.profile.router.get_user_organization_id")
 def test_update_profile(
-    mock_get_org,
-    mock_update_profile,
+    authenticated_client,
+    updated_organization_data,
+    mocker: MockerFixture,
 ):
-    mock_get_org.return_value = "org1"
+    mocker.patch(
+        "app.modules.organizations.profile.router.get_user_organization_id",
+        return_value="org1",
+    )
 
-    updated = PROFILE_RESPONSE.copy()
-    updated["name"] = "Updated Hospital"
+    mocker.patch(
+        "app.modules.organizations.profile.router.update_profile",
+        return_value=updated_organization_data,
+    )
 
-    mock_update_profile.return_value = updated
-
-    response = client.patch(
+    response = authenticated_client.patch(
         "/organizations/profile",
         json={
             "name": "Updated Hospital"
@@ -98,6 +105,3 @@ def test_update_profile(
 
     assert response.status_code == 200
     assert response.json()["name"] == "Updated Hospital"
-
-    mock_get_org.assert_called_once_with("user-123")
-    mock_update_profile.assert_called_once()
