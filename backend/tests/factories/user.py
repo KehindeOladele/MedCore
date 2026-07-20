@@ -1,13 +1,13 @@
 from copy import deepcopy
 
 
-_USER = {
+_DEFAULT_USER = {
+    "id": "user-123",
     "email": "admin@test.com",
-    "pasword": "admin1*",
 }
 
 
 def user_factory(**overrides):
-    user = deepcopy(_USER)
+    user = deepcopy(_DEFAULT_USER)
     user.update(overrides)
     return user
