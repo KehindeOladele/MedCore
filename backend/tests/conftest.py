@@ -20,3 +20,8 @@ def organization_data():
         "timezone": "Africa/Lagos",
         "setup_completed": False,
     }
+
+pytest_plugins = [
+    "tests.fixtures.auth",
+    "tests.fixtures.organizations",
+]
