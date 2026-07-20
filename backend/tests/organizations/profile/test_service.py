@@ -11,7 +11,6 @@ from app.modules.organizations.exceptions import (
 from app.modules.organizations.profile.schemas import (
     OrganizationProfileUpdate,
 )
-from tests.conftest import organization_data
 
 
 # ------------------
