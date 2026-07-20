@@ -5,14 +5,12 @@ from fastapi.testclient import TestClient
 from main import app
 from app.core.security import get_current_user
 
+from tests.factories.user import user_factory
 
 @pytest.fixture
 def current_user():
 
-    return {
-        "id": "user-123",
-        "email": "admin@test.com",
-    }
+    return user_factory
 
 
 @pytest.fixture
@@ -22,7 +20,9 @@ def authenticated_client(
 
     app.dependency_overrides[
         get_current_user
-    ] = lambda: current_user
+    ] = (
+        lambda: current_user
+    )
 
     client = TestClient(app)
 
