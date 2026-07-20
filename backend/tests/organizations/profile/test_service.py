@@ -1,4 +1,5 @@
 import pytest
+from pytest_mock import MockerFixture
 from unittest.mock import patch
 from app.modules.organizations.profile.service import (
     get_profile,
@@ -53,8 +54,9 @@ def test_get_profile_not_found(mock_get):
 # UPDATE PROFILE TESTS
 # ---------------------
 def test_update_profile(
-    mocker,
+    mocker: MockerFixture,
     organization_data,
+    updated_organization_data,
 ):
     mock_get = mocker.patch(
         "app.modules.organizations.profile.service.get_organization_profile"
@@ -68,14 +70,11 @@ def test_update_profile(
         "app.modules.organizations.profile.service.log_audit_event"
     )
 
-    updated_org = organization_data.copy()
-    updated_org["name"] = "New Name"
-
     mock_get.return_value = organization_data
-    mock_update.return_value = updated_org
+    mock_update.return_value = updated_organization_data
 
     payload = OrganizationProfileUpdate(
-        name="New Name"
+        name="Updated Hospital"
     )
 
     result = update_profile(
@@ -84,7 +83,7 @@ def test_update_profile(
         actor_id="user1",
     )
 
-    assert result.name == "New Name"
+    assert result.name == "Updated Hospital"
 
     mock_get.assert_called_once_with("org1")
     mock_update.assert_called_once()
