@@ -1,4 +1,4 @@
 pytest_plugins = [
     "tests.fixtures.auth",
-    "tests.fixtures.organization",
+    "tests.fixtures.organizations",
 ]
