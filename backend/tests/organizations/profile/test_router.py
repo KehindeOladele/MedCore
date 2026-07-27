@@ -17,33 +17,6 @@ def override_current_user():
     }
 
 
-# ------------------------
-# SHARED MOCK PROFILE
-# ------------------------
-PROFILE_RESPONSE = {
-    "id": "org1",
-    "active": True,
-    "name": "Test Hospital",
-    "type": "hospital",
-    "telecom": {
-        "phone": "08012345678",
-        "email": "admin@test.com",
-        "website": "https://hospital.test",
-    },
-    "address": {
-        "line": "123 Main Street",
-        "city": "Lagos",
-        "state": "Lagos",
-        "postal_code": "100001",
-        "country": "Nigeria",
-    },
-    "description": None,
-    "logo_url": None,
-    "timezone": "Africa/Lagos",
-    "setup_completed": False,
-}
-
-
 # --------------------------------------
 # GET PROFILE
 # --------------------------------------
