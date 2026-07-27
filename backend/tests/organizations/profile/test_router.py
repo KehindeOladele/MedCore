@@ -1,11 +1,5 @@
 from pytest_mock import MockerFixture
 
-from fastapi.testclient import TestClient
-
-from main import app
-from app.core.security import get_current_user
-
-
 
 # ------------------------
 # AUTH OVERRIDE
@@ -22,7 +16,7 @@ def override_current_user():
 # --------------------------------------
 def test_get_profile_authenticated(
     authenticated_client,
-    organization_data,
+    organization_profile_data,
     mocker: MockerFixture,
 ):
     mocker.patch(
@@ -32,7 +26,7 @@ def test_get_profile_authenticated(
 
     mocker.patch(
         "app.modules.organizations.profile.router.get_profile",
-        return_value=organization_data,
+        return_value=organization_profile_data,
     )
 
     response = authenticated_client.get(
@@ -48,7 +42,7 @@ def test_get_profile_authenticated(
 # --------------------------------------
 def test_update_profile(
     authenticated_client,
-    updated_organization_data,
+    updated_organization_profile_data,
     mocker: MockerFixture,
 ):
     mocker.patch(
@@ -58,7 +52,7 @@ def test_update_profile(
 
     mocker.patch(
         "app.modules.organizations.profile.router.update_profile",
-        return_value=updated_organization_data,
+        return_value=updated_organization_profile_data,
     )
 
     response = authenticated_client.patch(
