@@ -10,7 +10,7 @@ from tests.factories.user import user_factory
 @pytest.fixture
 def current_user():
 
-    return user_factory
+    return user_factory()
 
 
 @pytest.fixture
