@@ -14,3 +14,7 @@ def mock_list(data: list[Any]) -> SimpleNamespace:
 
 def mock_empty() -> SimpleNamespace:
     return SimpleNamespace(data=None, error=None)
+
+
+def mock_error(message: str = "Mock Supabase error") -> SimpleNamespace:
+    return SimpleNamespace(data=None, error=SimpleNamespace(message=message))
