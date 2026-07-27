@@ -6,21 +6,21 @@ _DEFAULT_ORGANIZATION = {
     "active": True,
     "name": "Test Hospital",
     "type": "hospital",
-
-    "phone": "08012345678",
-    "email": "admin@test.com",
-    "website": "https://hospital.test",
-
-    "address": "123 Main Street",
-    "city": "Lagos",
-    "state": "Lagos",
-    "postal_code": "100001",
-    "country": "Nigeria",
-
+    "telecom": {
+        "phone": "08012345678",
+        "email": "admin@test.com",
+        "website": "https://hospital.test",
+    },
+    "address": {
+        "line": "123 Main Street",
+        "city": "Lagos",
+        "state": "Lagos",
+        "postal_code": "100001",
+        "country": "Nigeria",
+    },
     "description": None,
     "logo_url": None,
     "timezone": "Africa/Lagos",
-
     "setup_completed": False,
 }
 
