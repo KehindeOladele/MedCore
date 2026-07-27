@@ -1,28 +1,27 @@
-from unittest.mock import MagicMock, patch
+# tests/test_queries.py
+from app.modules.organizations.profile.queries import get_organization_profile
+from tests.helpers.responses import mock_single
+from tests.helpers.supabase import patch_supabase_table
 
-from app.modules.organizations.profile.queries import (
-    get_organization_profile,
-)
 
-
-@patch("app.modules.organizations.profile.queries.supabase_admin")
-def test_get_profile(mock_supabase):
-
-    mock_response = MagicMock()
-    mock_response.data = {
-        "id": "org-123",
-        "name": "MedCore"
-    }
-
-    (
-        mock_supabase
-        .table.return_value
-        .select.return_value
-        .eq.return_value
-        .maybe_single.return_value
-        .execute.return_value
-    ) = mock_response
+def test_get_profile(mocker):
+    supabase_admin, chain = patch_supabase_table(
+        mocker,
+        "app.modules.organizations.profile.queries.supabase_admin",
+        response=mock_single(
+            {
+                "id": "org-123",
+                "name": "MedCore",
+            }
+        ),
+    )
 
     organization = get_organization_profile("org-123")
 
     assert organization["name"] == "MedCore"
+
+    supabase_admin.table.assert_called_once_with("organizations")
+    chain.select.assert_called_once_with("*")
+    chain.eq.assert_called_once_with("id", "org-123")
+    chain.maybe_single.assert_called_once()
+    chain.execute.assert_called_once()
