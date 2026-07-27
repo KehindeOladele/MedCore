@@ -6,11 +6,6 @@ from main import app
 from app.core.security import get_current_user
 
 
-# ------------------------
-# TEST CLIENT
-# ------------------------
-client = TestClient(app)
-
 
 # ------------------------
 # AUTH OVERRIDE
@@ -20,9 +15,6 @@ def override_current_user():
         "id": "user-123",
         "email": "admin@test.com",
     }
-
-
-app.dependency_overrides[get_current_user] = override_current_user
 
 
 # ------------------------
