@@ -43,3 +43,9 @@ CREATE TABLE departments (
 
     deleted_at TIMESTAMPTZ
 );
+
+
+
+-- Supabase RLS 
+ALTER TABLE departments
+ENABLE ROW LEVEL SECURITY;
