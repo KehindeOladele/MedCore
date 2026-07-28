@@ -1,3 +1,19 @@
+-- Create Department Table
+-- organization_id: Supports multi-tenancy, queries are scope by organization_id.
+-- parent_department_id: Supports departmental hierarchy.
+-- code: 
+-- Codes are often used in:
+    -- Billing
+    -- HL7 integrations
+    -- Reporting
+    -- Internal APIs
+-- active: Avoids deleting departments that have practitioners or historical records.
+-- Audit Fields: That keeps every business module consistent.
+    -- created_by
+    -- updated_by
+    -- created_at
+    -- updated_at
+    -- deleted_at
 CREATE TABLE departments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
