@@ -1,48 +1,157 @@
 """
-Organization module exceptions.
+Organization domain exceptions.
+
+These exceptions represent business/domain errors only.
+They are intentionally framework-agnostic and should not
+depend on FastAPI or HTTP concepts.
 """
 
 
+# ---------------------------------------------------------
+# Base Organization Exception
+# ---------------------------------------------------------
 class OrganizationError(Exception):
-    """Base exception for organization-related errors."""
-    pass
+    """
+    Base exception for all organization domain errors.
+    """
+
+    default_message = "Organization error."
+
+    def __init__(self, message: str | None = None):
+        super().__init__(message or self.default_message)
 
 
+# ---------------------------------------------------------
+# Organization Exceptions
+# ---------------------------------------------------------
 class UserOrganizationNotFoundError(OrganizationError):
-    """Raised when an user organization cannot be found"""
-    pass
+    """
+    Raised when a user's organization cannot be found.
+    """
+
+    default_message = (
+        "User organization could not be found."
+    )
 
 
 class OrganizationNotFoundError(OrganizationError):
-    """Raised when an organization cannot be found."""
-    pass
+    """
+    Raised when an organization does not exist.
+    """
+
+    default_message = (
+        "Organization not found."
+    )
 
 
-class OrganizationOnboardingError(OrganizationError):
-    """Base exception for onboarding workflow failures."""
-    pass
+class OrganizationAccessDeniedError(OrganizationError):
+    """
+    Raised when a user attempts to access an organization
+    they are not authorized to access.
+    """
+
+    default_message = (
+        "You do not have permission to access this organization."
+    )
 
 
-class EmailDeliveryError(OrganizationOnboardingError):
-    """Raised when the welcome email cannot be delivered."""
-    pass
+class OrganizationMembershipRequiredError(
+    OrganizationError
+):
+    """
+    Raised when organization membership is required.
+    """
+
+    default_message = (
+        "Organization membership is required."
+    )
 
 
-class InvalidOrganizationEmailError(OrganizationOnboardingError):
-    """Raised when the organization's email is missing or invalid."""
-    pass
+class OrganizationAdminRequiredError(
+    OrganizationError
+):
+    """
+    Raised when administrator privileges are required.
+    """
+
+    default_message = (
+        "Organization administrator privileges are required."
+    )
 
 
-class OrganizationProfileError(OrganizationError):
-    """Base exception for organization profile operations."""
-    pass
+# ---------------------------------------------------------
+# Organization Onboarding Exceptions
+# ---------------------------------------------------------
+class OrganizationOnboardingError(
+    OrganizationError
+):
+    """
+    Base exception for onboarding workflow failures.
+    """
+
+    default_message = (
+        "Organization onboarding failed."
+    )
 
 
-class OrganizationProfileValidationError(OrganizationProfileError):
-    """Raised when organization profile validation fails."""
-    pass
+class EmailDeliveryError(
+    OrganizationOnboardingError
+):
+    """
+    Raised when onboarding email delivery fails.
+    """
+
+    default_message = (
+        "Unable to deliver onboarding email."
+    )
 
 
-class OrganizationProfileUpdateError(OrganizationProfileError):
-    """Raised when updating the organization profile fails."""
-    pass
+class InvalidOrganizationEmailError(
+    OrganizationOnboardingError
+):
+    """
+    Raised when the organization's email is invalid.
+    """
+
+    default_message = (
+        "Organization email is missing or invalid."
+    )
+
+
+# ---------------------------------------------------------
+# Organization Profile Exceptions
+# ---------------------------------------------------------
+class OrganizationProfileError(
+    OrganizationError
+):
+    """
+    Base exception for organization profile operations.
+    """
+
+    default_message = (
+        "Organization profile operation failed."
+    )
+
+
+class OrganizationProfileValidationError(
+    OrganizationProfileError
+):
+    """
+    Raised when organization profile validation fails.
+    """
+
+    default_message = (
+        "Organization profile validation failed."
+    )
+
+
+class OrganizationProfileUpdateError(
+    OrganizationProfileError
+):
+    """
+    Raised when updating an organization profile fails.
+    """
+
+    default_message = (
+        "Failed to update organization profile."
+    )
