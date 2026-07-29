@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
 
 from app.modules.organizations.exceptions import (
@@ -167,3 +167,96 @@ async def email_delivery_handler(
             "detail": str(exc),
         },
     )
+
+
+# -------------------------------------
+# Register Exception Handlers
+# -------------------------------------
+def register_exception_handlers(
+    app: FastAPI,
+) -> None:
+    """
+    Register all application exception handlers.
+
+    This serves as the central registration point for
+    translating domain exceptions into HTTP responses.
+    """
+
+    # -------------------------
+    # Organization Exceptions
+    # -------------------------
+    app.add_exception_handler(
+        OrganizationError,
+        organization_error_handler,
+    )
+
+    app.add_exception_handler(
+        UserOrganizationNotFoundError,
+        user_organization_not_found_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationNotFoundError,
+        organization_not_found_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationAccessDeniedError,
+        organization_access_denied_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationMembershipRequiredError,
+        organization_membership_required_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationAdminRequiredError,
+        organization_admin_required_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationProfileValidationError,
+        organization_profile_validation_handler,
+    )
+
+    app.add_exception_handler(
+        OrganizationProfileUpdateError,
+        organization_profile_update_handler,
+    )
+
+    app.add_exception_handler(
+        InvalidOrganizationEmailError,
+        invalid_organization_email_handler,
+    )
+
+    app.add_exception_handler(
+        EmailDeliveryError,
+        email_delivery_handler,
+    )
+
+
+# ======================================
+# Departments
+# ======================================
+...
+
+# ======================================
+# Healthcare Services
+# ======================================
+...
+
+# ======================================
+# Practitioners
+# ======================================
+...
+
+# ======================================
+# Patients
+# ======================================
+...
+
+# ======================================
+# Appointments
+# ======================================
+...
