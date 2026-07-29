@@ -1,10 +1,14 @@
 # ----- Event Type Models -----
 class EventTypes:
-    
+
+    # Patients EventTypes
+    # -------------------
     PATIENT_CREATED = (
         "patient.created"
         )
-    
+
+    # Onboarding EventTypes
+    # ---------------------
     ONBOARDING_EMAIL_REQUESTED = (
         "onboarding.email_requested"
     )
@@ -20,6 +24,8 @@ class EventTypes:
         "organization.created"
     )
 
+    # Organization EventTypes
+    # -----------------------
     ORGANIZATION_ONBOARDING_REQUESTED = (
         "organization.onboarding.requested"
     )
@@ -34,6 +40,20 @@ class EventTypes:
 
     ORGANIZATION_PROFILE_UPDATED = (
         "organization.profile.updated"
+    )
+
+    # Department EventTypes
+    # ---------------------
+    DEPARTMENT_CREATED = (
+        "department.created"
+    )
+
+    DEPARTMENT_UPDATED = (
+        "department.updated"
+    )
+
+    DEPARTMENT_DELETED = (
+        "department.deleted"
     )
 
 
