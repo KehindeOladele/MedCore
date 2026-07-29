@@ -56,6 +56,14 @@ class EventTypes:
         "department.deleted"
     )
 
+    DEPARTMENT_ONBOARDING_REQUESTED = (
+        "department.onboarding.requested"
+    )
+
+    DEPARTMENT_ONBOARDING_COMPLETED = (
+        "department.onboarding.completed"
+    )
+
 
 # ----- Event Status Model -----
 class EventStatus:
