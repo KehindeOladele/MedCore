@@ -150,3 +150,29 @@ def soft_delete_department(
     )
 
     return response.data[0]
+
+
+
+# -------------------------------------------------------------
+# List Department Children
+# -------------------------------------------------------------
+def list_department_children(
+    organization_id: UUID,
+    parent_department_id: UUID,
+) -> list[dict]:
+    """
+    Return all direct child departments.
+    """
+
+    response = (
+        supabase
+        .table(TABLE_NAME)
+        .select("*")
+        .eq("organization_id", str(organization_id))
+        .eq("parent_department_id", str(parent_department_id))
+        .is_("deleted_at", "null")
+        .order("name")
+        .execute()
+    )
+
+    return response.data
