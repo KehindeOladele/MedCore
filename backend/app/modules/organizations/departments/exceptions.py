@@ -1,5 +1,9 @@
 from fastapi import HTTPException, status
+from app.modules.organizations.exceptions import OrganizationError
 
+"""
+Department module exceptions.
+"""
 
 class DepartmentError(HTTPException):
     """
@@ -14,14 +18,6 @@ class DepartmentError(HTTPException):
         super().__init__(
             status_code=status_code,
             detail=detail,
-        )
-
-
-class DepartmentNotFoundError(DepartmentError):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Department not found."
         )
 
 
@@ -53,7 +49,7 @@ class DepartmentHasChildrenError(DepartmentError):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Department has child departments."
+            detail="Department has no child departments."
         )
 
 
