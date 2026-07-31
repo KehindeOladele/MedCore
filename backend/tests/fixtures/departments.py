@@ -3,6 +3,7 @@ from tests.factories.departments import department_factory
 from app.modules.organizations.departments.schemas import (
     DepartmentCreate,
     DepartmentResponse,
+    DepartmentUpdate
 )
 
 
@@ -11,9 +12,9 @@ def department_data():
     return department_factory()
 
 
-# -----------------
-# UPDATE DEPARTMENT   
-# -----------------
+# ----------------------
+# UPDATE DEPARTMENT DATA   
+# ----------------------
 @pytest.fixture
 def updated_department_data():
     return department_factory(
@@ -32,4 +33,15 @@ def create_payload():
         code="CARD",
         description="Cardiology Department",
         parent_department_id=None,
+    )
+
+
+# -----------------
+# UPDATE DEPARTMENT   
+# -----------------
+@pytest.fixture
+def update_payload():
+    return DepartmentUpdate(
+        name="Updated Cardiology",
+        description="Updated Department",
     )
