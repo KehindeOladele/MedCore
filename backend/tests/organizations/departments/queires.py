@@ -1,59 +1,57 @@
 import pytest
 
 from app.modules.organizations.departments import queries
-from tests.helpers.responses import make_supabase_response
+
+from tests.helpers.responses import (
+    mock_empty,
+)
+from tests.helpers.supabase import (
+    patch_supabase_empty,
+    patch_supabase_list,
+    patch_supabase_single,
+    patch_supabase_table,
+)
 
 
+SUPABASE_TARGET = (
+    "app.modules.organizations.departments.queries.supabase"
+)
 
-# ---------------------------
-# CREATE TABLE QUERY TEST
-# ---------------------------
-def test_create_department(mocker, department_data):
-    """Should insert a department and return the created record."""
 
-    execute = mocker.Mock(
-        return_value=make_supabase_response([department_data])
-    )
+# ---------------------------------------------------------------------
+# create_department
+# ---------------------------------------------------------------------
 
-    insert = mocker.Mock(return_value=mocker.Mock(execute=execute))
-
-    table = mocker.Mock(return_value=mocker.Mock(insert=insert))
-
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+def test_create_department(
+    mocker,
+    department_data,
+):
+    _, chain = patch_supabase_single(
+        mocker,
+        SUPABASE_TARGET,
+        department_data,
     )
 
     result = queries.create_department(department_data)
 
-    table.assert_called_once_with("departments")
-    insert.assert_called_once_with(department_data)
-    execute.assert_called_once()
+    chain.insert.assert_called_once_with(department_data)
+    chain.execute.assert_called_once()
 
     assert result == department_data
 
 
-# ---------------------------
-# GET TABLE QUERY TEST
-# ---------------------------
-def test_get_department(mocker, department_data):
+# ---------------------------------------------------------------------
+# get_department
+# ---------------------------------------------------------------------
 
-    execute = mocker.Mock(
-        return_value=make_supabase_response([department_data])
-    )
-
-    single = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    eq = mocker.Mock(return_value=mocker.Mock(single=single))
-
-    select = mocker.Mock(return_value=mocker.Mock(eq=eq))
-
-    table = mocker.Mock(return_value=mocker.Mock(select=select))
-
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+def test_get_department(
+    mocker,
+    department_data,
+):
+    _, chain = patch_supabase_single(
+        mocker,
+        SUPABASE_TARGET,
+        department_data,
     )
 
     result = queries.get_department(
@@ -61,195 +59,180 @@ def test_get_department(mocker, department_data):
         department_id=department_data["id"],
     )
 
+    chain.select.assert_called_once()
+    chain.execute.assert_called_once()
+
     assert result == department_data
-    
 
-# ---------------------------
-# LIST TABLE QUERY TEST
-# ---------------------------
-def test_list_departments(mocker, department_data):
 
-    execute = mocker.Mock(
-        return_value=make_supabase_response([department_data])
+def test_get_department_not_found(
+    mocker,
+):
+    _, chain = patch_supabase_empty(
+        mocker,
+        SUPABASE_TARGET,
     )
 
-    order = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    eq = mocker.Mock(return_value=mocker.Mock(order=order))
-    select = mocker.Mock(return_value=mocker.Mock(eq=eq))
+    result = queries.get_department(
+        organization_id="org-1",
+        department_id="dept-1",
+    )
 
-    table = mocker.Mock(return_value=mocker.Mock(select=select))
+    chain.execute.assert_called_once()
 
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+    assert result is None
+
+
+# ---------------------------------------------------------------------
+# list_departments
+# ---------------------------------------------------------------------
+
+def test_list_departments(
+    mocker,
+    department_data,
+):
+    _, chain = patch_supabase_list(
+        mocker,
+        SUPABASE_TARGET,
+        [department_data],
     )
 
     result = queries.list_departments(
         department_data["organization_id"]
     )
 
-    assert len(result) == 1
-    assert result[0]["name"] == department_data["name"]
-        
+    chain.select.assert_called_once()
+    chain.order.assert_called_once()
 
-# --------------------------------
-# DEPARTMENT EXIST TRUE QUERY TEST
-# --------------------------------
-def test_department_exists_true(mocker, department_data):
+    assert result == [department_data]
 
-    execute = mocker.Mock(
-        return_value=make_supabase_response([department_data])
+
+def test_list_departments_empty(
+    mocker,
+):
+    _, chain = patch_supabase_empty(
+        mocker,
+        SUPABASE_TARGET,
     )
 
-    limit = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    eq = mocker.Mock(return_value=mocker.Mock(limit=limit))
-    select = mocker.Mock(return_value=mocker.Mock(eq=eq))
+    result = queries.list_departments("org-1")
 
-    table = mocker.Mock(return_value=mocker.Mock(select=select))
+    chain.execute.assert_called_once()
 
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+    assert result == []
+
+
+# ---------------------------------------------------------------------
+# department_exists
+# ---------------------------------------------------------------------
+
+def test_department_exists_true(
+    mocker,
+    department_data,
+):
+    patch_supabase_single(
+        mocker,
+        SUPABASE_TARGET,
+        department_data,
     )
 
-    assert (
-        queries.department_exists(
-            department_data["organization_id"],
-            department_data["name"],
-        )
-        is True
-    )
-        
+    assert queries.department_exists(
+        department_data["organization_id"],
+        department_data["name"],
+    ) is True
 
-# ---------------------------------
-# DEPARTMENT EXIST FALSE QUERY TEST
-# ---------------------------------
-def test_department_exists_false(mocker):
 
-    execute = mocker.Mock(
-        return_value=make_supabase_response([])
+def test_department_exists_false(
+    mocker,
+):
+    patch_supabase_empty(
+        mocker,
+        SUPABASE_TARGET,
     )
 
-    limit = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    eq = mocker.Mock(return_value=mocker.Mock(limit=limit))
-    select = mocker.Mock(return_value=mocker.Mock(eq=eq))
+    assert queries.department_exists(
+        "org-1",
+        "Radiology",
+    ) is False
 
-    table = mocker.Mock(return_value=mocker.Mock(select=select))
 
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
-    )
+# ---------------------------------------------------------------------
+# update_department
+# ---------------------------------------------------------------------
 
-    assert (
-        queries.department_exists(
-            "org1",
-            "Radiology",
-        )
-        is False
-    )
-        
-
-# --------------------------------
-# UPDATE DEPARTMENT QUERY TEST
-# --------------------------------
 def test_update_department(
     mocker,
     department_data,
     updated_department_data,
 ):
-
-    execute = mocker.Mock(
-        return_value=make_supabase_response([updated_department_data])
-    )
-
-    single = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    eq = mocker.Mock(return_value=mocker.Mock(single=single))
-    update = mocker.Mock(return_value=mocker.Mock(eq=eq))
-
-    table = mocker.Mock(return_value=mocker.Mock(update=update))
-
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
-    )
-
-    result = queries.update_department(
-        department_data["id"],
+    _, chain = patch_supabase_single(
+        mocker,
+        SUPABASE_TARGET,
         updated_department_data,
     )
 
-    assert result["name"] == updated_department_data["name"]
-            
-
-# --------------------------------
-# DELETE DEPARTMENT QUERY TEST
-# --------------------------------
-def test_soft_delete_department(mocker):
-
-    execute = mocker.Mock(
-        return_value=make_supabase_response([])
+    result = queries.update_department(
+        department_id=department_data["id"],
+        payload=updated_department_data,
     )
 
-    eq = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    update = mocker.Mock(return_value=mocker.Mock(eq=eq))
+    chain.update.assert_called_once_with(updated_department_data)
+    chain.execute.assert_called_once()
 
-    table = mocker.Mock(return_value=mocker.Mock(update=update))
+    assert result == updated_department_data
 
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+
+# ---------------------------------------------------------------------
+# soft_delete_department
+# ---------------------------------------------------------------------
+
+def test_soft_delete_department(
+    mocker,
+):
+    _, chain = patch_supabase_empty(
+        mocker,
+        SUPABASE_TARGET,
     )
 
-    queries.soft_delete_department("dept1")
+    queries.soft_delete_department("dept-1")
 
-    execute.assert_called_once()
-                
+    chain.update.assert_called_once()
+    chain.execute.assert_called_once()
 
-# -----------------------------------
-# LIST DEPARTMENT CHILDREN QUERY TEST
-# -----------------------------------
+
+# ---------------------------------------------------------------------
+# list_department_children
+# ---------------------------------------------------------------------
+
 def test_list_department_children(
     mocker,
     department_data,
 ):
-
-    execute = mocker.Mock(
-        return_value=make_supabase_response([department_data])
-    )
-
-    eq = mocker.Mock(return_value=mocker.Mock(execute=execute))
-    select = mocker.Mock(return_value=mocker.Mock(eq=eq))
-
-    table = mocker.Mock(return_value=mocker.Mock(select=select))
-
-    mocker.patch.object(
-        queries,
-        "supabase",
-        mocker.Mock(table=table),
+    _, chain = patch_supabase_list(
+        mocker,
+        SUPABASE_TARGET,
+        [department_data],
     )
 
     result = queries.list_department_children(
-        department_data["organization_id"],
-        department_data["parent_department_id"],
+        organization_id=department_data["organization_id"],
+        parent_department_id=department_data["parent_department_id"],
     )
 
-    assert isinstance(result, list)
-                
+    chain.select.assert_called_once()
+    chain.execute.assert_called_once()
 
-# ---------------------------------------
-# DEPARTMENT HAS CHILDREN TRUE QUERY TEST
-# ---------------------------------------
+    assert result == [department_data]
+
+
+# ---------------------------------------------------------------------
+# has_child_departments
+# ---------------------------------------------------------------------
+
 def test_has_child_departments_true(
     mocker,
     department_data,
 ):
-
     mocker.patch.object(
         queries,
         "list_department_children",
@@ -263,13 +246,11 @@ def test_has_child_departments_true(
         )
         is True
     )
-                
 
-# ----------------------------------------
-# DEPARTMENT HAS CHILDREN FALSE QUERY TEST
-# ----------------------------------------
-def test_has_child_departments_false(mocker):
 
+def test_has_child_departments_false(
+    mocker,
+):
     mocker.patch.object(
         queries,
         "list_department_children",
@@ -278,8 +259,8 @@ def test_has_child_departments_false(mocker):
 
     assert (
         queries.has_child_departments(
-            "org1",
-            "dept1",
+            "org-1",
+            "dept-1",
         )
         is False
     )
