@@ -5,16 +5,51 @@ from typing import Any
 
 
 def mock_single(data: Any) -> SimpleNamespace:
-    return SimpleNamespace(data=data, error=None)
+    """
+    Mock a Supabase response returning a single record.
+    """
+    return SimpleNamespace(
+        data=data,
+        error=None,
+    )
 
 
 def mock_list(data: list[Any]) -> SimpleNamespace:
-    return SimpleNamespace(data=data, error=None)
+    """
+    Mock a Supabase response returning multiple records.
+    """
+    return SimpleNamespace(
+        data=data,
+        error=None,
+    )
 
 
 def mock_empty() -> SimpleNamespace:
-    return SimpleNamespace(data=None, error=None)
+    """
+    Mock an empty Supabase response.
+    """
+    return SimpleNamespace(
+        data=[],
+        error=None,
+    )
 
 
 def mock_error(message: str = "Mock Supabase error") -> SimpleNamespace:
-    return SimpleNamespace(data=None, error=SimpleNamespace(message=message))
+    """
+    Mock a failed Supabase response.
+    """
+    return SimpleNamespace(
+        data=None,
+        error=SimpleNamespace(message=message),
+    )
+
+
+def mock_count(count: int) -> SimpleNamespace:
+    """
+    Mock responses that include a count.
+    """
+    return SimpleNamespace(
+        data=[],
+        count=count,
+        error=None,
+    )
