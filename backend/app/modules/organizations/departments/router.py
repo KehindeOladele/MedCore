@@ -104,6 +104,7 @@ def update_department(
     department_id: UUID,
     payload: DepartmentUpdate,
     current_user=Depends(get_current_user),
+    organization=Depends(require_organization_admin),
 ):
     return update_department_service(
         organization_id=organization_id,
@@ -125,6 +126,7 @@ def delete_department(
     organization_id: UUID,
     department_id: UUID,
     current_user=Depends(get_current_user),
+    organization=Depends(require_organization_admin),
 ):
     delete_department_service(
         organization_id=organization_id,
