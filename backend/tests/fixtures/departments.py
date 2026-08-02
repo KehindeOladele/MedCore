@@ -16,8 +16,12 @@ def department_data():
 # UPDATE DEPARTMENT DATA   
 # ----------------------
 @pytest.fixture
-def updated_department_data():
+def updated_department_data(department_data):
     return department_factory(
+        id=department_data["id"],
+        organization_id=department_data["organization_id"],
+        created_by=department_data["created_by"],
+        updated_by=department_data["updated_by"],
         name="Updated Cardiology",
         description="Updated description",
     )
