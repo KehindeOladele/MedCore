@@ -1,15 +1,29 @@
+from datetime import datetime, timezone
+from uuid import uuid4
+
+
 def department_factory(**overrides):
+    now = datetime.now(timezone.utc)
+
     data = {
-        "id": "dept-1",
-        "organization_id": "org-1",
+        "id": uuid4(),
+        "organization_id": uuid4(),
+
         "name": "Cardiology",
         "code": "CARD",
         "description": "Cardiology Department",
+
         "parent_department_id": None,
         "active": True,
-        "created_at": "2026-07-30T12:00:00Z",
-        "updated_at": "2026-07-30T12:00:00Z",
+
+        "created_by": uuid4(),
+        "updated_by": uuid4(),
+
+        "created_at": now,
+        "updated_at": now,
+        "deleted_at": None,
     }
 
     data.update(overrides)
+
     return data
