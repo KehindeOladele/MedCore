@@ -562,3 +562,94 @@ def test_update_department_response_contract(
     }
 
     assert expected.issubset(body.keys())
+
+
+# --------------------------------
+# DELETE DEPARTMENT ROUTE TEST
+# --------------------------------
+def test_delete_department_success(
+    authenticated_client,
+    authenticated_user,
+    mocker,
+    department_data,
+):
+    delete = mocker.patch.object(
+        router,
+        "delete_department_service",
+    )
+
+    response = authenticated_client.delete(
+        f"{BASE_URL}/{department_data['id']}"
+    )
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    assert response.content == b""
+
+    delete.assert_called_once_with(
+        organization_id=ORGANIZATION_ID,
+        department_id=department_data["id"],
+        actor_id=authenticated_user["id"],
+    )
+
+
+# --------------------------------
+# DELETE AUTH REQUIRED
+# --------------------------------
+def test_delete_department_requires_authentication(
+    client,
+):
+    response = client.delete(
+        f"{BASE_URL}/{uuid4()}"
+    )
+
+    assert (
+        response.status_code
+        == status.HTTP_401_UNAUTHORIZED
+    )
+
+
+# --------------------------------
+# DELETE NOT FOUND
+# --------------------------------
+def test_delete_department_not_found(
+    authenticated_client,
+    mocker,
+):
+    mocker.patch.object(
+        router,
+        "delete_department_service",
+        side_effect=DepartmentNotFoundError(),
+    )
+
+    response = authenticated_client.delete(
+        f"{BASE_URL}/{uuid4()}"
+    )
+
+    assert (
+        response.status_code
+        == status.HTTP_404_NOT_FOUND
+    )
+
+
+# --------------------------------
+# DELETE HAS CHILDREN
+# --------------------------------
+def test_delete_department_has_children(
+    authenticated_client,
+    mocker,
+):
+    mocker.patch.object(
+        router,
+        "delete_department_service",
+        side_effect=DepartmentHasChildrenError(),
+    )
+
+    response = authenticated_client.delete(
+        f"{BASE_URL}/{uuid4()}"
+    )
+
+    assert (
+        response.status_code
+        == status.HTTP_409_CONFLICT
+    )
