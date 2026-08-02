@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 from app.core.audit.service import log_audit_event
-from app.core.events.dispatcher import emit_event
+from app.core.events.emitter import emit_event
 from app.core.events.schemas import EventTypes
 
 from .exceptions import (
