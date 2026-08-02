@@ -23,11 +23,11 @@ def create_department(data: dict[str, Any]) -> dict:
         .execute()
     )
 
-    return response.data[0]
+    return response.data[0] if response.data else None
 
 
 # ---------------------------------------------------------
-# Get by ID
+# Get Department by ID
 # ---------------------------------------------------------
 
 def get_department(
@@ -49,7 +49,7 @@ def get_department(
         .execute()
     )
 
-    return response.data
+    return response.data[0] if response.data else None
 
 
 # ---------------------------------------------------------
@@ -73,7 +73,63 @@ def list_departments(
         .execute()
     )
 
-    return response.data
+    return response.data[0] if response.data else None
+
+
+# ---------------------------------------------------------
+# Root Departments
+# ---------------------------------------------------------
+
+def get_root_departments(
+    organization_id: UUID,
+) -> list[dict]:
+    """
+    Retrieve all root-level departments for an organization.
+
+    Root departments are departments without a parent.
+    """
+
+    response = (
+        supabase
+        .table(TABLE_NAME)
+        .select("*")
+        .eq("organization_id", str(organization_id))
+        .is_("parent_department_id", "null")
+        .is_("deleted_at", "null")
+        .order("name")
+        .execute()
+    )
+
+    return response.data[0] if response.data else None
+
+
+# ---------------------------------------------------------
+# Department Children
+# ---------------------------------------------------------
+
+def list_department_children(
+    organization_id: UUID,
+    parent_department_id: UUID,
+) -> list[dict]:
+    """
+    Retrieve all direct child departments.
+    """
+
+    response = (
+        supabase
+        .table(TABLE_NAME)
+        .select("*")
+        .eq("organization_id", str(organization_id))
+        .eq(
+            "parent_department_id",
+            str(parent_department_id),
+        )
+        .is_("deleted_at", "null")
+        .order("name")
+        .execute()
+    )
+
+    return response.data[0] if response.data else None
 
 
 # ---------------------------------------------------------
@@ -99,12 +155,42 @@ def department_exists(
         .execute()
     )
 
-    return response.data is not None
+    return response.data[0] if response.data else None
+
+
+# ---------------------------------------------------------
+# Has Child Departments
+# ---------------------------------------------------------
+
+def has_child_departments(
+    organization_id: UUID,
+    department_id: UUID,
+) -> bool:
+    """
+    Determine whether a department has any child departments.
+    """
+
+    response = (
+        supabase
+        .table(TABLE_NAME)
+        .select("id")
+        .eq("organization_id", str(organization_id))
+        .eq(
+            "parent_department_id",
+            str(department_id),
+        )
+        .is_("deleted_at", "null")
+        .limit(1)
+        .execute()
+    )
+
+    return bool(response.data)
 
 
 # ---------------------------------------------------------
 # Update
 # ---------------------------------------------------------
+
 
 def update_department(
     department_id: UUID,
@@ -124,7 +210,7 @@ def update_department(
         .execute()
     )
 
-    return response.data[0]
+    return response.data[0] if response.data else None
 
 
 # ---------------------------------------------------------
@@ -149,30 +235,4 @@ def soft_delete_department(
         .execute()
     )
 
-    return response.data[0]
-
-
-
-# -------------------------------------------------------------
-# List Department Children
-# -------------------------------------------------------------
-def list_department_children(
-    organization_id: UUID,
-    parent_department_id: UUID,
-) -> list[dict]:
-    """
-    Return all direct child departments.
-    """
-
-    response = (
-        supabase
-        .table(TABLE_NAME)
-        .select("*")
-        .eq("organization_id", str(organization_id))
-        .eq("parent_department_id", str(parent_department_id))
-        .is_("deleted_at", "null")
-        .order("name")
-        .execute()
-    )
-
-    return response.data
+    return response.data[0] if response.data else None
