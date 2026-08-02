@@ -3,6 +3,13 @@ from uuid import uuid4
 
 
 def department_factory(**overrides):
+    """
+    Canonical Department test factory.
+
+    Returns Python-native types (UUID, datetime) that match the
+    Department schemas. Individual tests can override any field.
+    """
+
     now = datetime.now(timezone.utc)
 
     data = {
