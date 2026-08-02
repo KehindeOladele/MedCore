@@ -29,6 +29,15 @@ class DepartmentAlreadyExistsError(DepartmentError):
         )
 
 
+
+class DepartmentNotFoundError(DepartmentError):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The department does not exist."
+        )
+
+
 class InvalidParentDepartmentError(DepartmentError):
     def __init__(self):
         super().__init__(
