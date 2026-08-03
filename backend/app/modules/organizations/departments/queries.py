@@ -23,8 +23,7 @@ def create_department(data: dict[str, Any]) -> dict:
         .execute()
     )
 
-    return response.data[0] if response.data else None
-
+    return response.data
 
 # ---------------------------------------------------------
 # Get Department by ID
@@ -49,7 +48,7 @@ def get_department(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return response.data if response.data else None 
 
 
 # ---------------------------------------------------------
@@ -73,7 +72,7 @@ def list_departments(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return response.data or []
 
 
 # ---------------------------------------------------------
@@ -129,7 +128,7 @@ def list_department_children(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return response.data or []
 
 
 # ---------------------------------------------------------
@@ -155,7 +154,7 @@ def department_exists(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return bool(response.data)
 
 
 # ---------------------------------------------------------
@@ -170,21 +169,11 @@ def has_child_departments(
     Determine whether a department has any child departments.
     """
 
-    response = (
-        supabase
-        .table(TABLE_NAME)
-        .select("id")
-        .eq("organization_id", str(organization_id))
-        .eq(
-            "parent_department_id",
-            str(department_id),
-        )
-        .is_("deleted_at", "null")
-        .limit(1)
-        .execute()
+    children = list_department_children(
+        organization_id,
+        department_id,
     )
-
-    return bool(response.data)
+    return bool(children)
 
 
 # ---------------------------------------------------------
@@ -210,7 +199,7 @@ def update_department(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return response.data if response.data else None
 
 
 # ---------------------------------------------------------
@@ -235,4 +224,4 @@ def soft_delete_department(
         .execute()
     )
 
-    return response.data[0] if response.data else None
+    return response.data if response.data else None
