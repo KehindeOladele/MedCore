@@ -7,6 +7,12 @@ from tests.factories.user import user_factory
 
 
 @pytest.fixture
+def client():
+    with TestClient(app) as client:
+        yield client
+
+        
+@pytest.fixture
 def current_user():
     return user_factory()
 
