@@ -32,7 +32,7 @@ from app.modules.organizations.dependencies import (
 
 
 router = APIRouter(
-    prefix="/organizations/{organization_id}/departments", # router is under the Organization router namespace
+    prefix="/{organization_id}/departments", 
     tags=["Organization Departments"],
 )
 
