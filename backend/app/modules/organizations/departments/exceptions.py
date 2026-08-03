@@ -33,7 +33,7 @@ class DepartmentAlreadyExistsError(DepartmentError):
 class DepartmentNotFoundError(DepartmentError):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_404_BAD_REQUEST,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="The department does not exist."
         )
 
@@ -41,7 +41,7 @@ class DepartmentNotFoundError(DepartmentError):
 class InvalidParentDepartmentError(DepartmentError):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="The specified parent department does not exist."
         )
 
@@ -49,7 +49,7 @@ class InvalidParentDepartmentError(DepartmentError):
 class CircularDepartmentHierarchyError(DepartmentError):
     def __init__(self):
         super().__init__(
-            status_code=status.HTTP_409_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Circular department hierarchy detected."
         )
 
