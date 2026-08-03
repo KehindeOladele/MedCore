@@ -32,7 +32,7 @@ def authenticated_client(current_user):
     )
 
     fake_org = {
-        "id": str(uuid4()),,
+        "id": str(uuid4()),
         "name": "Test Hospital",
     }
 
