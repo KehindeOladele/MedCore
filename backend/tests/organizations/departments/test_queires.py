@@ -173,7 +173,8 @@ def test_update_department(
 
     result = queries.update_department(
         department_id=department_data["id"],
-        payload=updated_department_data,
+        organization_id="org-1",
+        data=updated_department_data,
     )
 
     chain.update.assert_called_once_with(updated_department_data)
@@ -188,13 +189,19 @@ def test_update_department(
 
 def test_soft_delete_department(
     mocker,
+    department_data,
+    updated_department_data,
 ):
     _, chain = patch_supabase_empty(
         mocker,
         SUPABASE_TARGET,
     )
 
-    queries.soft_delete_department("dept-1")
+    queries.soft_delete_department(
+        department_id=department_data["id"],
+        organization_id="org-1",
+        data=updated_department_data
+    )
 
     chain.update.assert_called_once()
     chain.execute.assert_called_once()
