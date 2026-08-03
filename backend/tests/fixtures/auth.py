@@ -11,7 +11,7 @@ def client():
     with TestClient(app) as client:
         yield client
 
-        
+
 @pytest.fixture
 def current_user():
     return user_factory()
@@ -24,3 +24,8 @@ def authenticated_client(current_user):
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def authenticated_user(current_user):
+    return current_user
