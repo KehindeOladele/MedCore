@@ -33,6 +33,9 @@ from app.shared.tasks.event_tasks import process_events_task
 from app.modules.organizations.profile.router import (
     router as profile_router,
 )
+from app.modules.organizations.departments.router import (
+    router as departments_router,
+)
 
 
 # ---------------------------------------
@@ -45,6 +48,12 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 # MONITOR ORGANIZATION PROFILE ROUTER 
 # ---------------------------------------
 router.include_router(profile_router)
+
+
+# ---------------------------------------
+# MONITOR ORGANIZATION PROFILE ROUTER 
+# ---------------------------------------
+router.include_router(departments_router)
 
 
 #----------------------------------------- 
