@@ -79,18 +79,21 @@ class DepartmentUpdate(BaseModel):
 # ---------------------------------------------------------
 # Response
 # ---------------------------------------------------------
-class DepartmentResponse(DepartmentBase):
-    """
-    Department returned to the client.
-    """
-    model_config = ConfigDict(from_attributes=True)
+class DepartmentResponse(BaseModel):
     id: UUID
     organization_id: UUID
-    created_by: Optional[UUID]
-    updated_by: Optional[UUID]
+    name: str
+    code: Optional[str] = None
+    description: Optional[str] = None
+    parent_department_id: Optional[UUID] = None
+    active: bool
+
+    created_by: Optional[UUID] = None
+    updated_by:Optional [UUID] = None
+    deleted_at: Optional[datetime] = None
+
     created_at: datetime
     updated_at: datetime
-    deleted_at: Optional[datetime]
 
 
 # ---------------------------------------------------------
