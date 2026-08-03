@@ -25,10 +25,10 @@ def department_factory(**overrides):
 
         "created_by": uuid4(),
         "updated_by": uuid4(),
+        "deleted_at": None,
 
         "created_at": now,
         "updated_at": now,
-        "deleted_at": None,
     }
 
     data.update(overrides)
