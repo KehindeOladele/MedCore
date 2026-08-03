@@ -588,6 +588,11 @@ def test_update_department_service_logs_audit(
         "_emit_department_event",
     )
 
+    mocker.patch.object(
+    service,
+    "_validate_department_name",
+    )
+
     service.update_department_service(
         organization_id=ORGANIZATION_ID,
         department_id=department_data["id"],
@@ -637,6 +642,11 @@ def test_update_department_service_emits_event(
     event = mocker.patch.object(
         service,
         "_emit_department_event",
+    )
+
+    mocker.patch.object(
+    service,
+    "_validate_department_name",
     )
 
     service.update_department_service(
