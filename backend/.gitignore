@@ -1,4 +1,5 @@
 .venv
+.coverage
 ../.venv
 .env
 ../.env
