@@ -9,10 +9,9 @@ from .exceptions import (
     CircularDepartmentHierarchyError,
     DepartmentAlreadyExistsError,
     DepartmentHasChildrenError,
-    DepartmentInUseError,
-    DepartmentNotFoundError,
     InvalidParentDepartmentError,
 )
+from app.modules.organizations.exceptions import DepartmentNotFoundError
 
 from .queries import (
     create_department,
