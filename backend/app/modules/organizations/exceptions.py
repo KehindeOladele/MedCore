@@ -79,6 +79,16 @@ class OrganizationAdminRequiredError(
     )
 
 
+class OrganizationInactiveError(OrganizationError):
+    """
+    Raised when an operation requires an active organization.
+    """
+
+    default_message = (
+        "The organization is inactive."
+    )
+
+
 # ---------------------------------------------------------
 # Organization Onboarding Exceptions
 # ---------------------------------------------------------
@@ -154,4 +164,27 @@ class OrganizationProfileUpdateError(
 
     default_message = (
         "Failed to update organization profile."
+    )
+
+
+# ---------------------------------------------------------
+# Organization Shared Department Exceptions
+# ---------------------------------------------------------
+class DepartmentNotFoundError(OrganizationError):
+    """
+    Raised when the referenced department does not exist.
+    """
+
+    default_message = (
+        "Department not found."
+    )
+
+
+class DepartmentInactiveError(OrganizationError):
+    """
+    Raised when the referenced department is inactive.
+    """
+
+    default_message = (
+        "The department is inactive."
     )
