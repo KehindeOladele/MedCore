@@ -33,33 +33,6 @@ class HealthcareServiceAlreadyExistsError(HealthcareServiceError):
         "A healthcare service with this name already exists."
     )
 
-
-# ---------------------------------------------------------------------
-# Organization State
-# ---------------------------------------------------------------------
-
-class InactiveOrganizationError(HealthcareServiceError):
-    default_message = (
-        "Cannot manage healthcare services for an inactive organization."
-    )
-
-
-# ---------------------------------------------------------------------
-# Department Validation
-# ---------------------------------------------------------------------
-
-class DepartmentNotFoundError(HealthcareServiceError):
-    default_message = (
-        "The selected department does not exist."
-    )
-
-
-class InactiveDepartmentError(HealthcareServiceError):
-    default_message = (
-        "The selected department is inactive."
-    )
-
-
 # ---------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------
