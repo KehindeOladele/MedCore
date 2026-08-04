@@ -1,5 +1,22 @@
 -- Create Healthcare Service table
-
+-- | Column                      | Purpose                       | Future Use                         |
+-- | --------------------------- | ----------------------------- | ---------------------------------- |
+-- | `organization_id`           | Tenant boundary               | Required for every query           |
+-- | `department_id`             | Organizes services            | Department → Healthcare Services   |
+-- | `name`                      | Human-readable service name   | UI, scheduling, search             |
+-- | `description`               | Patient-facing description    | Booking portal                     |
+-- | `active`                    | Enable/disable service        | Soft retirement                    |
+-- | `category`                  | High-level classification     | FHIR `HealthcareService.category`  |
+-- | `type`                      | Service type                  | FHIR `HealthcareService.type`      |
+-- | `specialty`                 | Clinical specialty            | FHIR `HealthcareService.specialty` |
+-- | `appointment_required`      | Walk-in vs appointment        | Scheduling engine                  |
+-- | `referral_required`         | Referral workflow             | Clinical business rules            |
+-- | `online_booking_available`  | Self-service booking          | Patient portal                     |
+-- | `phone`, `email`, `website` | Contact details               | FHIR `telecom` mapping             |
+-- | `service_code`              | Internal or standardized code | Billing, interoperability          |
+-- | `display_order`             | UI ordering                   | Setup Wizard and patient portal    |
+-- | `deleted_at`                | Soft delete                   | Audit and recovery                 |
+-- | `created_by`, `updated_by`  | Audit trail                   | Compliance                         |
 
 CREATE TABLE healthcare_services (
     -- Primary Key
