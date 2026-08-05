@@ -71,6 +71,9 @@ class EventTypes:
         "healtcare_service.created"
     )
 
+    HEALTHCARE_SERVICE_UPDATED = (
+        "healtcare_service.updated"
+    )
 
 # ----- Event Status Model -----
 class EventStatus:
