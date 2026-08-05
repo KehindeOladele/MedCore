@@ -1,5 +1,6 @@
 from uuid import UUID
 from app.core.audit.service import log_audit_event
+from app.core.events.schemas import EventTypes
 from app.modules.organizations.departments import (
     queries as department_queries,
     )  
@@ -20,10 +21,13 @@ from app.modules.organizations.exceptions import (
     )
 from .schemas import (
     HealthcareServiceCreate,
-    HealthcareServiceUpdate
+    HealthcareServiceUpdate,
+    HealthcareServiceResponse
     )
 
-
+# ----------------------------------------------------------------------------
+# PRIVATE HELPERS
+# ----------------------------------------------------------------------------
 
 # ---------------------------------------------------
 # GET HEALTHCARE SERVICE HELPER
@@ -293,3 +297,216 @@ def _record_healthcare_service_activity(
         payload=payload,
     )
 
+
+
+
+# ----------------------------------------------------------------------------
+# PUBLIC SERVICES
+# ----------------------------------------------------------------------------
+
+
+
+# ---------------------------------------------------------
+# CREATE HEALTHCARE SERVICE
+# ---------------------------------------------------------
+def create_healthcare_service(
+    *,
+    organization_id: UUID,
+    payload: HealthcareServiceCreate,
+    actor_id: UUID,
+) -> HealthcareServiceResponse:
+    """
+    Create a new healthcare service.
+    """
+
+    _validate_organization_active(
+        organization_id,
+    )
+
+    _validate_department(
+        organization_id=organization_id,
+        department_id=payload.department_id,
+    )
+
+    _validate_unique_name(
+        organization_id=organization_id,
+        name=payload.name,
+    )
+
+    service_data = _prepare_create_payload(
+        organization_id=organization_id,
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+    healthcare_service = queries.create_healthcare_service(
+        service_data,
+        payload=payload
+    )
+
+    _record_healthcare_service_activity(
+        actor_id=actor_id,
+        action="healthcare_service.created",
+        healthcare_service=healthcare_service,
+        event_type=EventTypes.HEALTHCARE_SERVICE_CREATED,
+    )
+
+    return HealthcareServiceResponse.model_validate(
+        healthcare_service
+    )
+
+
+# ---------------------------------------------------------
+# GET HEALTHCARE SERVICE
+# ---------------------------------------------------------
+def get_healthcare_service_service(
+    *,
+    organization_id: UUID,
+    healthcare_service_id: UUID,
+) -> HealthcareServiceResponse:
+    """
+    Retrieve a healthcare service.
+    """
+
+    healthcare_service = (
+        _get_healthcare_service_or_raise(
+            organization_id=organization_id,
+            healthcare_service_id=healthcare_service_id,
+        )
+    )
+
+    return HealthcareServiceResponse.model_validate(
+        healthcare_service
+    )
+
+
+# ---------------------------------------------------------
+# LIST HEALTHCARE SERVICE
+# ---------------------------------------------------------
+def list_healthcare_services_service(
+    *,
+    organization_id: UUID,
+    active_only: bool = False,
+) -> list[HealthcareServiceResponse]:
+    """
+    List healthcare services.
+    """
+
+    _validate_organization_active(
+        organization_id,
+    )
+
+    services = queries.list_healthcare_services(
+        organization_id=organization_id,
+        active_only=active_only,
+    )
+
+    return [
+        HealthcareServiceResponse.model_validate(service)
+        for service in services
+    ]
+
+
+# ---------------------------------------------------------
+# UPDATE HEALTHCARE SERVICE
+# ---------------------------------------------------------
+def update_healthcare_service_service(
+    *,
+    organization_id: UUID,
+    healthcare_service_id: UUID,
+    payload: HealthcareServiceUpdate,
+    actor_id: UUID,
+) -> HealthcareServiceResponse:
+    """
+    Update a healthcare service.
+    """
+
+    existing = _get_healthcare_service_or_raise(
+        organization_id=organization_id,
+        healthcare_service_id=healthcare_service_id,
+    )
+
+    _validate_organization_active(
+        organization_id,
+    )
+
+    department_id = (
+        payload.department_id
+        if payload.department_id is not None
+        else existing.get("department_id")
+    )
+
+    _validate_department(
+        organization_id=organization_id,
+        department_id=department_id,
+    )
+
+    if payload.name is not None:
+        _validate_unique_name(
+            organization_id=organization_id,
+            name=payload.name,
+            exclude_service_id=healthcare_service_id,
+        )
+
+    update_data = _prepare_update_payload(
+        payload=payload,
+        actor_id=actor_id,
+    )
+
+    healthcare_service = (
+        queries.update_healthcare_service(
+            organization_id=organization_id,
+            healthcare_service_id=healthcare_service_id,
+            payload=payload
+        )
+    )
+
+    _record_healthcare_service_activity(
+        actor_id=actor_id,
+        action= "healthcare_service.updated",
+        healthcare_service=healthcare_service,
+        event_type=EventTypes.HEALTHCARE_SERVICE_UPDATED,
+    )
+
+    return HealthcareServiceResponse.model_validate(
+        healthcare_service
+    )
+
+
+# ---------------------------------------------------------
+# DELETE HEALTHCARE SERVICE
+# ---------------------------------------------------------
+def delete_healthcare_service_service(
+    *,
+    organization_id: UUID,
+    healthcare_service_id: UUID,
+    actor_id: UUID,
+) -> None:
+    """
+    Soft delete a healthcare service.
+    """
+
+    healthcare_service = (
+        _get_healthcare_service_or_raise(
+            organization_id=organization_id,
+            healthcare_service_id=healthcare_service_id,
+        )
+    )
+
+    _validate_organization_active(
+        organization_id,
+    )
+
+    queries.delete_healthcare_service(
+        organization_id=organization_id,
+        healthcare_service_id=healthcare_service_id,
+    )
+
+    healthcare_service["active"] = False
+
+    _record_healthcare_service_activity(
+        actor_id=actor_id,
+        action="healthcare_service.updated",
+        healthcare_service=healthcare_service,
+        event_type=EventTypes.HEALTHCARE_SERVICE_DELETED,
+    )
