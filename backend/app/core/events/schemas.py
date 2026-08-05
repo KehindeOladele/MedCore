@@ -65,6 +65,13 @@ class EventTypes:
     )
 
 
+    # Healthcare_service EventTypes
+    # -----------------------------
+    HEALTHCARE_SERVICE_CREATED = (
+        "healtcare_service.created"
+    )
+
+
 # ----- Event Status Model -----
 class EventStatus:
     PENDING = "pending"
