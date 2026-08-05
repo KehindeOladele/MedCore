@@ -278,6 +278,37 @@ def _emit_department_event(
     )
 
 
+# ---------------------------------------------------
+# RECORD DEPARTMENT ACTIVITY HELPER
+# ---------------------------------------------------
+def _record_department_activity(
+    *,
+    action: str,
+    event_type: str,
+    department: dict,
+    actor_id: UUID,
+) -> None:
+    """
+    Record audit information and emit the corresponding domain event.
+    """
+
+    _log_department_audit(
+        actor_id=actor_id,
+        action=action,
+        department=department,
+    )
+
+    payload = _build_department_event_payload(
+        department=department,
+        actor_id=actor_id,
+    )
+
+    _emit_department_event(
+        event_type=event_type,
+        payload=payload,
+    )
+
+
 
 # ---------------------------------------------------------
 # PUBLIC SERVICE
