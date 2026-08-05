@@ -261,3 +261,35 @@ def _emit_healthcare_service_event(
         event_type=event_type,
         payload=payload,
     )
+
+
+# ---------------------------------------------------
+# RECORD HEALTHCARE SERVICE ACTIVITY HELPER
+# ---------------------------------------------------
+def _record_healthcare_service_activity(
+    *,
+    action: str,
+    event_type: str,
+    healthcare_service: dict,
+    actor_id: UUID,
+) -> None:
+    """
+    Record audit information and emit the corresponding domain event.
+    """
+
+    _log_healthcare_service_audit(
+        actor_id=actor_id,
+        action=action,
+        healthcare_service=healthcare_service,
+    )
+
+    payload = _build_healthcare_service_event_payload(
+        healthcare_service=healthcare_service,
+        actor_id=actor_id,
+    )
+
+    _emit_healthcare_service_event(
+        event_type=event_type,
+        payload=payload,
+    )
+
