@@ -346,16 +346,11 @@ def create_department_service(
 
     department = create_department(department_data)
 
-    _log_department_audit(
+    _record_department_activity(
         actor_id=actor_id,
+        department=department,
         action="department.created",
-        department=department,
-    )
-
-    _emit_department_event(
         event_type=EventTypes.DEPARTMENT_CREATED,
-        actor_id=actor_id,
-        department=department,
     )
 
     return DepartmentResponse.model_validate(department)
@@ -454,16 +449,11 @@ def update_department_service(
         data=update_data,
     )
 
-    _log_department_audit(
+    _record_department_activity(
         actor_id=actor_id,
+        department=updated,
         action="department.updated",
-        department=updated,
-    )
-
-    _emit_department_event(
         event_type=EventTypes.DEPARTMENT_UPDATED,
-        actor_id=actor_id,
-        department=updated,
     )
 
     return DepartmentResponse.model_validate(updated)
@@ -503,16 +493,11 @@ def delete_department_service(
         },
     )
 
-    _log_department_audit(
+    _record_department_activity(
         actor_id=actor_id,
+        department=deleted,
         action="department.deleted",
-        department=deleted,
-    )
-
-    _emit_department_event(
         event_type=EventTypes.DEPARTMENT_DELETED,
-        actor_id=actor_id,
-        department=deleted,
     )
 
 
