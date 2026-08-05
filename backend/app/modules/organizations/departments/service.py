@@ -158,21 +158,24 @@ def _log_department_audit(
     actor_id: UUID,
     action: str,
     department: dict,
-):
+) -> None:
     """
     Record a department audit event.
     """
 
     log_audit_event(
         actor_id=str(actor_id),
+        actor_type="user",
+        organization_id=str(
+            department["organization_id"]
+        ),
         action=action,
-        resource_type="department",
-        resource_id=str(department["id"]),
+        resource_type="healthcare_service",
+        resource_id=str(
+            department["id"]
+        ),
         metadata={
-            "organization_id": str(
-                department["organization_id"]
-            ),
-            "department_name": department["name"],
+            "service_name": department["name"],
         },
     )
 
