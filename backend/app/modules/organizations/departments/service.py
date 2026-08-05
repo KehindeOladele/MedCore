@@ -263,27 +263,19 @@ def _build_department_event_payload(
 # Central Event Emitter for Department
 def _emit_department_event(
     *,
-    event_type: EventTypes,
-    actor_id: UUID,
-    department: dict,
+    event_type: str,
+    payload:dict
 ):
     """
     Publish a department domain event.
     """
 
     emit_event(
+        aggregate_type=payload["aggregate_type"],
+        aggregate_id=payload["aggregate_id"],
         event_type=event_type,
-        aggregate_id=str(department["id"]),
-        payload={
-            "organization_id": str(
-                department["organization_id"]
-            ),
-            "department_id": str(department["id"]),
-            "department_name": department["name"],
-            "actor_id": str(actor_id),
-        },
+        payload=payload,
     )
-
 
 
 
