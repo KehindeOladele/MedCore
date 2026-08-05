@@ -79,6 +79,14 @@ class EventTypes:
     "healthcare_service.updated"
     )
 
+    HEALTHCARE_SERVICE_ACTIVATED = (
+    "healthcare_service.activated"
+    )
+
+    HEALTHCARE_SERVICE_DEACTIVATED = (
+        "healthcare_service.deactivated"
+    )
+
 # ----- Event Status Model -----
 class EventStatus:
     PENDING = "pending"
