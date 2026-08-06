@@ -359,7 +359,7 @@ def create_healthcare_service(
 # ---------------------------------------------------------
 # GET HEALTHCARE SERVICE
 # ---------------------------------------------------------
-def get_healthcare_service_service(
+def get_healthcare_service(
     *,
     organization_id: UUID,
     healthcare_service_id: UUID,
@@ -383,7 +383,7 @@ def get_healthcare_service_service(
 # ---------------------------------------------------------
 # LIST HEALTHCARE SERVICE
 # ---------------------------------------------------------
-def list_healthcare_services_service(
+def list_healthcare_services(
     *,
     organization_id: UUID,
     active_only: bool = False,
@@ -410,7 +410,7 @@ def list_healthcare_services_service(
 # ---------------------------------------------------------
 # UPDATE HEALTHCARE SERVICE
 # ---------------------------------------------------------
-def update_healthcare_service_service(
+def update_healthcare_service(
     *,
     organization_id: UUID,
     healthcare_service_id: UUID,
@@ -476,7 +476,7 @@ def update_healthcare_service_service(
 # ---------------------------------------------------------
 # DELETE HEALTHCARE SERVICE
 # ---------------------------------------------------------
-def delete_healthcare_service_service(
+def delete_healthcare_service(
     *,
     organization_id: UUID,
     healthcare_service_id: UUID,
