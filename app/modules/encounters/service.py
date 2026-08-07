@@ -1,0 +1,108 @@
+from fastapi import HTTPException
+from app.core.supabase_admin import supabase_admin
+
+# ---- Creare Encounter Service -----
+def create_encounter(
+    payload,
+    created_by: str
+):
+
+    response = (
+        supabase_admin
+        .table("encounters")
+        .insert({
+            "patient_id": payload.patient_id,
+            "organization_id": payload.organization_id,
+            "practitioner_id": payload.practitioner_id,
+            "encounter_class": payload.encounter_class,
+            "status": payload.status,
+            "reason": payload.reason,
+            "appointment_id": payload.appointment_id,
+            "start_time": (
+                payload.start_time.isoformat()
+                if payload.start_time else None
+            ),
+            "end_time": (
+                payload.end_time.isoformat()
+                if payload.end_time else None
+            ),
+            "location": payload.location,
+            "notes": payload.notes,
+            "metadata": payload.metadata,
+            "created_by": created_by
+        })
+        .execute()
+    )
+
+    return response.data[0]
+
+
+# ----- Get Patient Encounter Service -----
+def get_patient_encounters(
+    patient_id: str
+):
+
+    response = (
+        supabase_admin
+        .table("encounters")
+        .select("""
+            *,
+            organizations (
+                id,
+                name
+            ),
+            practitioners (
+                id,
+                first_name,
+                last_name,
+                photo
+            )
+        """)
+        .eq("patient_id", patient_id)
+        .order(
+            "created_at",
+            desc=True
+        )
+        .execute()
+    )
+
+    return response.data
+
+
+# ----- Update Encounter Service -----
+def update_encounter(
+    encounter_id: str,
+    payload
+):
+
+    update_data = payload.model_dump(
+        exclude_unset=True
+    )
+
+    if (
+        "start_time" in update_data
+        and update_data["start_time"]
+    ):
+        update_data["start_time"] = (
+            update_data["start_time"]
+            .isoformat()
+        )
+
+    if (
+        "end_time" in update_data
+        and update_data["end_time"]
+    ):
+        update_data["end_time"] = (
+            update_data["end_time"]
+            .isoformat()
+        )
+
+    response = (
+        supabase_admin
+        .table("encounters")
+        .update(update_data)
+        .eq("id", encounter_id)
+        .execute()
+    )
+
+    return response.data[0]
