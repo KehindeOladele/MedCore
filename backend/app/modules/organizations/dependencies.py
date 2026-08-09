@@ -8,22 +8,27 @@ from .exceptions import (
 )
 
 
-# --------------------
+# ------------------------------------
 # Members Check Helper
-# --------------------
+# ------------------------------------
 def _user_has_organization_access(
     current_user: dict,
     organization_id: UUID,
 ) -> bool:
     """
-    Temporary access check until the
-    membership module is implemented.
+    Temporary organization access check until the
+    organization membership module is implemented.
     """
 
-    return str(current_user.get("organization_id")) == str(
-        organization_id
+    organization_ids = current_user.get(
+        "organization_ids",
+        []
     )
 
+    return str(organization_id) in {
+        str(org_id)
+        for org_id in organization_ids
+    }
 
 # ---------------------------------
 #   BASE DEPENDENCY
@@ -58,6 +63,27 @@ def require_organization_member(
 
     return organization
 
+
+# ---------------------------------
+# ORGANIZATION ACCESS DEPENDENCY
+# ---------------------------------
+
+def require_organization_access(
+    organization=Depends(require_organization_member),
+):
+    """
+    Ensure the authenticated user has access to the
+    requested organization.
+
+    This dependency is intended for authenticated
+    read operations on organization-scoped resources.
+
+    It currently delegates to require_organization_member()
+    so that organization existence and membership checks
+    remain centralized.
+    """
+
+    return organization
 
 
 # ---------------------------------
