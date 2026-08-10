@@ -1,9 +1,11 @@
 from copy import deepcopy
 from uuid import uuid4
+from .user import USER_ID
 
 
 ORGANIZATION_ID = uuid4()
 OTHER_ORGANIZATION_ID = uuid4()
+HEALTHCARE_SERVICE_ID = uuid4()
 
 
 _DEFAULT_ORGANIZATION_ROW = {
@@ -25,6 +27,31 @@ _DEFAULT_ORGANIZATION_ROW = {
     "setup_completed": False,
 }
 
+
+_DEFAULT_HEALTHCARE_SERVICE_ROW= {
+        "id": HEALTHCARE_SERVICE_ID,
+        "organization_id": ORGANIZATION_ID,
+        "name": "Cardiology",
+        "code": "CARD",
+        "description": "Cardiology services",
+        "category": "Specialty",
+        "type": "Clinical",
+        "specialty": "Cardiology",
+        "phone": "08012345678",
+        "email": "cardiology@test.com",
+        "website": "https://hospital.test/cardiology",
+        "appointment_required": True,
+        "referral_required": False,
+        "online_booking_available": True,
+        "department_id": None,
+        "service_code": None,
+        "display_order": 1,
+        "active": True,
+        "created_by": USER_ID,
+        "updated_by": USER_ID,
+        "created_at": "2026-08-01T10:00:00Z",
+        "updated_at": "2026-08-01T10:00:00Z",
+    }
 
 
 # --------------------------------------
@@ -76,3 +103,13 @@ def organization_profile_factory(**overrides):
         "timezone": row.get("timezone"),
         "setup_completed": row.get("setup_completed", False),
     }
+
+
+
+# --------------------------------------
+# HEALTHCARE SERVICE LAYER (FLAT ROWS)
+# --------------------------------------
+def healthcare_service_row_factory(**overrides):
+    healthcare_servie = deepcopy(_DEFAULT_HEALTHCARE_SERVICE_ROW)
+    healthcare_servie.update(overrides)
+    return healthcare_servie
