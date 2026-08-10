@@ -180,3 +180,15 @@ def test_require_organization_member_raises_when_user_has_no_access(
             current_user=current_user,
         )
 
+
+# ---------------------------------------------------------
+# REQUIRE ORGANIZATION ACCESS DEPENDENCY TEST
+# ---------------------------------------------------------
+def test_require_organization_access_returns_organization(
+    organization,
+):
+    result = dependencies.require_organization_access(
+        organization=organization,
+    )
+
+    assert result is organization
