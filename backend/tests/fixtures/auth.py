@@ -30,7 +30,7 @@ def client():
 # --------------------------------------
 @pytest.fixture
 def current_user():
-    return user_factory()
+    return user_factory
 
 
 
