@@ -1,7 +1,13 @@
 from copy import deepcopy
+from uuid import uuid4
+
+
+ORGANIZATION_ID = uuid4()
+OTHER_ORGANIZATION_ID = uuid4()
+
 
 _DEFAULT_ORGANIZATION_ROW = {
-    "id": "org1",
+    "id": ORGANIZATION_ID,
     "active": True,
     "name": "Test Hospital",
     "type": "hospital",
@@ -18,6 +24,20 @@ _DEFAULT_ORGANIZATION_ROW = {
     "timezone": "Africa/Lagos",
     "setup_completed": False,
 }
+
+
+
+# --------------------------------------
+# ORGANIZATION LAYER
+# --------------------------------------
+def organization_factory(**overrides):
+    row = organization_row_factory(**overrides)
+    return {
+        "id": row["id"],
+        "name": row["address"],
+        "type": row["type"],
+        "active": True,
+    }
 
 # --------------------------------------
 # SERVICE LAYER (FLAT ROWS)
