@@ -6,40 +6,17 @@ from app.modules.organizations.exceptions import (
     OrganizationAccessDeniedError,
     OrganizationNotFoundError,
 )
+from tests.fixtures.auth import current_user
+from tests.factories.organization import (
+    ORGANIZATION_ID,
+    OTHER_ORGANIZATION_ID
+    )
+
+
 
 
 # ---------------------------------------------------------
-# Shared Test Data
-# ---------------------------------------------------------
-
-ORGANIZATION_ID = uuid4()
-OTHER_ORGANIZATION_ID = uuid4()
-
-
-@pytest.fixture
-def organization():
-    return {
-        "id": str(ORGANIZATION_ID),
-        "name": "Test Hospital",
-        "type": "hospital",
-        "active": True,
-    }
-
-
-@pytest.fixture
-def current_user():
-    return {
-        "id": str(uuid4()),
-        "email": "admin@test.com",
-        "role": "admin",
-        "organization_ids": [
-            str(ORGANIZATION_ID),
-        ],
-    }
-
-
-# ---------------------------------------------------------
-# _user_has_organization_access()
+# USER ORGANIZATION ACCESS DEPENDENCY TEST
 # ---------------------------------------------------------
 
 def test_user_has_organization_access_returns_true(
@@ -70,7 +47,7 @@ def test_user_has_organization_access_supports_multiple_organizations():
     organization_three = uuid4()
 
     user = {
-        "id": str(uuid4()),
+        "id": str(current_user),
         "organization_ids": [
             str(organization_one),
             str(organization_two),
@@ -95,7 +72,7 @@ def test_user_has_organization_access_supports_multiple_organizations():
 
 def test_user_has_organization_access_handles_missing_organization_ids():
     user = {
-        "id": str(uuid4()),
+        "id": str(current_user),
     }
 
     result = dependencies._user_has_organization_access(
@@ -108,7 +85,7 @@ def test_user_has_organization_access_handles_missing_organization_ids():
 
 def test_user_has_organization_access_handles_empty_organization_ids():
     user = {
-        "id": str(uuid4()),
+        "id": str(current_user),
         "organization_ids": [],
     }
 
@@ -122,7 +99,7 @@ def test_user_has_organization_access_handles_empty_organization_ids():
 
 def test_user_has_organization_access_normalizes_uuid_types():
     user = {
-        "id": str(uuid4()),
+        "id": str(current_user),
         "organization_ids": [
             str(ORGANIZATION_ID),
         ],
