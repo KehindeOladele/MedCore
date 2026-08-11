@@ -51,9 +51,7 @@ def test_user_has_organization_access_returns_false_for_other_organization():
 
 
 def test_user_has_organization_access_supports_multiple_organizations():
-    organization_one = ORGANIZATION_ID
-    organization_two = OTHER_ORGANIZATION_ID
-    organization_three = OTHER_ORGANIZATION_ID
+    third_organization_id = uuid4()
 
     current_user = user_factory(
         organization_ids=[
@@ -64,17 +62,17 @@ def test_user_has_organization_access_supports_multiple_organizations():
 
     assert dependencies._user_has_organization_access(
         current_user=current_user,
-        organization_id=organization_one,
+        organization_id=ORGANIZATION_ID,
     ) is True
 
     assert dependencies._user_has_organization_access(
         current_user=current_user,
-        organization_id=organization_two,
+        organization_id=OTHER_ORGANIZATION_ID,
     ) is True
 
     assert dependencies._user_has_organization_access(
         current_user=current_user,
-        organization_id=organization_three,
+        organization_id=third_organization_id,
     ) is False
 
 
