@@ -5,10 +5,6 @@ from tests.factories.organization import (
     organization_row_factory,
     healthcare_service_row_factory
 )
-from tests.factories.user import (
-    USER_ID,
-    user_factory
-    )
 from app.modules.organizations.healthcare_services.schemas import (
     HealthcareServiceResponse,
 )
@@ -55,16 +51,7 @@ def updated_organization_profile_data():
 # --------------------------------------
 @pytest.fixture
 def organization():
-    return organization_factory
-
-
-
-# --------------------------------------
-# CURRENT USER FIXTURE
-# --------------------------------------
-@pytest.fixture
-def current_user():
-    return user_factory
+    return organization_factory()
 
 
 
@@ -73,7 +60,7 @@ def current_user():
 # --------------------------------------
 @pytest.fixture
 def healthcare_service_data():
-    return healthcare_service_row_factory
+    return healthcare_service_row_factory()
 
 
 # --------------------------------------
