@@ -55,7 +55,7 @@ def test_get_profile_not_found(mock_get):
 def test_update_profile(
     organization_data,
     updated_organization_data,
-    mocker: MockerFixture,
+    mocker,
 ):
     mock_get = mocker.patch(
         "app.modules.organizations.profile.service.get_organization_profile"
