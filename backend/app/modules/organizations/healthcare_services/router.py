@@ -52,10 +52,10 @@ router = APIRouter(
 def create_healthcare_service_endpoint(
     payload: HealthcareServiceCreate,
     current_user=Depends(get_current_user),
-    _: dict = Depends(require_organization_admin),
+    organization: dict = Depends(require_organization_admin),
 ):
     return create_healthcare_service(
-        organization_id=current_user["organization_id"],
+        organization_id=organization["id"],
         payload=payload,
         actor_id=current_user["id"],
     )
@@ -69,11 +69,10 @@ def create_healthcare_service_endpoint(
     response_model=list[HealthcareServiceResponse],
 )
 def list_healthcare_services_endpoint(
-    current_user=Depends(get_current_user),
-    _: dict = Depends(require_organization_access),
+    organization: dict = Depends(require_organization_access),
 ):
     return list_healthcare_services(
-        organization_id=current_user["organization_id"],
+        organization_id=organization["id"],
     )
 
 
@@ -86,11 +85,10 @@ def list_healthcare_services_endpoint(
 )
 def get_healthcare_service_endpoint(
     healthcare_service_id: UUID,
-    current_user=Depends(get_current_user),
-    _: dict = Depends(require_organization_access),
+    organization: dict = Depends(require_organization_access),
 ):
     return get_healthcare_service(
-        organization_id=current_user["organization_id"],
+        organization_id=organization["id"],
         healthcare_service_id=healthcare_service_id,
     )
 
@@ -106,10 +104,10 @@ def update_healthcare_service_endpoint(
     healthcare_service_id: UUID,
     payload: HealthcareServiceUpdate,
     current_user=Depends(get_current_user),
-    _: dict = Depends(require_organization_admin),
+    organization: dict = Depends(require_organization_admin),
 ):
     return update_healthcare_service(
-        organization_id=current_user["organization_id"],
+        organization_id=organization["id"],
         healthcare_service_id=healthcare_service_id,
         payload=payload,
         actor_id=current_user["id"],
@@ -126,10 +124,10 @@ def update_healthcare_service_endpoint(
 def delete_healthcare_service_endpoint(
     healthcare_service_id: UUID,
     current_user=Depends(get_current_user),
-    _: dict = Depends(require_organization_admin),
+    organization: dict = Depends(require_organization_admin),
 ):
     delete_healthcare_service(
-        organization_id=current_user["organization_id"],
+        organization_id=organization["id"],
         healthcare_service_id=healthcare_service_id,
         actor_id=current_user["id"],
     )
