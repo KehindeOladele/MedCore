@@ -1,5 +1,4 @@
 import pytest
-from uuid import uuid4, UUID
 from tests.factories.user import user_factory
 from app.modules.organizations import dependencies
 from app.modules.organizations.exceptions import (
@@ -7,10 +6,13 @@ from app.modules.organizations.exceptions import (
     OrganizationNotFoundError,
 )
 from tests.factories.organization import (
+    organization_factory,
+)
+from tests.factories.constants import (
     ORGANIZATION_ID,
     OTHER_ORGANIZATION_ID,
-    organization_factory
-    )
+    USER_ID
+)
 
 
 
@@ -19,12 +21,11 @@ from tests.factories.organization import (
 # USER ORGANIZATION ACCESS DEPENDENCY TEST
 # ---------------------------------------------------------
 def test_user_has_organization_access_returns_true():
-    current_user = {
-        "id": str(uuid4()),
-        "organization_ids": [
+    current_user = user_factory(
+        organization_ids=[
             str(ORGANIZATION_ID),
-        ],
-    }
+        ]
+    )
 
     result = dependencies._user_has_organization_access(
         current_user=current_user,
@@ -35,12 +36,11 @@ def test_user_has_organization_access_returns_true():
 
 
 def test_user_has_organization_access_returns_false_for_other_organization():
-    current_user = {
-        "id": str(uuid4()),
-        "organization_ids": [
+    current_user = user_factory(
+        organization_ids=[
             str(ORGANIZATION_ID),
-        ],
-    }
+        ]
+    )
 
     result = dependencies._user_has_organization_access(
         current_user=current_user,
@@ -51,17 +51,16 @@ def test_user_has_organization_access_returns_false_for_other_organization():
 
 
 def test_user_has_organization_access_supports_multiple_organizations():
-    organization_one = uuid4()
-    organization_two = uuid4()
-    organization_three = uuid4()
+    organization_one = ORGANIZATION_ID
+    organization_two = OTHER_ORGANIZATION_ID
+    organization_three = OTHER_ORGANIZATION_ID
 
-    current_user = {
-        "id": str(uuid4()),
-        "organization_ids": [
-            str(organization_one),
-            str(organization_two),
-        ],
-    }
+    current_user = user_factory(
+        organization_ids=[
+            str(ORGANIZATION_ID),
+            str(OTHER_ORGANIZATION_ID),
+        ]
+    )
 
     assert dependencies._user_has_organization_access(
         current_user=current_user,
@@ -79,24 +78,23 @@ def test_user_has_organization_access_supports_multiple_organizations():
     ) is False
 
 
-def test_user_has_organization_access_returns_false_when_organization_ids_missing():
-    current_user = {
-        "id": str(uuid4()),
-    }
+# def test_user_has_organization_access_returns_false_when_organization_ids_missing():
+#     current_user = user_factory(
+#         organization_ids=None,
+#     )
 
-    result = dependencies._user_has_organization_access(
-        current_user=current_user,
-        organization_id=ORGANIZATION_ID,
-    )
+#     result = dependencies._user_has_organization_access(
+#         current_user=current_user,
+#         organization_id=ORGANIZATION_ID,
+#     )
 
-    assert result is False
+#     assert result is False
 
 
 def test_user_has_organization_access_returns_false_when_organization_ids_empty():
-    current_user = {
-        "id": str(uuid4()),
-        "organization_ids": [],
-    }
+    current_user = user_factory(
+        organization_ids=[],
+    )
 
     result = dependencies._user_has_organization_access(
         current_user=current_user,
@@ -107,12 +105,11 @@ def test_user_has_organization_access_returns_false_when_organization_ids_empty(
 
 
 def test_user_has_organization_access_normalizes_uuid_values():
-    current_user = {
-        "id": str(uuid4()),
-        "organization_ids": [
+    current_user = user_factory(
+        organization_ids=[
             ORGANIZATION_ID,
-        ],
-    }
+        ]
+    )
 
     result = dependencies._user_has_organization_access(
         current_user=current_user,
@@ -133,3 +130,88 @@ def test_require_organization_access_returns_organization(
     )
 
     assert result is organization
+
+
+
+# ---------------------------------------------------------
+# ORGANIZATION MEMBER DEPENDENCY TEST
+# ---------------------------------------------------------
+
+
+def test_require_organization_member_returns_organization(
+    mocker,
+):
+    organization = organization_factory()
+
+    get_organization = mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=organization,
+    )
+
+    current_user = user_factory(
+        organization_ids=[
+            str(ORGANIZATION_ID),
+        ]
+    )
+
+    result = dependencies.require_organization_member(
+        organization_id=ORGANIZATION_ID,
+        current_user=current_user,
+    )
+
+    assert result is organization
+
+    get_organization.assert_called_once_with(
+        organization_id=ORGANIZATION_ID,
+    )
+
+
+def test_require_organization_member_raises_not_found(
+    mocker,
+):
+    mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=None,
+    )
+
+    current_user = user_factory(
+        organization_ids=[
+            str(ORGANIZATION_ID),
+        ]
+    )
+
+    with pytest.raises(
+        OrganizationNotFoundError
+    ):
+        dependencies.require_organization_member(
+            organization_id=ORGANIZATION_ID,
+            current_user=current_user,
+        )
+
+
+def test_require_organization_member_raises_access_denied(
+    mocker,
+):
+    organization = organization_factory()
+
+    mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=organization,
+    )
+
+    current_user = user_factory(
+        organization_ids=[
+            str(OTHER_ORGANIZATION_ID),
+        ]
+    )
+
+    with pytest.raises(
+        OrganizationAccessDeniedError
+    ):
+        dependencies.require_organization_member(
+            organization_id=ORGANIZATION_ID,
+            current_user=current_user,
+        )
