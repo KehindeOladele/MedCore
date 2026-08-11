@@ -1,12 +1,10 @@
 from copy import deepcopy
-from uuid import uuid4
-from .user import USER_ID
 
-
-ORGANIZATION_ID = uuid4()
-OTHER_ORGANIZATION_ID = uuid4()
-HEALTHCARE_SERVICE_ID = uuid4()
-
+from .constants import (
+ORGANIZATION_ID,
+HEALTHCARE_SERVICE_ID,
+USER_ID
+)
 
 _DEFAULT_ORGANIZATION_ROW = {
     "id": ORGANIZATION_ID,
@@ -61,7 +59,7 @@ def organization_factory(**overrides):
     row = organization_row_factory(**overrides)
     return {
         "id": row["id"],
-        "name": row["address"],
+        "name": row["name"],
         "type": row["type"],
         "active": True,
     }
@@ -110,6 +108,6 @@ def organization_profile_factory(**overrides):
 # HEALTHCARE SERVICE LAYER (FLAT ROWS)
 # --------------------------------------
 def healthcare_service_row_factory(**overrides):
-    healthcare_servie = deepcopy(_DEFAULT_HEALTHCARE_SERVICE_ROW)
-    healthcare_servie.update(overrides)
-    return healthcare_servie
+    healthcare_service = deepcopy(_DEFAULT_HEALTHCARE_SERVICE_ROW)
+    healthcare_service.update(overrides)
+    return healthcare_service
