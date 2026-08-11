@@ -81,6 +81,10 @@ def test_update_profile(
         payload,
         actor_id="user1",
     )
+    
+    assert result.id == str(
+        organization_data["id"]
+    )
 
     assert result.name == "Updated Hospital"
 
