@@ -80,7 +80,7 @@ def organization_profile_factory(**overrides):
     row = organization_row_factory(**overrides)
 
     return {
-        "id": row["id"],
+        "id": str(row["id"]),
         "active": row["active"],
         "name": row["name"],
         "type": row["type"],
