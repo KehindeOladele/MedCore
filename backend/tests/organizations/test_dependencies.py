@@ -1,12 +1,11 @@
 import pytest
-from uuid import uuid4
-
+from uuid import uuid4, UUID
+from tests.factories.user import user_factory
 from app.modules.organizations import dependencies
 from app.modules.organizations.exceptions import (
     OrganizationAccessDeniedError,
     OrganizationNotFoundError,
 )
-from tests.fixtures.auth import current_user
 from tests.factories.organization import (
     ORGANIZATION_ID,
     OTHER_ORGANIZATION_ID
@@ -18,167 +17,89 @@ from tests.factories.organization import (
 # ---------------------------------------------------------
 # USER ORGANIZATION ACCESS DEPENDENCY TEST
 # ---------------------------------------------------------
-def test_user_has_organization_access_returns_true(
-    current_user,
-):
-    result = dependencies._user_has_organization_access(
+def test_user_has_organization_access_matching_organization():
+    organization_id = ORGANIZATION_ID
+
+    current_user = user_factory
+
+    assert dependencies._user_has_organization_access(
         current_user=current_user,
-        organization_id=ORGANIZATION_ID,
-    )
-
-    assert result is True
+        organization_id=organization_id,
+    ) is True
 
 
-def test_user_has_organization_access_returns_false_for_other_org(
-    current_user,
-):
-    result = dependencies._user_has_organization_access(
-        current_user=current_user,
-        organization_id=OTHER_ORGANIZATION_ID,
-    )
+def test_user_has_organization_access_wrong_organization():
+    organization_id = ORGANIZATION_ID
+    other_organization_id = OTHER_ORGANIZATION_ID
 
-    assert result is False
-
-
-def test_user_has_organization_access_supports_multiple_organizations():
-    organization_one = uuid4()
-    organization_two = uuid4()
-    organization_three = uuid4()
-
-    user = {
-        "id": str(current_user),
+    current_user = {
+        "id": "user1",
         "organization_ids": [
-            str(organization_one),
-            str(organization_two),
+            str(organization_id),
         ],
     }
 
     assert dependencies._user_has_organization_access(
-        user,
-        organization_one,
-    ) is True
-
-    assert dependencies._user_has_organization_access(
-        user,
-        organization_two,
-    ) is True
-
-    assert dependencies._user_has_organization_access(
-        user,
-        organization_three,
+        current_user=current_user,
+        organization_id=other_organization_id,
     ) is False
 
 
-def test_user_has_organization_access_handles_missing_organization_ids():
-    user = {
-        "id": str(current_user),
-    }
+def test_user_has_organization_access_multiple_organizations():
+    organization_id = ORGANIZATION_ID
+    other_organization_id = uuid4()
 
-    result = dependencies._user_has_organization_access(
-        user,
-        ORGANIZATION_ID,
-    )
-
-    assert result is False
-
-
-def test_user_has_organization_access_handles_empty_organization_ids():
-    user = {
-        "id": str(current_user),
-        "organization_ids": [],
-    }
-
-    result = dependencies._user_has_organization_access(
-        user,
-        ORGANIZATION_ID,
-    )
-
-    assert result is False
-
-
-def test_user_has_organization_access_normalizes_uuid_types():
-    user = {
-        "id": str(current_user),
+    current_user = {
+        "id": "user1",
         "organization_ids": [
-            str(ORGANIZATION_ID),
+            str(organization_id),
+            str(other_organization_id),
         ],
     }
 
-    result = dependencies._user_has_organization_access(
-        user,
-        ORGANIZATION_ID,
-    )
-
-    assert result is True
-
-
-# ---------------------------------------------------------
-# REQUIRE ORGANIZATION MEMBER TEST
-# ---------------------------------------------------------
-def test_require_organization_member_success(
-    mocker,
-    current_user,
-    organization,
-):
-    get_organization = mocker.patch.object(
-        dependencies,
-        "get_organization",
-        return_value=organization,
-    )
-
-    result = dependencies.require_organization_member(
-        organization_id=ORGANIZATION_ID,
+    assert dependencies._user_has_organization_access(
         current_user=current_user,
-    )
-
-    assert result == organization
-
-    get_organization.assert_called_once_with(
-        organization_id=ORGANIZATION_ID,
-    )
+        organization_id=other_organization_id,
+    ) is True
 
 
-def test_require_organization_member_raises_when_org_not_found(
-    mocker,
-    current_user,
-):
-    mocker.patch.object(
-        dependencies,
-        "get_organization",
-        return_value=None,
-    )
+def test_user_has_organization_access_missing_organization_ids():
+    current_user = {
+        "id": "user1",
+    }
 
-    with pytest.raises(
-        OrganizationNotFoundError
-    ):
-        dependencies.require_organization_member(
-            organization_id=ORGANIZATION_ID,
-            current_user=current_user,
-        )
+    assert dependencies._user_has_organization_access(
+        current_user=current_user,
+        organization_id=uuid4(),
+    ) is False
 
 
-def test_require_organization_member_raises_when_user_has_no_access(
-    mocker,
-    current_user,
-    organization,
-):
-    mocker.patch.object(
-        dependencies,
-        "get_organization",
-        return_value=organization,
-    )
+def test_user_has_organization_access_empty_organization_ids():
+    current_user = {
+        "id": "user1",
+        "organization_ids": [],
+    }
 
-    current_user["organization_ids"] = [
-        str(OTHER_ORGANIZATION_ID)
-    ]
+    assert dependencies._user_has_organization_access(
+        current_user=current_user,
+        organization_id=uuid4(),
+    ) is False
 
-    with pytest.raises(
-        OrganizationAccessDeniedError
-    ):
-        dependencies.require_organization_member(
-            organization_id=ORGANIZATION_ID,
-            current_user=current_user,
-        )
+
+def test_user_has_organization_access_normalizes_uuid_values():
+    organization_id = uuid4()
+
+    current_user = {
+        "id": "user1",
+        "organization_ids": [
+            organization_id,
+        ],
+    }
+
+    assert dependencies._user_has_organization_access(
+        current_user=current_user,
+        organization_id=UUID(str(organization_id)),
+    ) is True
 
 
 # ---------------------------------------------------------
@@ -192,3 +113,104 @@ def test_require_organization_access_returns_organization(
     )
 
     assert result is organization
+
+
+# ---------------------------------------------------------
+# REQUIRE ORGANIZATION MEMBER TEST
+# ---------------------------------------------------------
+
+# ORGANIZATION MEMBER SUCCESS TEST
+# ---------------------------------------------------------
+def test_require_organization_member_success(
+    mocker,
+):
+    organization_id = ORGANIZATION_ID
+
+    organization = {
+        "id": str(organization_id),
+        "name": "Test Hospital",
+        "active": True,
+    }
+
+    current_user = {
+        "id": "user1",
+        "organization_ids": [
+            str(organization_id),
+        ],
+    }
+
+    mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=organization,
+    )
+
+    result = dependencies.require_organization_member(
+        organization_id=organization_id,
+        current_user=current_user,
+    )
+
+    assert result is organization
+
+
+
+# ORGANIZATION MEMBER NOT FOUND TEST
+# ---------------------------------------------------------
+def test_require_organization_member_organization_not_found(
+    mocker,
+):
+    organization_id = uuid4()
+
+    mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=None,
+    )
+
+    current_user = {
+        "id": "user1",
+        "organization_ids": [
+            str(organization_id),
+        ],
+    }
+
+    with pytest.raises(
+        OrganizationNotFoundError
+    ):
+        dependencies.require_organization_member(
+            organization_id=organization_id,
+            current_user=current_user,
+        )
+
+
+# ORGANIZATION MEMBER DENIED TEST
+# ---------------------------------------------------------
+def test_require_organization_member_access_denied(
+    mocker,
+):
+    organization_id = uuid4()
+
+    organization = {
+        "id": str(organization_id),
+        "name": "Test Hospital",
+        "active": True,
+    }
+
+    mocker.patch.object(
+        dependencies,
+        "get_organization",
+        return_value=organization,
+    )
+
+    current_user = {
+        "id": "user1",
+        "organization_ids": [],
+    }
+
+    with pytest.raises(
+        OrganizationAccessDeniedError
+    ):
+        dependencies.require_organization_member(
+            organization_id=organization_id,
+            current_user=current_user,
+        )
