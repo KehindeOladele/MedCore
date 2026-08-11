@@ -1,4 +1,5 @@
 import pytest
+from uuid import uuid4
 from tests.factories.user import user_factory
 from app.modules.organizations import dependencies
 from app.modules.organizations.exceptions import (
