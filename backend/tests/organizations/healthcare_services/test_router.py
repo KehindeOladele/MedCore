@@ -35,12 +35,12 @@ def test_create_healthcare_service_success(
 ):
     create_service = mocker.patch.object(
         router,
-        "create_healthcare_service_endpoint",
+        "create_healthcare_service",
         return_value=healthcare_service_response,
     )
 
     response = authenticated_client.post(
-        "/healthcare-services/",
+        "/organizations/healthcare-services/",
         json={
             "name": "Cardiology",
             "description": "Cardiology services",
@@ -64,7 +64,7 @@ def test_create_healthcare_service_invalid_payload(
     authenticated_client,
 ):
     response = authenticated_client.post(
-        "/healthcare-services/",
+        "/organizations/healthcare-services/",
         json={
             "name": "",
         },
@@ -85,14 +85,14 @@ def test_list_healthcare_services_success(
 ):
     list_service = mocker.patch.object(
         router,
-        "list_healthcare_services_endpoont",
+        "list_healthcare_services",
         return_value=[
             healthcare_service_response,
         ],
     )
 
     response = authenticated_client.get(
-        "/healthcare-services/"
+        "/organizations/healthcare-services/"
     )
 
     assert response.status_code == 200
@@ -113,12 +113,12 @@ def test_list_healthcare_services_empty(
 ):
     list_service = mocker.patch.object(
         router,
-        "list_healthcare_services_endpoint",
+        "list_healthcare_services",
         return_value=[],
     )
 
     response = authenticated_client.get(
-        "/healthcare-services/"
+        "/organizations/healthcare-services/"
     )
 
     assert response.status_code == 200
@@ -129,9 +129,9 @@ def test_list_healthcare_services_empty(
     )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # GET HEALTHCARE SERVICE
-# =========================================================
+# ---------------------------------------------------------
 
 
 def test_get_healthcare_service_success(
@@ -141,15 +141,19 @@ def test_get_healthcare_service_success(
 ):
     get_service = mocker.patch.object(
         router,
-        "get_healthcare_service_endpoint",
+        "get_healthcare_service",
         return_value=healthcare_service_response,
     )
 
     response = authenticated_client.get(
-        f"/healthcare-services/{HEALTHCARE_SERVICE_ID}"
+        f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}"
     )
 
     assert response.status_code == 200
+
+    body = response.json()
+
+    assert body["name"] == "Cardiology"
 
     get_service.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
@@ -163,12 +167,12 @@ def test_get_healthcare_service_not_found(
 ):
     get_service = mocker.patch.object(
         router,
-        "get_healthcare_service_endpoint",
+        "get_healthcare_service",
         side_effect=HealthcareServiceNotFoundError(),
     )
 
     response = authenticated_client.get(
-        f"/healthcare-services/{HEALTHCARE_SERVICE_ID}"
+        f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}"
     )
 
     assert response.status_code == 404
@@ -179,9 +183,9 @@ def test_get_healthcare_service_not_found(
     )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # UPDATE HEALTHCARE SERVICE
-# =========================================================
+# ---------------------------------------------------------
 
 
 def test_update_healthcare_service_success(
@@ -191,18 +195,22 @@ def test_update_healthcare_service_success(
 ):
     update_service = mocker.patch.object(
         router,
-        "update_healthcare_service_endpoint",
+        "update_healthcare_service",
         return_value=healthcare_service_response,
     )
 
     response = authenticated_client.patch(
-        f"/healthcare-services/{HEALTHCARE_SERVICE_ID}",
+        f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}",
         json={
             "name": "Updated Cardiology",
         },
     )
 
     assert response.status_code == 200
+
+    body = response.json() 
+
+    assert body["name"] == "Cardiology"
 
     update_service.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
@@ -212,9 +220,9 @@ def test_update_healthcare_service_success(
     )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # DELETE HEALTHCARE SERVICE
-# =========================================================
+# ---------------------------------------------------------
 
 
 def test_delete_healthcare_service_success(
@@ -223,11 +231,11 @@ def test_delete_healthcare_service_success(
 ):
     delete_service = mocker.patch.object(
         router,
-        "delete_healthcare_service_endpoint",
+        "delete_healthcare_service",
     )
 
     response = authenticated_client.delete(
-        f"/healthcare-services/{HEALTHCARE_SERVICE_ID}"
+        f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}"
     )
 
     assert response.status_code == 204
@@ -240,27 +248,27 @@ def test_delete_healthcare_service_success(
     )
 
 
-# =========================================================
+# ---------------------------------------------------------
 # AUTHENTICATION
-# =========================================================
+# ---------------------------------------------------------
 
 
 @pytest.mark.parametrize(
     "method,path",
     [
-        ("GET", "/healthcare-services/"),
+        ("GET", "/organizations/healthcare-services/"),
         (
             "GET",
-            f"/healthcare-services/{HEALTHCARE_SERVICE_ID}",
+            f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}",
         ),
-        ("POST", "/healthcare-services/"),
+        ("POST", "/organizations/healthcare-services/"),
         (
             "PATCH",
-            f"/healthcare-services/{HEALTHCARE_SERVICE_ID}",
+            f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}",
         ),
         (
             "DELETE",
-            f"/healthcare-services/{HEALTHCARE_SERVICE_ID}",
+            f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}",
         ),
     ],
 )
@@ -277,9 +285,9 @@ def test_healthcare_service_routes_require_authentication(
     assert response.status_code == 401
 
 
-# =========================================================
+# ---------------------------------------------------------
 # READ AUTHORIZATION
-# =========================================================
+# ---------------------------------------------------------
 
 
 def test_list_healthcare_services_denies_organization_access(
@@ -296,7 +304,7 @@ def test_list_healthcare_services_denies_organization_access(
 
     try:
         response = client.get(
-            "/healthcare-services/"
+            "/organizations/healthcare-services/"
         )
 
         assert response.status_code == 403
@@ -308,9 +316,86 @@ def test_list_healthcare_services_denies_organization_access(
         )
 
 
-# =========================================================
+def test_get_healthcare_service_denies_organization_access( client, mocker, ): 
+    app = client.app 
+
+    app.dependency_overrides[ 
+        require_organization_access 
+        ] = mocker.Mock( 
+            side_effect=OrganizationAccessDeniedError() 
+            ) 
+
+    try: 
+        response = client.get( 
+            f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}" 
+            ) 
+
+        assert response.status_code == 403 
+
+    finally: 
+        app.dependency_overrides.pop( 
+            require_organization_access, 
+            None, 
+            )
+
+# --------------------------------------------------------- 
+# MUTATION AUTHORIZATION 
+# --------------------------------------------------------- 
+@pytest.mark.parametrize( 
+    "method,path,payload", 
+    [ 
+        ( 
+            "POST", 
+            "/organizations/healthcare-services/", 
+            { 
+                "name": "Cardiology", 
+                "description": "Cardiology services", 
+                }, 
+            ), 
+            ( 
+                "PATCH", f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}", 
+                { "name": "Updated Cardiology", }, 
+                ), 
+                ( 
+                    "DELETE", f"/organizations/healthcare-services/{HEALTHCARE_SERVICE_ID}", 
+                    None, 
+                ), 
+    ], 
+    ) 
+
+def test_healthcare_service_mutations_require_admin( 
+    client, 
+    mocker, 
+    method, 
+    path, 
+    payload, 
+    ): 
+
+    app = client.app 
+
+    app.dependency_overrides[ 
+        require_organization_admin 
+        ] = mocker.Mock( 
+            side_effect=OrganizationAccessDeniedError() 
+            ) 
+
+    try: 
+        response = client.request( 
+            method, 
+            path, json=payload, 
+            ) 
+
+        assert response.status_code == 403 
+
+    finally: app.dependency_overrides.pop( 
+        require_organization_admin, 
+        None, 
+        )        
+
+
+# ---------------------------------------------------------
 # ROUTER DEPENDENCY DECLARATION
-# =========================================================
+# ---------------------------------------------------------
 
 
 def test_healthcare_service_list_declares_organization_access():
@@ -320,7 +405,7 @@ def test_healthcare_service_list_declares_organization_access():
         route
         for route in routes
         if route.path.endswith(
-            "/healthcare-services/"
+            "/organizations/healthcare-services/"
         )
         and "GET" in route.methods
     )
