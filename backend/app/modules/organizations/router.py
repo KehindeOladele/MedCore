@@ -30,11 +30,14 @@ from app.modules.organizations.queries import (
 )
 from app.core.supabase_client import supabase
 from app.shared.tasks.event_tasks import process_events_task
-from app.modules.organizations.profile.router import (
+from .profile.router import (
     router as profile_router,
 )
-from app.modules.organizations.departments.router import (
+from .departments.router import (
     router as departments_router,
+)
+from .healthcare_services.router import (
+    router as healthcare_service_router
 )
 
 
@@ -45,15 +48,23 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
 
 # ---------------------------------------
-# MONITOR ORGANIZATION PROFILE ROUTER 
+# PROFILE ROUTER 
 # ---------------------------------------
 router.include_router(profile_router)
 
 
 # ---------------------------------------
-# MONITOR ORGANIZATION PROFILE ROUTER 
+# DEPARTMENTS ROUTER 
 # ---------------------------------------
 router.include_router(departments_router)
+
+
+# ---------------------------------------
+# HEALTHCARE SERVICE ROUTER 
+# ---------------------------------------
+router.include_router(healthcare_service_router)
+
+
 
 
 #----------------------------------------- 
