@@ -20,7 +20,7 @@ from .schemas import (
     HealthcareServiceResponse,
 )
 
-from app.modules.organizations.healthcare_services.service import (
+from .service import (
     create_healthcare_service,
     get_healthcare_service,
     list_healthcare_services,
