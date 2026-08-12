@@ -13,7 +13,6 @@ from app.modules.organizations.dependencies import (
 
 from tests.factories.user import (
     user_factory,
-    USER_ID,
 )
 
 from tests.factories.organization import (
