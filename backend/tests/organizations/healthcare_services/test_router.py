@@ -22,7 +22,10 @@ from tests.factories.organization import (
 from tests.factories.user import USER_ID
 
 
-BASE_URL = "/organizations/healthcare-services"
+BASE_URL = (
+    f"/organizations/{ORGANIZATION_ID}"
+    "/healthcare-services"
+)
 
 
 # ---------------------------------------------------------
@@ -42,7 +45,7 @@ def test_create_healthcare_service_success(
     )
 
     response = authenticated_client.post(
-        f"{BASE_URL}/",
+        f"{BASE_URL}",
         json={
             "name": "Cardiology",
             "description": "Cardiology services",
@@ -56,7 +59,7 @@ def test_create_healthcare_service_success(
     assert body["name"] == "Cardiology"
 
     create_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         payload=mocker.ANY,
         actor_id=USER_ID,
     )
@@ -66,7 +69,7 @@ def test_create_healthcare_service_invalid_payload(
     authenticated_client,
 ):
     response = authenticated_client.post(
-        f"{BASE_URL}/",
+        f"{BASE_URL}",
         json={
             "name": "",
         },
@@ -94,7 +97,7 @@ def test_list_healthcare_services_success(
     )
 
     response = authenticated_client.get(
-        f"{BASE_URL}/"
+        f"{BASE_URL}"
     )
 
     assert response.status_code == 200
@@ -105,7 +108,7 @@ def test_list_healthcare_services_success(
     assert body[0]["name"] == "Cardiology"
 
     list_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
     )
 
 
@@ -120,14 +123,14 @@ def test_list_healthcare_services_empty(
     )
 
     response = authenticated_client.get(
-        f"{BASE_URL}/"
+        f"{BASE_URL}"
     )
 
     assert response.status_code == 200
     assert response.json() == []
 
     list_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
     )
 
 
@@ -158,7 +161,7 @@ def test_get_healthcare_service_success(
     assert body["name"] == "Cardiology"
 
     get_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         healthcare_service_id=HEALTHCARE_SERVICE_ID,
     )
 
@@ -180,7 +183,7 @@ def test_get_healthcare_service_not_found(
     assert response.status_code == 404
 
     get_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         healthcare_service_id=HEALTHCARE_SERVICE_ID,
     )
 
@@ -215,7 +218,7 @@ def test_update_healthcare_service_success(
     assert body["name"] == "Cardiology"
 
     update_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         healthcare_service_id=HEALTHCARE_SERVICE_ID,
         payload=mocker.ANY,
         actor_id=USER_ID,
@@ -244,7 +247,7 @@ def test_delete_healthcare_service_success(
     assert response.content == b""
 
     delete_service.assert_called_once_with(
-        organization_id=str(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         healthcare_service_id=HEALTHCARE_SERVICE_ID,
         actor_id=USER_ID,
     )
@@ -258,12 +261,12 @@ def test_delete_healthcare_service_success(
 @pytest.mark.parametrize(
     "method,path",
     [
-        ("GET", f"{BASE_URL}/"),
+        ("GET", f"{BASE_URL}"),
         (
             "GET",
             f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}",
         ),
-        ("POST", f"{BASE_URL}/"),
+        ("POST", f"{BASE_URL}"),
         (
             "PATCH",
             f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}",
@@ -306,7 +309,7 @@ def test_list_healthcare_services_denies_organization_access(
 
     try:
         response = client.get(
-            f"{BASE_URL}/"
+            f"{BASE_URL}"
         )
 
         assert response.status_code == 403
@@ -348,7 +351,7 @@ def test_get_healthcare_service_denies_organization_access( client, mocker, ):
     [ 
         ( 
             "POST", 
-            f"{BASE_URL}/", 
+            f"{BASE_URL}", 
             { 
                 "name": "Cardiology", 
                 "description": "Cardiology services", 
@@ -366,14 +369,14 @@ def test_get_healthcare_service_denies_organization_access( client, mocker, ):
     ) 
 
 def test_healthcare_service_mutations_require_admin( 
-    client, 
+    authenticated_client, 
     mocker, 
     method, 
     path, 
     payload, 
     ): 
 
-    app = client.app 
+    app = authenticated_client.app 
 
     app.dependency_overrides[ 
         require_organization_admin 
@@ -382,7 +385,7 @@ def test_healthcare_service_mutations_require_admin(
             ) 
 
     try: 
-        response = client.request( 
+        response = authenticated_client.request( 
             method, 
             path, json=payload, 
             ) 
