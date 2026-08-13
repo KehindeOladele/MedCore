@@ -45,7 +45,7 @@ router = APIRouter(
 # CREATE HEALTHCARE SERVICE ENDPOINT
 # -------------------------------------------------------
 @router.post(
-    "/",
+    "",
     response_model=HealthcareServiceResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -83,7 +83,7 @@ def list_healthcare_services_endpoint(
 # GET HEALTHCARE SERVICE ENDPOINT
 # -------------------------------------------------------
 @router.get(
-    "/{healthcare_service_id}",
+    "",
     response_model=HealthcareServiceResponse,
 )
 def get_healthcare_service_endpoint(
@@ -102,7 +102,7 @@ def get_healthcare_service_endpoint(
 # UPDATE HEALTHCARE SERVICE ENDPOINT
 # -------------------------------------------------------
 @router.patch(
-    "/{healthcare_service_id}",
+    "",
     response_model=HealthcareServiceResponse,
 )
 def update_healthcare_service_endpoint(
@@ -124,7 +124,7 @@ def update_healthcare_service_endpoint(
 # DELETE HEALTHCARE SERVICE ENDPOINT
 # -------------------------------------------------------
 @router.delete(
-    "/{healthcare_service_id}",
+    "",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_healthcare_service_endpoint(
