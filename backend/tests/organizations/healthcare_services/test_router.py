@@ -296,10 +296,10 @@ def test_healthcare_service_routes_require_authentication(
 
 
 def test_list_healthcare_services_denies_organization_access(
-    client,
+    authenticated_client,
     mocker,
 ):
-    app = client.app
+    app = authenticated_client.app
 
     app.dependency_overrides[
         require_organization_access
@@ -308,7 +308,7 @@ def test_list_healthcare_services_denies_organization_access(
     )
 
     try:
-        response = client.get(
+        response = authenticated_client.get(
             f"{BASE_URL}"
         )
 
@@ -321,8 +321,11 @@ def test_list_healthcare_services_denies_organization_access(
         )
 
 
-def test_get_healthcare_service_denies_organization_access( client, mocker, ): 
-    app = client.app 
+def test_get_healthcare_service_denies_organization_access( 
+        authenticated_client, 
+        mocker, 
+): 
+    app = authenticated_client.app 
 
     app.dependency_overrides[ 
         require_organization_access 
@@ -331,7 +334,7 @@ def test_get_healthcare_service_denies_organization_access( client, mocker, ):
             ) 
 
     try: 
-        response = client.get( 
+        response = authenticated_client.get( 
             f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}" 
             ) 
 
