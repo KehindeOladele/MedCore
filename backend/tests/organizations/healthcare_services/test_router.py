@@ -409,7 +409,7 @@ def test_healthcare_service_list_declares_organization_access():
     list_route = next(
         route
         for route in routes
-        if route.path == "/healthcare-services/"
+        if route.path == "/{organization_id}/healthcare-services/"
         and "GET" in route.methods
     )
 
