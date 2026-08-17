@@ -19,6 +19,20 @@ class HealthcareServiceError(OrganizationError):
 
     pass
 
+
+# ---------------------------------------------------------------------
+# CRUD
+# ---------------------------------------------------------------------
+
+class HealthcareServiceNotFoundError(HealthcareServiceError):
+    default_message = "Healthcare service not found."
+
+
+class HealthcareServiceAlreadyExistsError(HealthcareServiceError):
+    default_message = (
+        "A healthcare service with this name already exists."
+    )
+
 # ---------------------------------------------------------------------
 # Lifecycle
 # ---------------------------------------------------------------------
