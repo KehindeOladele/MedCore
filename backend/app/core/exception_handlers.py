@@ -12,6 +12,8 @@ from app.modules.organizations.exceptions import (
     OrganizationProfileUpdateError,
     InvalidOrganizationEmailError,
     EmailDeliveryError,
+    DepartmentInactiveError,
+    DepartmentNotFoundError,
 )
 
 
@@ -239,7 +241,15 @@ def register_exception_handlers(
     # ======================================
     # Departments
     # ======================================
-    ...
+    app.add_exception_handler(
+        DepartmentNotFoundError,
+        department_not_found_handler,
+    )
+
+    app.add_exception_handler(
+        DepartmentInactiveError,
+        department_inactive_handler,
+    )
 
     # ======================================
     # Healthcare Services
