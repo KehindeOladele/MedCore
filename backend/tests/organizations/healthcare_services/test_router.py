@@ -375,7 +375,6 @@ def test_get_healthcare_service_denies_organization_access(
 
 def test_healthcare_service_mutations_require_admin( 
     authenticated_client, 
-    mocker, 
     method, 
     path, 
     payload, 
@@ -383,12 +382,12 @@ def test_healthcare_service_mutations_require_admin(
 
     app = authenticated_client.app 
 
-    def deny_organization_access():
+    def deny_organization_admin():
         raise OrganizationAccessDeniedError()
 
     app.dependency_overrides[ 
-        require_organization_access 
-        ] = deny_organization_access
+        require_organization_admin 
+        ] = deny_organization_admin
 
     try: 
         response = authenticated_client.request( 
