@@ -301,11 +301,12 @@ def test_list_healthcare_services_denies_organization_access(
 ):
     app = authenticated_client.app
 
+    def deny_organization_access():
+        raise OrganizationAccessDeniedError()
+
     app.dependency_overrides[
         require_organization_access
-    ] = mocker.Mock(
-        side_effect=OrganizationAccessDeniedError()
-    )
+    ] = deny_organization_access
 
     try:
         response = authenticated_client.get(
@@ -327,11 +328,12 @@ def test_get_healthcare_service_denies_organization_access(
 ): 
     app = authenticated_client.app 
 
+    def deny_organization_access():
+        raise OrganizationAccessDeniedError()
+
     app.dependency_overrides[ 
         require_organization_access 
-        ] = mocker.Mock( 
-            side_effect=OrganizationAccessDeniedError() 
-            ) 
+        ] = deny_organization_access
 
     try: 
         response = authenticated_client.get( 
@@ -381,11 +383,12 @@ def test_healthcare_service_mutations_require_admin(
 
     app = authenticated_client.app 
 
+    def deny_organization_access():
+        raise OrganizationAccessDeniedError()
+
     app.dependency_overrides[ 
-        require_organization_admin 
-        ] = mocker.Mock( 
-            side_effect=OrganizationAccessDeniedError() 
-            ) 
+        require_organization_access 
+        ] = deny_organization_access
 
     try: 
         response = authenticated_client.request( 
@@ -404,8 +407,6 @@ def test_healthcare_service_mutations_require_admin(
 # ---------------------------------------------------------
 # ROUTER DEPENDENCY DECLARATION
 # ---------------------------------------------------------
-
-
 def test_healthcare_service_list_declares_organization_access():
     routes = router.router.routes
 
