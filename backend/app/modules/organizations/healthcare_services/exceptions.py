@@ -17,21 +17,7 @@ class HealthcareServiceError(OrganizationError):
     Base exception for all Healthcare Service domain errors.
     """
 
-    default_message = "Healthcare service error."
-
-
-# ---------------------------------------------------------------------
-# CRUD
-# ---------------------------------------------------------------------
-
-class HealthcareServiceNotFoundError(HealthcareServiceError):
-    default_message = "Healthcare service not found."
-
-
-class HealthcareServiceAlreadyExistsError(HealthcareServiceError):
-    default_message = (
-        "A healthcare service with this name already exists."
-    )
+    pass
 
 # ---------------------------------------------------------------------
 # Lifecycle
