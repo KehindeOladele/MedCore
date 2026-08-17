@@ -12,10 +12,11 @@ from app.modules.organizations.exceptions import (
     OrganizationProfileUpdateError,
     InvalidOrganizationEmailError,
     EmailDeliveryError,
-    DepartmentInactiveError,
     DepartmentNotFoundError,
 )
-
+from app.modules.organizations.healthcare_services.exceptions import (
+    HealthcareServiceNotFoundError,
+)
 
 # ----------------------------
 # Generic Organization Handler
@@ -171,6 +172,37 @@ async def email_delivery_handler(
     )
 
 
+# -------------------------------------------
+# Department Not Found Handler
+# -------------------------------------------
+async def department_not_found_handler(
+        request: Request,
+        exc: DepartmentNotFoundError
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "details": str(exc)
+        }
+    )
+
+
+# -------------------------------------------
+# Healthcare Service Not Found Handler
+# -------------------------------------------
+async def healthcare_service_not_found_handler(
+    request: Request,
+    exc: HealthcareServiceNotFoundError,
+):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "detail": str(exc),
+        },
+    )
+
+
+
 # -------------------------------------
 # Register Exception Handlers
 # -------------------------------------
@@ -246,15 +278,13 @@ def register_exception_handlers(
         department_not_found_handler,
     )
 
-    app.add_exception_handler(
-        DepartmentInactiveError,
-        department_inactive_handler,
-    )
-
     # ======================================
     # Healthcare Services
     # ======================================
-    ...
+    app.add_exception_handler(
+        HealthcareServiceNotFoundError,
+        healthcare_service_not_found_handler,
+    )
 
     # ======================================
     # Practitioners
