@@ -1,23 +1,25 @@
 from uuid import UUID
 
 from app.modules.organizations.healthcare_services import queries
-
-
-ORGANIZATION_ID = UUID(
-    "0b7d7b1b-208f-4618-9972-c652672a6fb9"
+from tests.fixtures.healthcare_service import (
+    healthcare_service_create,
+    healthcare_service_update
+)
+from tests.factories.constants import (
+    ORGANIZATION_ID,
+    HEALTHCARE_SERVICE_ID,
+    DEPARTMENT_ID,
+    USER_ID
 )
 
-HEALTHCARE_SERVICE_ID = UUID(
-    "07e46ce0-1701-4479-be7c-3841e7661ffe"
-)
 
-DEPARTMENT_ID = UUID(
-    "11111111-1111-1111-1111-111111111111"
-)
+ORGANIZATION_ID = ORGANIZATION_ID
 
-USER_ID = UUID(
-    "22222222-2222-2222-2222-222222222222"
-)
+HEALTHCARE_SERVICE_ID = HEALTHCARE_SERVICE_ID
+
+DEPARTMENT_ID = DEPARTMENT_ID
+
+USER_ID = USER_ID
 
 
 # =========================================================
