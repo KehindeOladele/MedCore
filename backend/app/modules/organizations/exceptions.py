@@ -188,26 +188,3 @@ class DepartmentInactiveError(OrganizationError):
     default_message = (
         "The department is inactive."
     )
-
-
-# ---------------------------------------------------------
-# Organization Shared Healthcare-Service Exceptions
-# ---------------------------------------------------------
-class HealthcareServiceNotFoundError(OrganizationError):
-    """
-    Raised when the referenced healthcare-service does not exist.
-    """
-
-    default_message = (
-        "Healthcare service not found."
-    )
-
-
-class HealthcareServiceInactiveError(OrganizationError):
-    """
-    Raised when the referenced healthcare-service is inactive.
-    """
-
-    default_message = (
-        "The healthcare service is inactive."
-    )
