@@ -5,9 +5,9 @@ from app.modules.organizations.departments import (
     queries as department_queries,
     )  
 
-from . import queries
+from app.modules.organizations.healthcare_services import queries
 from app.core.events.emitter import emit_event
-from .exceptions import (
+from app.modules.organizations.healthcare_services.exceptions import (
     HealthcareServiceNotFoundError,
     HealthcareServiceAlreadyExistsError,
     )
@@ -19,7 +19,7 @@ from app.modules.organizations.exceptions import (
     DepartmentNotFoundError,
     DepartmentInactiveError,
     )
-from .schemas import (
+from app.modules.organizations.healthcare_services.schemas import (
     HealthcareServiceCreate,
     HealthcareServiceUpdate,
     HealthcareServiceResponse
