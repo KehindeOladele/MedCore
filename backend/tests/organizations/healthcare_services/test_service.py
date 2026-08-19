@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import pytest
 
 from app.core.events.schemas import EventTypes
@@ -54,8 +52,8 @@ def test_get_healthcare_service_or_raise_found(
     )
 
     result = service._get_healthcare_service_or_raise(
-        organization_id=UUID(ORGANIZATION_ID),
-        healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+        organization_id=ORGANIZATION_ID,
+        healthcare_service_id=HEALTHCARE_SERVICE_ID,
     )
 
     assert result == healthcare_service_data
@@ -72,8 +70,8 @@ def test_get_healthcare_service_or_raise_not_found(
 
     with pytest.raises(HealthcareServiceNotFoundError):
         service._get_healthcare_service_or_raise(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
         )
 
 
@@ -96,7 +94,7 @@ def test_validate_organization_active_success(
     )
 
     result = service._validate_organization_active(
-        UUID(ORGANIZATION_ID)
+        ORGANIZATION_ID
     )
 
     assert result == organization
@@ -113,7 +111,7 @@ def test_validate_organization_active_not_found(
 
     with pytest.raises(OrganizationNotFoundError):
         service._validate_organization_active(
-            UUID(ORGANIZATION_ID)
+            ORGANIZATION_ID
         )
 
 
@@ -133,7 +131,7 @@ def test_validate_organization_active_inactive(
 
     with pytest.raises(OrganizationInactiveError):
         service._validate_organization_active(
-            UUID(ORGANIZATION_ID)
+            ORGANIZATION_ID
         )
 
 
@@ -143,7 +141,7 @@ def test_validate_organization_active_inactive(
 
 def test_validate_department_none():
     result = service._validate_department(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         department_id=None,
     )
 
@@ -166,7 +164,7 @@ def test_validate_department_success(
     )
 
     result = service._validate_department(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         department_id=UUID(
             "11111111-1111-1111-1111-111111111111"
         ),
@@ -186,7 +184,7 @@ def test_validate_department_not_found(
 
     with pytest.raises(DepartmentNotFoundError):
         service._validate_department(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
             department_id=UUID(
                 "11111111-1111-1111-1111-111111111111"
             ),
@@ -210,7 +208,7 @@ def test_validate_department_inactive(
 
     with pytest.raises(DepartmentInactiveError):
         service._validate_department(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
             department_id=UUID(
                 "11111111-1111-1111-1111-111111111111"
             ),
@@ -231,7 +229,7 @@ def test_validate_unique_name_available(
     )
 
     service._validate_unique_name(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         name="Cardiology",
     )
 
@@ -252,7 +250,7 @@ def test_validate_unique_name_duplicate(
 
     with pytest.raises(HealthcareServiceAlreadyExistsError):
         service._validate_unique_name(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
             name="Cardiology",
         )
 
@@ -272,9 +270,9 @@ def test_validate_unique_name_allows_excluded_service(
     )
 
     service._validate_unique_name(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         name="Cardiology",
-        exclude_service_id=UUID(HEALTHCARE_SERVICE_ID),
+        exclude_service_id=HEALTHCARE_SERVICE_ID,
     )
 
 
@@ -286,9 +284,9 @@ def test_prepare_create_payload(
     healthcare_service_create,
 ):
     result = service._prepare_create_payload(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         payload=healthcare_service_create,
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
     )
 
     assert result["organization_id"] == ORGANIZATION_ID
@@ -306,7 +304,7 @@ def test_prepare_update_payload(
 ):
     result = service._prepare_update_payload(
         payload=healthcare_service_update,
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
     )
 
     assert result["updated_by"] == USER_ID
@@ -322,7 +320,7 @@ def test_build_healthcare_service_event_payload(
 ):
     result = service._build_healthcare_service_event_payload(
         healthcare_service=healthcare_service_data,
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
     )
 
     assert result == {
@@ -402,9 +400,9 @@ def test_create_healthcare_service_success(
     )
 
     result = service.create_healthcare_service(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         payload=healthcare_service_create,
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
     )
 
     assert isinstance(
@@ -412,12 +410,12 @@ def test_create_healthcare_service_success(
         HealthcareServiceResponse,
     )
 
-    assert result.id == UUID(HEALTHCARE_SERVICE_ID)
+    assert result.id == HEALTHCARE_SERVICE_ID
 
     create_query.assert_called_once()
 
     activity.assert_called_once_with(
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
         action="healthcare_service.created",
         healthcare_service=healthcare_service_data,
         event_type=EventTypes.HEALTHCARE_SERVICE_CREATED,
@@ -436,9 +434,9 @@ def test_create_healthcare_service_rejects_inactive_organization(
 
     with pytest.raises(OrganizationInactiveError):
         service.create_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
             payload=healthcare_service_create,
-            actor_id=UUID(USER_ID),
+            actor_id=USER_ID,
         )
 
 
@@ -469,9 +467,9 @@ def test_create_healthcare_service_rejects_duplicate_name(
 
     with pytest.raises(HealthcareServiceAlreadyExistsError):
         service.create_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
             payload=healthcare_service_create,
-            actor_id=UUID(USER_ID),
+            actor_id=USER_ID,
         )
 
     create_query.assert_not_called()
@@ -492,8 +490,8 @@ def test_get_healthcare_service_success(
     )
 
     result = service.get_healthcare_service(
-        organization_id=UUID(ORGANIZATION_ID),
-        healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+        organization_id=ORGANIZATION_ID,
+        healthcare_service_id=HEALTHCARE_SERVICE_ID,
     )
 
     assert isinstance(
@@ -501,7 +499,7 @@ def test_get_healthcare_service_success(
         HealthcareServiceResponse,
     )
 
-    assert result.id == UUID(HEALTHCARE_SERVICE_ID)
+    assert result.id == HEALTHCARE_SERVICE_ID
 
 
 def test_get_healthcare_service_not_found(
@@ -515,8 +513,8 @@ def test_get_healthcare_service_not_found(
 
     with pytest.raises(HealthcareServiceNotFoundError):
         service.get_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
         )
 
 
@@ -540,7 +538,7 @@ def test_list_healthcare_services_success(
     )
 
     result = service.list_healthcare_services(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
     )
 
     assert len(result) == 1
@@ -569,12 +567,12 @@ def test_list_healthcare_services_active_only(
     )
 
     service.list_healthcare_services(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         active_only=True,
     )
 
     list_query.assert_called_once_with(
-        organization_id=UUID(ORGANIZATION_ID),
+        organization_id=ORGANIZATION_ID,
         active_only=True,
     )
 
@@ -595,7 +593,7 @@ def test_list_healthcare_services_rejects_inactive_organization(
 
     with pytest.raises(OrganizationInactiveError):
         service.list_healthcare_services(
-            organization_id=UUID(ORGANIZATION_ID),
+            organization_id=ORGANIZATION_ID,
         )
 
     list_query.assert_not_called()
@@ -643,10 +641,10 @@ def test_update_healthcare_service_success(
     )
 
     result = service.update_healthcare_service(
-        organization_id=UUID(ORGANIZATION_ID),
-        healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+        organization_id=ORGANIZATION_ID,
+        healthcare_service_id=HEALTHCARE_SERVICE_ID,
         payload=healthcare_service_update,
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
     )
 
     assert isinstance(
@@ -657,7 +655,7 @@ def test_update_healthcare_service_success(
     update_query.assert_called_once()
 
     activity.assert_called_once_with(
-        actor_id=UUID(USER_ID),
+        actor_id=USER_ID,
         action="healthcare_service.updated",
         healthcare_service=healthcare_service_data,
         event_type=EventTypes.HEALTHCARE_SERVICE_UPDATED,
@@ -676,10 +674,10 @@ def test_update_healthcare_service_not_found(
 
     with pytest.raises(HealthcareServiceNotFoundError):
         service.update_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
             payload=healthcare_service_update,
-            actor_id=UUID(USER_ID),
+            actor_id=USER_ID,
         )
 
 
@@ -717,10 +715,10 @@ def test_update_healthcare_service_duplicate_name(
 
     with pytest.raises(HealthcareServiceAlreadyExistsError):
         service.update_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
             payload=healthcare_service_update,
-            actor_id=UUID(USER_ID),
+            actor_id=USER_ID,
         )
 
     update_query.assert_not_called()
@@ -756,21 +754,21 @@ def test_delete_healthcare_service_success(
     )
 
     service.delete_healthcare_service(
-        organization_id=UUID(ORGANIZATION_ID),
-        healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
-        actor_id=UUID(USER_ID),
+        organization_id=ORGANIZATION_ID,
+        healthcare_service_id=HEALTHCARE_SERVICE_ID,
+        actor_id=USER_ID,
     )
 
     delete_query.assert_called_once_with(
-        organization_id=UUID(ORGANIZATION_ID),
-        healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
+        organization_id=ORGANIZATION_ID,
+        healthcare_service_id=HEALTHCARE_SERVICE_ID,
     )
 
     activity.assert_called_once()
 
     activity_call = activity.call_args.kwargs
 
-    assert activity_call["actor_id"] == UUID(USER_ID)
+    assert activity_call["actor_id"] == USER_ID
     assert activity_call["event_type"] == (
         EventTypes.HEALTHCARE_SERVICE_DELETED
     )
@@ -794,9 +792,9 @@ def test_delete_healthcare_service_not_found(
 
     with pytest.raises(HealthcareServiceNotFoundError):
         service.delete_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
-            actor_id=UUID(USER_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
+            actor_id=USER_ID,
         )
 
     delete_query.assert_not_called()
@@ -825,9 +823,9 @@ def test_delete_healthcare_service_inactive_organization(
 
     with pytest.raises(OrganizationInactiveError):
         service.delete_healthcare_service(
-            organization_id=UUID(ORGANIZATION_ID),
-            healthcare_service_id=UUID(HEALTHCARE_SERVICE_ID),
-            actor_id=UUID(USER_ID),
+            organization_id=ORGANIZATION_ID,
+            healthcare_service_id=HEALTHCARE_SERVICE_ID,
+            actor_id=USER_ID,
         )
 
     delete_query.assert_not_called()
