@@ -165,9 +165,7 @@ def test_validate_department_success(
 
     result = service._validate_department(
         organization_id=ORGANIZATION_ID,
-        department_id=UUID(
-            "11111111-1111-1111-1111-111111111111"
-        ),
+        department_id= "11111111-1111-1111-1111-111111111111",
     )
 
     assert result == department
@@ -185,9 +183,7 @@ def test_validate_department_not_found(
     with pytest.raises(DepartmentNotFoundError):
         service._validate_department(
             organization_id=ORGANIZATION_ID,
-            department_id=UUID(
-                "11111111-1111-1111-1111-111111111111"
-            ),
+            department_id= "11111111-1111-1111-1111-111111111111",
         )
 
 
@@ -209,9 +205,7 @@ def test_validate_department_inactive(
     with pytest.raises(DepartmentInactiveError):
         service._validate_department(
             organization_id=ORGANIZATION_ID,
-            department_id=UUID(
-                "11111111-1111-1111-1111-111111111111"
-            ),
+            department_id= "11111111-1111-1111-1111-111111111111",
         )
 
 
@@ -548,7 +542,7 @@ def test_list_healthcare_services_success(
         HealthcareServiceResponse,
     )
 
-    assert result[0].id == UUID(HEALTHCARE_SERVICE_ID)
+    assert result[0].id == HEALTHCARE_SERVICE_ID
 
 
 def test_list_healthcare_services_active_only(
