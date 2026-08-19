@@ -10,12 +10,10 @@ from app.modules.organizations.departments.exceptions import (
     DepartmentAlreadyExistsError,
     InvalidParentDepartmentError,
     DepartmentHasChildrenError,
-    DepartmentNotFoundError,
     CircularDepartmentHierarchyError
 )
-
+from app.modules.organizations.exceptions import DepartmentNotFoundError
 from app.modules.organizations.departments.schemas import (
-    DepartmentCreate,
     DepartmentResponse,
     DepartmentUpdate
 )

@@ -1,12 +1,19 @@
 from copy import deepcopy
 
+from .constants import (
+    USER_ID,
+    ORGANIZATION_ID,
+)
+
 
 _DEFAULT_USER = {
-        "id": "user-123",
-        "email": "admin@test.com",
-        "role": "admin",
-        "organization_id": "org-123",
-    }
+    "id": USER_ID,
+    "email": "admin@test.com",
+    "role": "admin",
+    "organization_ids": [
+        str(ORGANIZATION_ID),
+    ],
+}
 
 
 def user_factory(**overrides):

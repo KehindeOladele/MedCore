@@ -5,9 +5,9 @@ from app.modules.organizations.departments import (
     queries as department_queries,
     )  
 
-from . import queries
+from app.modules.organizations.healthcare_services import queries
 from app.core.events.emitter import emit_event
-from .exceptions import (
+from app.modules.organizations.healthcare_services.exceptions import (
     HealthcareServiceNotFoundError,
     HealthcareServiceAlreadyExistsError,
     )
@@ -19,7 +19,7 @@ from app.modules.organizations.exceptions import (
     DepartmentNotFoundError,
     DepartmentInactiveError,
     )
-from .schemas import (
+from app.modules.organizations.healthcare_services.schemas import (
     HealthcareServiceCreate,
     HealthcareServiceUpdate,
     HealthcareServiceResponse
@@ -148,7 +148,7 @@ def _validate_unique_name(
 
     if (
         exclude_service_id is not None
-        and existing["id"] == str(exclude_service_id)
+        and existing["id"] == exclude_service_id
     ):
         return
 
@@ -172,9 +172,9 @@ def _prepare_create_payload(
         exclude_none=True,
     )
 
-    data["organization_id"] = str(organization_id)
-    data["created_by"] = str(actor_id)
-    data["updated_by"] = str(actor_id)
+    data["organization_id"] = organization_id
+    data["created_by"] = actor_id
+    data["updated_by"] = actor_id
 
     return data
 
@@ -196,7 +196,7 @@ def _prepare_update_payload(
         exclude_none=True,
     )
 
-    data["updated_by"] = str(actor_id)
+    data["updated_by"] = actor_id
 
     return data
 
@@ -211,11 +211,9 @@ def _log_healthcare_service_audit(
     healthcare_service: dict,
 ) -> None:
     log_audit_event(
-        actor_id=str(actor_id),
+        actor_id=actor_id,
         actor_type="user",
-        organization_id=str(
-            healthcare_service["organization_id"]
-        ),
+        organization_id= healthcare_service["organization_id"],
         action=action,
         resource_type="healthcare_service",
         resource_id=str(
@@ -244,7 +242,7 @@ def _build_healthcare_service_event_payload(
         "aggregate_id": healthcare_service["id"],
         "organization_id": healthcare_service["organization_id"],
         "department_id": healthcare_service.get("department_id"),
-        "actor_id": str(actor_id),
+        "actor_id": actor_id,
         "service_name": healthcare_service["name"],
         "active": healthcare_service["active"],
     }

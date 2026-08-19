@@ -55,7 +55,7 @@ def test_get_profile_not_found(mock_get):
 def test_update_profile(
     organization_data,
     updated_organization_data,
-    mocker: MockerFixture,
+    mocker,
 ):
     mock_get = mocker.patch(
         "app.modules.organizations.profile.service.get_organization_profile"
@@ -80,6 +80,10 @@ def test_update_profile(
         "org1",
         payload,
         actor_id="user1",
+    )
+    
+    assert result.id == str(
+        organization_data["id"]
     )
 
     assert result.name == "Updated Hospital"

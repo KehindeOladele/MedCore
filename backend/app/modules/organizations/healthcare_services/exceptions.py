@@ -17,7 +17,7 @@ class HealthcareServiceError(OrganizationError):
     Base exception for all Healthcare Service domain errors.
     """
 
-    default_message = "Healthcare service error."
+    pass
 
 
 # ---------------------------------------------------------------------

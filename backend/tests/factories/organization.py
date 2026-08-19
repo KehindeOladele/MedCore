@@ -1,7 +1,13 @@
 from copy import deepcopy
 
+from .constants import (
+ORGANIZATION_ID,
+HEALTHCARE_SERVICE_ID,
+USER_ID
+)
+
 _DEFAULT_ORGANIZATION_ROW = {
-    "id": "org1",
+    "id": ORGANIZATION_ID,
     "active": True,
     "name": "Test Hospital",
     "type": "hospital",
@@ -19,6 +25,19 @@ _DEFAULT_ORGANIZATION_ROW = {
     "setup_completed": False,
 }
 
+
+# --------------------------------------
+# ORGANIZATION LAYER
+# --------------------------------------
+def organization_factory(**overrides):
+    row = organization_row_factory(**overrides)
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "type": row["type"],
+        "active": True,
+    }
+
 # --------------------------------------
 # SERVICE LAYER (FLAT ROWS)
 # --------------------------------------
@@ -35,7 +54,7 @@ def organization_profile_factory(**overrides):
     row = organization_row_factory(**overrides)
 
     return {
-        "id": row["id"],
+        "id": str(row["id"]),
         "active": row["active"],
         "name": row["name"],
         "type": row["type"],

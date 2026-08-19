@@ -1,4 +1,5 @@
 from pytest_mock import MockerFixture
+from tests.factories.user import USER_ID
 
 
 # ------------------------
@@ -17,14 +18,14 @@ def override_current_user():
 def test_get_profile_authenticated(
     authenticated_client,
     organization_profile_data,
-    mocker: MockerFixture,
+    mocker,
 ):
-    mocker.patch(
+    mock_get_org = mocker.patch(
         "app.modules.organizations.profile.router.get_user_organization_id",
-        return_value="org1",
+        return_value=str(organization_profile_data["id"]),
     )
 
-    mocker.patch(
+    mock_get_profile = mocker.patch(
         "app.modules.organizations.profile.router.get_profile",
         return_value=organization_profile_data,
     )
@@ -34,7 +35,18 @@ def test_get_profile_authenticated(
     )
 
     assert response.status_code == 200
-    assert response.json()["id"] == "org1"
+
+    body = response.json()
+
+    assert body["id"] == str(
+        organization_profile_data["id"]
+    )
+    assert body["name"] == "Test Hospital"
+
+    mock_get_org.assert_called_once_with(USER_ID)
+    mock_get_profile.assert_called_once_with(
+        str(organization_profile_data["id"])
+    )
 
 
 # --------------------------------------
@@ -43,14 +55,16 @@ def test_get_profile_authenticated(
 def test_update_profile(
     authenticated_client,
     updated_organization_profile_data,
-    mocker: MockerFixture,
+    mocker,
 ):
-    mocker.patch(
+    mock_get_org = mocker.patch(
         "app.modules.organizations.profile.router.get_user_organization_id",
-        return_value="org1",
+        return_value=str(
+            updated_organization_profile_data["id"]
+        ),
     )
 
-    mocker.patch(
+    mock_update = mocker.patch(
         "app.modules.organizations.profile.router.update_profile",
         return_value=updated_organization_profile_data,
     )
@@ -63,4 +77,17 @@ def test_update_profile(
     )
 
     assert response.status_code == 200
-    assert response.json()["name"] == "Updated Hospital"
+
+    body = response.json()
+
+    assert body["name"] == "Updated Hospital"
+
+    mock_get_org.assert_called_once_with(USER_ID)
+
+    mock_update.assert_called_once_with(
+        organization_id=str(
+            updated_organization_profile_data["id"]
+        ),
+        payload=mocker.ANY,
+        actor_id=USER_ID,
+    )
