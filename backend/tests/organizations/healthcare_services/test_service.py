@@ -19,8 +19,6 @@ from app.modules.organizations.healthcare_services.exceptions import (
 )
 
 from app.modules.organizations.healthcare_services.schemas import (
-    HealthcareServiceCreate,
-    HealthcareServiceUpdate,
     HealthcareServiceResponse,
 )
 
@@ -30,6 +28,11 @@ from tests.factories.constants import (
     USER_ID,
 )
 
+from tests.fixtures.healthcare_service import (
+    healthcare_service_create,
+    healthcare_service_update,
+    healthcare_service_data
+)
 
 # ============================================================
 # PRIVATE HELPER TESTS
