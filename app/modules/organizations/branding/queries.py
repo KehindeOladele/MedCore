@@ -5,7 +5,9 @@ from uuid import UUID
 
 from app.core.supabase_admin import supabase_admin
 
-
+# -----------------------------------------------------------------------------------
+# GET LOGO URL, PATH, PRIMARY COLOR, SECONDARY COLOR
+# -----------------------------------------------------------------------------------
 def get_branding(organization_id: UUID) -> dict[str, Any] | None:
     response = (
         supabase_admin.table("organizations")
@@ -15,6 +17,9 @@ def get_branding(organization_id: UUID) -> dict[str, Any] | None:
     return response.data or None
 
 
+# -----------------------------------------------------------------------------------
+# UPDATE LOGO URL, PATH, PRIMARY COLOR, SECONDARY COLOR
+# -----------------------------------------------------------------------------------
 def update_branding(organization_id: UUID, updates: dict[str, Any]) -> dict[str, Any] | None:
     response = (
         supabase_admin.table("organizations").update(updates)
