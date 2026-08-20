@@ -1,28 +1,15 @@
 import pytest
-
+from uuid import uuid4
 from fastapi.testclient import TestClient
-
 from main import app
-
 from app.core.security import get_current_user
-
+from tests.factories.user import user_factory
 from app.modules.organizations.dependencies import (
-    require_organization_access,
     require_organization_admin,
-)
-
-from tests.factories.user import (
-    user_factory,
-)
-
-from tests.factories.organization import (
-    ORGANIZATION_ID,
+    require_organization_member,
 )
 
 
-# --------------------------------------
-# CLIENT TEST FIXTURE
-# --------------------------------------
 
 @pytest.fixture
 def client():
@@ -43,24 +30,20 @@ def current_user():
     return user_factory()
 
 
-# --------------------------------------
-# AUTHENTICATED CLIENT FIXTURE
-# --------------------------------------
-
 @pytest.fixture
 def authenticated_client(current_user):
-
-    fake_org = {
-        "id": str(ORGANIZATION_ID),
-        "name": "Test Hospital",
-    }
 
     app.dependency_overrides[get_current_user] = (
         lambda: current_user
     )
 
+    fake_org = {
+        "id": str(uuid4()),
+        "name": "Test Hospital",
+    }
+
     app.dependency_overrides[
-        require_organization_access
+        require_organization_member
     ] = lambda: fake_org
 
     app.dependency_overrides[

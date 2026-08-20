@@ -32,18 +32,6 @@ def organization_profile_data():
     return organization_profile_factory()
 
 
-
-# --------------------------------------
-# UPDATE ORGANIZATION PROFILE FIXTURE
-# --------------------------------------
 @pytest.fixture
 def updated_organization_profile_data():
     return organization_profile_factory(name="Updated Hospital")
-
-
-# --------------------------------------
-# ORGANIZATION FIXTURE
-# --------------------------------------
-@pytest.fixture
-def organization():
-    return organization_factory()

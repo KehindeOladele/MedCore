@@ -77,8 +77,6 @@ router.include_router(operating_hours_router)
 router.include_router(branding_router)
 
 
-
-
 #----------------------------------------- 
 # Organization Registration Endpoint
 # ----------------------------------------
@@ -205,4 +203,8 @@ def invite_user(
 # --------------------------------------------------
 @router.post("/accept-invite")
 def accept_invite(payload: AcceptInviteRequest):
+<<<<<<< HEAD
     return accept_invitation(payload)
+=======
+    return accept_invitation(payload)
+>>>>>>> main/main

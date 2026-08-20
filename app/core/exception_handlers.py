@@ -12,16 +12,8 @@ from app.modules.organizations.exceptions import (
     OrganizationProfileUpdateError,
     InvalidOrganizationEmailError,
     EmailDeliveryError,
-    DepartmentNotFoundError,
 )
-from app.modules.organizations.healthcare_services.exceptions import (
-    HealthcareServiceNotFoundError,
-)
-from app.modules.organizations.operating_hours.exceptions import (
-    OperatingHoursConflictError,
-    OperatingHoursNotFoundError,
-)
-from app.modules.organizations.branding.exceptions import BrandingNotFoundError
+
 
 # ----------------------------
 # Generic Organization Handler
@@ -177,58 +169,6 @@ async def email_delivery_handler(
     )
 
 
-# -------------------------------------------
-# Department Not Found Handler
-# -------------------------------------------
-async def department_not_found_handler(
-        request: Request,
-        exc: DepartmentNotFoundError
-):
-    return JSONResponse(
-        status_code=404,
-        content={
-            "details": str(exc)
-        }
-    )
-
-
-# -------------------------------------------
-# Healthcare Service Not Found Handler
-# -------------------------------------------
-async def healthcare_service_not_found_handler(
-    request: Request,
-    exc: HealthcareServiceNotFoundError,
-):
-    return JSONResponse(
-        status_code=404,
-        content={
-            "detail": str(exc),
-        },
-    )
-
-
-async def operating_hours_not_found_handler(
-    request: Request,
-    exc: OperatingHoursNotFoundError,
-):
-    return JSONResponse(status_code=404, content={"detail": str(exc)})
-
-
-async def operating_hours_conflict_handler(
-    request: Request,
-    exc: OperatingHoursConflictError,
-):
-    return JSONResponse(status_code=409, content={"detail": str(exc)})
-
-
-async def branding_not_found_handler(
-    request: Request,
-    exc: BrandingNotFoundError,
-):
-    return JSONResponse(status_code=404, content={"detail": str(exc)})
-
-
-
 # -------------------------------------
 # Register Exception Handlers
 # -------------------------------------
@@ -299,32 +239,12 @@ def register_exception_handlers(
     # ======================================
     # Departments
     # ======================================
-    app.add_exception_handler(
-        DepartmentNotFoundError,
-        department_not_found_handler,
-    )
+    ...
 
     # ======================================
     # Healthcare Services
     # ======================================
-    app.add_exception_handler(
-        HealthcareServiceNotFoundError,
-        healthcare_service_not_found_handler,
-    )
-
-    app.add_exception_handler(
-        OperatingHoursNotFoundError,
-        operating_hours_not_found_handler,
-    )
-    app.add_exception_handler(
-        OperatingHoursConflictError,
-        operating_hours_conflict_handler,
-    )
-
-    app.add_exception_handler(
-        BrandingNotFoundError,
-        branding_not_found_handler,
-    )
+    ...
 
     # ======================================
     # Practitioners

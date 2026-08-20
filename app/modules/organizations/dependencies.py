@@ -8,27 +8,22 @@ from .exceptions import (
 )
 
 
-# ------------------------------------
+# --------------------
 # Members Check Helper
-# ------------------------------------
+# --------------------
 def _user_has_organization_access(
     current_user: dict,
     organization_id: UUID,
 ) -> bool:
     """
-    Temporary organization access check until the
-    organization membership module is implemented.
+    Temporary access check until the
+    membership module is implemented.
     """
 
-    organization_ids = current_user.get(
-        "organization_ids",
-        []
+    return str(current_user.get("organization_id")) == str(
+        organization_id
     )
 
-    return str(organization_id) in {
-        str(org_id)
-        for org_id in organization_ids
-    }
 
 # ---------------------------------
 #   BASE DEPENDENCY
