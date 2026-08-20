@@ -39,6 +39,7 @@ from .departments.router import (
 from .healthcare_services.router import (
     router as healthcare_service_router
 )
+from .operating_hours.router import router as operating_hours_router
 
 
 # ---------------------------------------
@@ -63,6 +64,11 @@ router.include_router(departments_router)
 # HEALTHCARE SERVICE ROUTER 
 # ---------------------------------------
 router.include_router(healthcare_service_router)
+
+# ---------------------------------------
+# OPERATING HOURS ROUTER
+# ---------------------------------------
+router.include_router(operating_hours_router)
 
 
 

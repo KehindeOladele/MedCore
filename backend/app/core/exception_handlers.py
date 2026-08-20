@@ -17,6 +17,10 @@ from app.modules.organizations.exceptions import (
 from app.modules.organizations.healthcare_services.exceptions import (
     HealthcareServiceNotFoundError,
 )
+from app.modules.organizations.operating_hours.exceptions import (
+    OperatingHoursConflictError,
+    OperatingHoursNotFoundError,
+)
 
 # ----------------------------
 # Generic Organization Handler
@@ -202,6 +206,20 @@ async def healthcare_service_not_found_handler(
     )
 
 
+async def operating_hours_not_found_handler(
+    request: Request,
+    exc: OperatingHoursNotFoundError,
+):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
+async def operating_hours_conflict_handler(
+    request: Request,
+    exc: OperatingHoursConflictError,
+):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
 
 # -------------------------------------
 # Register Exception Handlers
@@ -284,6 +302,15 @@ def register_exception_handlers(
     app.add_exception_handler(
         HealthcareServiceNotFoundError,
         healthcare_service_not_found_handler,
+    )
+
+    app.add_exception_handler(
+        OperatingHoursNotFoundError,
+        operating_hours_not_found_handler,
+    )
+    app.add_exception_handler(
+        OperatingHoursConflictError,
+        operating_hours_conflict_handler,
     )
 
     # ======================================
