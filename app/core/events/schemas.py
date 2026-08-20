@@ -87,6 +87,11 @@ class EventTypes:
         "healthcare_service.deactivated"
     )
 
+    # Organization Operating Hours EventTypes
+    OPERATING_HOURS_CREATED = "operating_hours.created"
+    OPERATING_HOURS_UPDATED = "operating_hours.updated"
+    OPERATING_HOURS_DELETED = "operating_hours.deleted"
+
 # ----- Event Status Model -----
 class EventStatus:
     PENDING = "pending"
