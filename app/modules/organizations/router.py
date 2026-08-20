@@ -30,17 +30,12 @@ from app.modules.organizations.queries import (
 )
 from app.core.supabase_client import supabase
 from app.shared.tasks.event_tasks import process_events_task
-from .profile.router import (
+from app.modules.organizations.profile.router import (
     router as profile_router,
 )
-from .departments.router import (
+from app.modules.organizations.departments.router import (
     router as departments_router,
 )
-from .healthcare_services.router import (
-    router as healthcare_service_router
-)
-from .operating_hours.router import router as operating_hours_router
-from .branding.router import router as branding_router
 
 
 # ---------------------------------------
@@ -50,31 +45,15 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
 
 # ---------------------------------------
-# PROFILE ROUTER 
+# MONITOR ORGANIZATION PROFILE ROUTER 
 # ---------------------------------------
 router.include_router(profile_router)
 
 
 # ---------------------------------------
-# DEPARTMENTS ROUTER 
+# MONITOR ORGANIZATION PROFILE ROUTER 
 # ---------------------------------------
 router.include_router(departments_router)
-
-
-# ---------------------------------------
-# HEALTHCARE SERVICE ROUTER 
-# ---------------------------------------
-router.include_router(healthcare_service_router)
-
-# ---------------------------------------
-# OPERATING HOURS ROUTER
-# ---------------------------------------
-router.include_router(operating_hours_router)
-
-# ---------------------------------------
-# BRANDING ROUTER
-# ---------------------------------------
-router.include_router(branding_router)
 
 
 #----------------------------------------- 
@@ -203,8 +182,4 @@ def invite_user(
 # --------------------------------------------------
 @router.post("/accept-invite")
 def accept_invite(payload: AcceptInviteRequest):
-<<<<<<< HEAD
     return accept_invitation(payload)
-=======
-    return accept_invitation(payload)
->>>>>>> main/main

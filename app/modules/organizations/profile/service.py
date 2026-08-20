@@ -67,7 +67,7 @@ def _build_profile_response(
 ) -> OrganizationProfileResponse:
 
     return OrganizationProfileResponse(
-        id=str(organization["id"]),
+        id=organization["id"],
         active=organization["active"],
         name=organization["name"],
         type=organization["type"],

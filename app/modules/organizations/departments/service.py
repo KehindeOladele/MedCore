@@ -9,9 +9,10 @@ from .exceptions import (
     CircularDepartmentHierarchyError,
     DepartmentAlreadyExistsError,
     DepartmentHasChildrenError,
+    DepartmentInUseError,
+    DepartmentNotFoundError,
     InvalidParentDepartmentError,
 )
-from app.modules.organizations.exceptions import DepartmentNotFoundError
 
 from .queries import (
     create_department,
@@ -158,24 +159,21 @@ def _log_department_audit(
     actor_id: UUID,
     action: str,
     department: dict,
-) -> None:
+):
     """
     Record a department audit event.
     """
 
     log_audit_event(
         actor_id=str(actor_id),
-        actor_type="user",
-        organization_id=str(
-            department["organization_id"]
-        ),
         action=action,
-        resource_type="healthcare_service",
-        resource_id=str(
-            department["id"]
-        ),
+        resource_type="department",
+        resource_id=str(department["id"]),
         metadata={
-            "service_name": department["name"],
+            "organization_id": str(
+                department["organization_id"]
+            ),
+            "department_name": department["name"],
         },
     )
 
@@ -263,50 +261,27 @@ def _build_department_event_payload(
 # Central Event Emitter for Department
 def _emit_department_event(
     *,
-    event_type: str,
-    payload:dict
+    event_type: EventTypes,
+    actor_id: UUID,
+    department: dict,
 ):
     """
     Publish a department domain event.
     """
 
     emit_event(
-        aggregate_type=payload["aggregate_type"],
-        aggregate_id=payload["aggregate_id"],
         event_type=event_type,
-        payload=payload,
+        aggregate_id=str(department["id"]),
+        payload={
+            "organization_id": str(
+                department["organization_id"]
+            ),
+            "department_id": str(department["id"]),
+            "department_name": department["name"],
+            "actor_id": str(actor_id),
+        },
     )
 
-
-# ---------------------------------------------------
-# RECORD DEPARTMENT ACTIVITY HELPER
-# ---------------------------------------------------
-def _record_department_activity(
-    *,
-    action: str,
-    event_type: str,
-    department: dict,
-    actor_id: UUID,
-) -> None:
-    """
-    Record audit information and emit the corresponding domain event.
-    """
-
-    _log_department_audit(
-        actor_id=actor_id,
-        action=action,
-        department=department,
-    )
-
-    payload = _build_department_event_payload(
-        department=department,
-        actor_id=actor_id,
-    )
-
-    _emit_department_event(
-        event_type=event_type,
-        payload=payload,
-    )
 
 
 
@@ -346,11 +321,16 @@ def create_department_service(
 
     department = create_department(department_data)
 
-    _record_department_activity(
+    _log_department_audit(
+        actor_id=actor_id,
+        action="department.created",
+        department=department,
+    )
+
+    _emit_department_event(
+        event_type=EventTypes.DEPARTMENT_CREATED,
         actor_id=actor_id,
         department=department,
-        action="department.created",
-        event_type=EventTypes.DEPARTMENT_CREATED,
     )
 
     return DepartmentResponse.model_validate(department)
@@ -449,11 +429,16 @@ def update_department_service(
         data=update_data,
     )
 
-    _record_department_activity(
+    _log_department_audit(
+        actor_id=actor_id,
+        action="department.updated",
+        department=updated,
+    )
+
+    _emit_department_event(
+        event_type=EventTypes.DEPARTMENT_UPDATED,
         actor_id=actor_id,
         department=updated,
-        action="department.updated",
-        event_type=EventTypes.DEPARTMENT_UPDATED,
     )
 
     return DepartmentResponse.model_validate(updated)
@@ -493,11 +478,16 @@ def delete_department_service(
         },
     )
 
-    _record_department_activity(
+    _log_department_audit(
+        actor_id=actor_id,
+        action="department.deleted",
+        department=deleted,
+    )
+
+    _emit_department_event(
+        event_type=EventTypes.DEPARTMENT_DELETED,
         actor_id=actor_id,
         department=deleted,
-        action="department.deleted",
-        event_type=EventTypes.DEPARTMENT_DELETED,
     )
 
 

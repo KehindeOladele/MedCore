@@ -59,27 +59,6 @@ def require_organization_member(
     return organization
 
 
-# ---------------------------------
-# ORGANIZATION ACCESS DEPENDENCY
-# ---------------------------------
-
-def require_organization_access(
-    organization=Depends(require_organization_member),
-):
-    """
-    Ensure the authenticated user has access to the
-    requested organization.
-
-    This dependency is intended for authenticated
-    read operations on organization-scoped resources.
-
-    It currently delegates to require_organization_member()
-    so that organization existence and membership checks
-    remain centralized.
-    """
-
-    return organization
-
 
 # ---------------------------------
 #   ADMIN DEPENDENCY

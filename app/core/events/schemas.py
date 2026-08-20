@@ -65,38 +65,6 @@ class EventTypes:
     )
 
 
-    # Healthcare_service EventTypes
-    # -----------------------------
-    HEALTHCARE_SERVICE_CREATED = (
-        "healtcare_service.created"
-    )
-
-    HEALTHCARE_SERVICE_UPDATED = (
-        "healtcare_service.updated"
-    )
-
-    HEALTHCARE_SERVICE_DELETED = (
-    "healthcare_service.updated"
-    )
-
-    HEALTHCARE_SERVICE_ACTIVATED = (
-    "healthcare_service.activated"
-    )
-
-    HEALTHCARE_SERVICE_DEACTIVATED = (
-        "healthcare_service.deactivated"
-    )
-
-    # Organization Operating Hours EventTypes
-    OPERATING_HOURS_CREATED = "operating_hours.created"
-    OPERATING_HOURS_UPDATED = "operating_hours.updated"
-    OPERATING_HOURS_DELETED = "operating_hours.deleted"
-
-    # Organization Branding EventTypes
-    ORGANIZATION_BRANDING_UPDATED = "organization.branding.updated"
-    ORGANIZATION_LOGO_UPDATED = "organization.branding.logo_updated"
-    ORGANIZATION_LOGO_REMOVED = "organization.branding.logo_removed"
-
 # ----- Event Status Model -----
 class EventStatus:
     PENDING = "pending"
