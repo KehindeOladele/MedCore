@@ -21,6 +21,7 @@ from app.modules.organizations.operating_hours.exceptions import (
     OperatingHoursConflictError,
     OperatingHoursNotFoundError,
 )
+from app.modules.organizations.branding.exceptions import BrandingNotFoundError
 
 # ----------------------------
 # Generic Organization Handler
@@ -220,6 +221,13 @@ async def operating_hours_conflict_handler(
     return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
+async def branding_not_found_handler(
+    request: Request,
+    exc: BrandingNotFoundError,
+):
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
+
+
 
 # -------------------------------------
 # Register Exception Handlers
@@ -311,6 +319,11 @@ def register_exception_handlers(
     app.add_exception_handler(
         OperatingHoursConflictError,
         operating_hours_conflict_handler,
+    )
+
+    app.add_exception_handler(
+        BrandingNotFoundError,
+        branding_not_found_handler,
     )
 
     # ======================================
