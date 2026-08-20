@@ -1,9 +1,17 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel, 
+    ConfigDict, 
+    Field, 
+    field_validator, 
+    model_validator
+)
 
 
 HEX_COLOR_PATTERN = r"^#[0-9A-Fa-f]{6}$"
 
-
+# -----------------------------------------------------------------------------------
+# BRANDING SCHEMAS
+# -----------------------------------------------------------------------------------
 class BrandingThemeUpdate(BaseModel):
     """A small, portable visual theme for patient- and staff-facing clients."""
 
@@ -21,7 +29,9 @@ class BrandingThemeUpdate(BaseModel):
     def normalize_color(cls, value: str | None) -> str | None:
         return value.upper() if value else value
 
-
+# -----------------------------------------------------------------------------------
+# BRANDING RESPONSE SCHEMA
+# -----------------------------------------------------------------------------------
 class BrandingResponse(BaseModel):
     organization_id: str
     logo_url: str | None = None
