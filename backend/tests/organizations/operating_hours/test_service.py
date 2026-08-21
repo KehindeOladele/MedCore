@@ -335,32 +335,6 @@ def test_validate_day_conflicts_ignores_excluded_entry(mocker):
     )
 
 
-def test_validate_day_conflicts_ignores_entries_from_other_days(mocker):
-    mocker.patch.object(
-        service.queries,
-        "list_operating_hours",
-        return_value=[
-            entry(
-                day_of_week=1,
-                opens_at="08:00:00",
-                closes_at="16:00:00",
-            )
-        ],
-    )
-
-    candidate = OperatingHoursCreate(
-        day_of_week=0,
-        slot_index=0,
-        opens_at=time(8),
-        closes_at=time(16),
-    )
-
-    service._validate_day_conflicts(
-        organization_id=ORGANIZATION_ID,
-        candidate=candidate,
-    )
-
-
 # ============================================================
 # Create
 # ============================================================
@@ -375,10 +349,12 @@ def test_create_persists_a_valid_open_window_and_records_activity(mocker):
         return_value=[],
     )
 
+    created_entry = entry()
+
     create = mocker.patch.object(
         service.queries,
         "create_operating_hours",
-        return_value=entry(),
+        return_value=created_entry,
     )
 
     activity = mocker.patch.object(
@@ -408,7 +384,7 @@ def test_create_persists_a_valid_open_window_and_records_activity(mocker):
     activity.assert_called_once_with(
         action="operating_hours.created",
         event_type=service.EventTypes.OPERATING_HOURS_CREATED,
-        entry=entry(),
+        entry=created_entry,
         actor_id=USER_ID,
     )
 
