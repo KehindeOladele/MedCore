@@ -1,11 +1,17 @@
 import pytest
-
+from unittest.mock import Mock
+from uuid import uuid4
+from tests.factories.constants import ORGANIZATION_ID
 from app.modules.organizations.branding.constants import (
     MAX_LOGO_SIZE_BYTES,
 )
 from app.modules.organizations.branding.exceptions import InvalidLogoError
 from app.modules.organizations.branding.storage import validate_logo
-
+from app.modules.organizations.branding.constants import BUCKET
+from app.modules.organizations.branding.storage import (
+    delete_logo,
+    replace_logo,
+)
 
 # ====================================================================================
 # VALID LOGO SIGNATURES
@@ -192,3 +198,170 @@ def test_validate_logo_rejects_unsupported_content_type(content_type):
             content_type=content_type,
             content=content,
         )
+
+# ====================================================================================
+# REPLACE ORGANIZATION LOGO
+# ====================================================================================
+
+
+def test_replace_logo_uploads_to_expected_bucket_and_path(monkeypatch):
+    organization_id = ORGANIZATION_ID
+    content = b"\x89PNG\r\n\x1a\n" + b"png-content"
+
+    bucket = Mock()
+    bucket.get_public_url.return_value = (
+        f"https://storage.example.com/{organization_id}/logo.png"
+    )
+
+    storage = Mock()
+    storage.from_.return_value = bucket
+
+    supabase = Mock()
+    supabase.storage = storage
+
+    monkeypatch.setattr(
+        "app.modules.organizations.branding.storage.supabase_admin",
+        supabase,
+    )
+
+    path, url = replace_logo(
+        organization_id=organization_id,
+        content_type="image/png",
+        content=content,
+    )
+
+    expected_path = f"{organization_id}/logo.png"
+
+    assert path == expected_path
+    assert url == f"https://storage.example.com/{expected_path}"
+
+    storage.from_.assert_called_once_with(BUCKET)
+
+    bucket.upload.assert_called_once_with(
+        path=expected_path,
+        file=content,
+        file_options={
+            "content-type": "image/png",
+            "upsert": "true",
+        },
+    )
+
+    bucket.get_public_url.assert_called_once_with(expected_path)
+
+
+def test_replace_logo_uses_jpg_extension_for_jpeg(monkeypatch):
+    organization_id = uuid4()
+    content = b"\xff\xd8\xff" + b"jpeg-content"
+
+    bucket = Mock()
+    bucket.get_public_url.return_value = (
+        f"https://storage.example.com/{organization_id}/logo.jpg"
+    )
+
+    storage = Mock()
+    storage.from_.return_value = bucket
+
+    supabase = Mock()
+    supabase.storage = storage
+
+    monkeypatch.setattr(
+        "app.modules.organizations.branding.storage.supabase_admin",
+        supabase,
+    )
+
+    path, url = replace_logo(
+        organization_id=organization_id,
+        content_type="image/jpeg",
+        content=content,
+    )
+
+    expected_path = f"{organization_id}/logo.jpg"
+
+    assert path == expected_path
+    assert url == f"https://storage.example.com/{expected_path}"
+
+    bucket.upload.assert_called_once_with(
+        path=expected_path,
+        file=content,
+        file_options={
+            "content-type": "image/jpeg",
+            "upsert": "true",
+        },
+    )
+
+    bucket.get_public_url.assert_called_once_with(expected_path)
+
+
+def test_replace_logo_uses_webp_extension_for_webp(monkeypatch):
+    organization_id = ORGANIZATION_ID
+    content = (
+        b"RIFF"
+        + b"\x00\x00\x00\x00"
+        + b"WEBP"
+        + b"webp-content"
+    )
+
+    bucket = Mock()
+    bucket.get_public_url.return_value = (
+        f"https://storage.example.com/{organization_id}/logo.webp"
+    )
+
+    storage = Mock()
+    storage.from_.return_value = bucket
+
+    supabase = Mock()
+    supabase.storage = storage
+
+    monkeypatch.setattr(
+        "app.modules.organizations.branding.storage.supabase_admin",
+        supabase,
+    )
+
+    path, url = replace_logo(
+        organization_id=organization_id,
+        content_type="image/webp",
+        content=content,
+    )
+
+    expected_path = f"{organization_id}/logo.webp"
+
+    assert path == expected_path
+    assert url == f"https://storage.example.com/{expected_path}"
+
+    bucket.upload.assert_called_once_with(
+        path=expected_path,
+        file=content,
+        file_options={
+            "content-type": "image/webp",
+            "upsert": "true",
+        },
+    )
+
+    bucket.get_public_url.assert_called_once_with(expected_path)
+
+
+# ====================================================================================
+# DELETE ORGANIZATION LOGO
+# ====================================================================================
+
+
+def test_delete_logo_removes_expected_storage_path(monkeypatch):
+    logo_path = f"{uuid4()}/logo.png"
+
+    bucket = Mock()
+
+    storage = Mock()
+    storage.from_.return_value = bucket
+
+    supabase = Mock()
+    supabase.storage = storage
+
+    monkeypatch.setattr(
+        "app.modules.organizations.branding.storage.supabase_admin",
+        supabase,
+    )
+
+    delete_logo(logo_path)
+
+    storage.from_.assert_called_once_with(BUCKET)
+    bucket.remove.assert_called_once_with([logo_path])
