@@ -139,7 +139,7 @@ def test_response_allows_missing_optional_branding_values():
 # ====================================================================================
 
 
-def EventTypes.ORGANIZATION_LOGO_UPDATED(mocker):
+def test_record_activity(mocker):
     log_audit_event = mocker.patch.object(
         service,
         "log_audit_event",
@@ -306,7 +306,7 @@ def test_update_theme_updates_primary_color(mocker):
 
     record_activity.assert_called_once_with(
         action="organization.branding.updated",
-        event_type=EventTypes.ORGANIZATION_BRANDING_UPDATED
+        event_type=EventTypes.ORGANIZATION_BRANDING_UPDATED,
         organization_id=ORGANIZATION_ID,
         actor_id=USER_ID,
         metadata={
