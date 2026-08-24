@@ -88,10 +88,34 @@ class EventTypes:
     )
 
     # Organization Operating Hours EventTypes
-    OPERATING_HOURS_CREATED = "operating_hours.created"
-    OPERATING_HOURS_UPDATED = "operating_hours.updated"
-    OPERATING_HOURS_DELETED = "operating_hours.deleted"
+    # ---------------------------------------
+    OPERATING_HOURS_CREATED = (
+        "operating_hours.created"
+        )
+    
+    OPERATING_HOURS_UPDATED = (
+        "operating_hours.updated"
+        )
+    
+    OPERATING_HOURS_DELETED = (
+        "operating_hours.deleted"
+        )
 
+    # Organization Branding EventTypes
+    # --------------------------------
+    ORGANIZATION_BRANDING_UPDATED = (
+        "organization.branding.updated"
+    )
+
+    ORGANIZATION_LOGO_UPDATED = (
+        "organization.logo.updated"
+    )
+
+    ORGANIZATION_LOGO_REMOVED = (
+        "organization.logo.removed"
+    )
+
+    
 # ----- Event Status Model -----
 class EventStatus:
     PENDING = "pending"
