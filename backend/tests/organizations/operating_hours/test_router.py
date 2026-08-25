@@ -9,32 +9,16 @@ from app.modules.organizations.operating_hours.exceptions import (
     OperatingHoursNotFoundError,
 )
 
-from tests.factories.constants import ORGANIZATION_ID, USER_ID
+from tests.factories.constants import ORGANIZATION_ID, USER_ID, OPERATING_HOURS_ID
+from tests.factories.operating_hours import response_data
 
 
-ENTRY_ID = "11111111-1111-1111-1111-111111111111"
+ENTRY_ID = OPERATING_HOURS_ID
 
 BASE_URL = f"/organizations/{ORGANIZATION_ID}/operating-hours"
 
 
-def response_data(**overrides):
-    data = {
-        "id": ENTRY_ID,
-        "organization_id": str(ORGANIZATION_ID),
-        "day_of_week": 0,
-        "slot_index": 0,
-        "opens_at": "08:00:00",
-        "closes_at": "16:00:00",
-        "is_closed": False,
-        "created_by": str(USER_ID),
-        "updated_by": str(USER_ID),
-        "deleted_at": None,
-        "created_at": "2026-01-01T00:00:00Z",
-        "updated_at": "2026-01-01T00:00:00Z",
-    }
 
-    data.update(overrides)
-    return data
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +215,7 @@ def test_get_route_returns_200_and_delegates_to_service(
 
     get.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
-        operating_hours_id=UUID(ENTRY_ID),
+        operating_hours_id=OPERATING_HOURS_ID,
     )
 
 
@@ -281,7 +265,7 @@ def test_update_route_returns_200_and_delegates_to_service(
 
     update.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
-        operating_hours_id=UUID(ENTRY_ID),
+        operating_hours_id=OPERATING_HOURS_ID,
         payload=mocker.ANY,
         actor_id=USER_ID,
     )
@@ -370,7 +354,7 @@ def test_delete_route_returns_204_and_delegates_to_service(
 
     remove.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
-        operating_hours_id=UUID(ENTRY_ID),
+        operating_hours_id=OPERATING_HOURS_ID,
         actor_id=USER_ID,
     )
 
