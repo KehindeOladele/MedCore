@@ -45,7 +45,7 @@ def test_create_route_returns_201_and_delegates_to_service(
     }
 
     response = authenticated_client.post(
-        BASE_URL,``
+        BASE_URL,
         json=payload,
     )
 
