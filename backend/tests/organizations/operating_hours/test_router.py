@@ -50,7 +50,7 @@ def test_create_route_returns_201_and_delegates_to_service(
     )
 
     assert response.status_code == 201
-    assert response.json()["id"] == ENTRY_ID
+    assert response.json()["id"] == str(ENTRY_ID)
 
     create.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
@@ -211,7 +211,7 @@ def test_get_route_returns_200_and_delegates_to_service(
     )
 
     assert response.status_code == 200
-    assert response.json()["id"] == ENTRY_ID
+    assert response.json()["id"] == str(ENTRY_ID)
 
     get.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
