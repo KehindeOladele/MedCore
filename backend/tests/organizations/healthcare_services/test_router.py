@@ -4,21 +4,24 @@ from app.modules.organizations.healthcare_services import router
 from app.modules.organizations.healthcare_services.exceptions import (
     HealthcareServiceNotFoundError,
 )
-
 from app.modules.organizations.exceptions import (
     OrganizationAccessDeniedError,
 )
-
 from app.modules.organizations.dependencies import (
     require_organization_access,
     require_organization_admin,
 )
 
-from tests.factories.organization import (
+from tests.factories.constants import (
     HEALTHCARE_SERVICE_ID,
     ORGANIZATION_ID,
+    OPERATING_HOURS_ID
 )
-
+from tests.factories.healthcare_service import (
+    healthcare_service_create_factory,
+    healthcare_service_row_factory,
+    healthcare_service_update_factory,
+)
 from tests.factories.user import USER_ID
 
 
@@ -27,6 +30,7 @@ BASE_URL = (
     "/healthcare-services"
 )
 
+healthcare_service = healthcare_service_row_factory()
 
 # ---------------------------------------------------------
 # CREATE HEALTHCARE SERVICE
@@ -36,26 +40,25 @@ BASE_URL = (
 def test_create_healthcare_service_success(
     authenticated_client,
     mocker,
-    healthcare_service_response,
 ):
+
     create_service = mocker.patch.object(
         router,
         "create_healthcare_service",
-        return_value=healthcare_service_response,
+        return_value=healthcare_service,
     )
 
     response = authenticated_client.post(
-        f"{BASE_URL}",
-        json={
-            "name": "Cardiology",
-            "description": "Cardiology services",
-        },
+        BASE_URL,
+        json=healthcare_service_create_factory(),
     )
 
     assert response.status_code == 201
 
     body = response.json()
 
+    assert body["id"] == str(HEALTHCARE_SERVICE_ID)
+    assert body["organization_id"] == str(ORGANIZATION_ID)
     assert body["name"] == "Cardiology"
 
     create_service.assert_called_once_with(
@@ -69,7 +72,7 @@ def test_create_healthcare_service_invalid_payload(
     authenticated_client,
 ):
     response = authenticated_client.post(
-        f"{BASE_URL}",
+        BASE_URL,
         json={
             "name": "",
         },
@@ -86,18 +89,17 @@ def test_create_healthcare_service_invalid_payload(
 def test_list_healthcare_services_success(
     authenticated_client,
     mocker,
-    healthcare_service_response,
 ):
     list_service = mocker.patch.object(
         router,
         "list_healthcare_services",
         return_value=[
-            healthcare_service_response,
+            healthcare_service,
         ],
     )
 
     response = authenticated_client.get(
-        f"{BASE_URL}"
+        BASE_URL
     )
 
     assert response.status_code == 200
@@ -105,7 +107,11 @@ def test_list_healthcare_services_success(
     body = response.json()
 
     assert len(body) == 1
+    assert body[0]["id"] == str(HEALTHCARE_SERVICE_ID)
+    assert body[0]["organization_id"] == str(ORGANIZATION_ID)
     assert body[0]["name"] == "Cardiology"
+    assert body[0]["category"] == "Specialty"
+    assert body[0]["type"] == "Clinical"
 
     list_service.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
@@ -123,7 +129,7 @@ def test_list_healthcare_services_empty(
     )
 
     response = authenticated_client.get(
-        f"{BASE_URL}"
+        BASE_URL
     )
 
     assert response.status_code == 200
@@ -142,12 +148,12 @@ def test_list_healthcare_services_empty(
 def test_get_healthcare_service_success(
     authenticated_client,
     mocker,
-    healthcare_service_response,
 ):
+
     get_service = mocker.patch.object(
         router,
         "get_healthcare_service",
-        return_value=healthcare_service_response,
+        return_value=healthcare_service,
     )
 
     response = authenticated_client.get(
@@ -158,7 +164,14 @@ def test_get_healthcare_service_success(
 
     body = response.json()
 
+    assert body["id"] == str(HEALTHCARE_SERVICE_ID)
+    assert body["organization_id"] == str(ORGANIZATION_ID)
     assert body["name"] == "Cardiology"
+    assert body["description"] == "Cardiology services"
+    assert body["category"] == "Specialty"
+    assert body["type"] == "Clinical"
+    assert body["specialty"] == "Cardiology"
+    assert body["active"] is True
 
     get_service.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
@@ -196,19 +209,17 @@ def test_get_healthcare_service_not_found(
 def test_update_healthcare_service_success(
     authenticated_client,
     mocker,
-    healthcare_service_response,
 ):
+    
     update_service = mocker.patch.object(
         router,
         "update_healthcare_service",
-        return_value=healthcare_service_response,
+        return_value=healthcare_service,
     )
 
     response = authenticated_client.patch(
         f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}",
-        json={
-            "name": "Updated Cardiology",
-        },
+        json=healthcare_service_update_factory(),
     )
 
     assert response.status_code == 200
@@ -310,7 +321,7 @@ def test_list_healthcare_services_denies_organization_access(
 
     try:
         response = authenticated_client.get(
-            f"{BASE_URL}"
+            BASE_URL
         )
 
         assert response.status_code == 403
@@ -323,8 +334,7 @@ def test_list_healthcare_services_denies_organization_access(
 
 
 def test_get_healthcare_service_denies_organization_access( 
-        authenticated_client, 
-        mocker, 
+        authenticated_client,
 ): 
     app = authenticated_client.app 
 
@@ -356,20 +366,19 @@ def test_get_healthcare_service_denies_organization_access(
     [ 
         ( 
             "POST", 
-            f"{BASE_URL}", 
-            { 
-                "name": "Cardiology", 
-                "description": "Cardiology services", 
-                }, 
-            ), 
-            ( 
-                "PATCH", f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}", 
-                { "name": "Updated Cardiology", }, 
-                ), 
-                ( 
-                    "DELETE", f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}", 
-                    None, 
-                ), 
+            BASE_URL,
+            healthcare_service_create_factory(), 
+        ), 
+        ( 
+            "PATCH", 
+            f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}", 
+            healthcare_service_update_factory(), 
+        ), 
+        (   
+            "DELETE", 
+            f"{BASE_URL}/{HEALTHCARE_SERVICE_ID}", 
+            None, 
+        ), 
     ], 
     ) 
 
@@ -392,7 +401,8 @@ def test_healthcare_service_mutations_require_admin(
     try: 
         response = authenticated_client.request( 
             method, 
-            path, json=payload, 
+            path, 
+            json=payload, 
             ) 
 
         assert response.status_code == 403 
