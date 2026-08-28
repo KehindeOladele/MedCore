@@ -10,7 +10,11 @@ from app.modules.organizations.operating_hours.exceptions import (
 )
 
 from tests.factories.constants import ORGANIZATION_ID, USER_ID, OPERATING_HOURS_ID
-from tests.factories.operating_hours import response_data
+from tests.factories.operating_hours import (
+    response_data,
+    operating_hours_create_factory,
+    operating_hours_update_factory
+    )
 
 
 ENTRY_ID = OPERATING_HOURS_ID
@@ -36,13 +40,7 @@ def test_create_route_returns_201_and_delegates_to_service(
         return_value=response_data(),
     )
 
-    payload = {
-        "day_of_week": 0,
-        "slot_index": 0,
-        "opens_at": "08:00:00",
-        "closes_at": "16:00:00",
-        "is_closed": False,
-    }
+    payload = operating_hours_create_factory()
 
     response = authenticated_client.post(
         BASE_URL,
@@ -67,11 +65,9 @@ def test_create_route_accepts_closed_day(
         router,
         "create_operating_hours",
         return_value=response_data(
-            day_of_week=6,
-            slot_index=0,
+            is_closed=True,
             opens_at=None,
             closes_at=None,
-            is_closed=True,
         ),
     )
 
@@ -151,12 +147,7 @@ def test_list_route_returns_200_and_delegates_to_service(
         "list_operating_hours",
         return_value=[
             response_data(),
-            response_data(
-                id="22222222-2222-2222-2222-222222222222",
-                slot_index=1,
-                opens_at="17:00:00",
-                closes_at="20:00:00",
-            ),
+            response_data(slot_index=1),
         ],
     )
 

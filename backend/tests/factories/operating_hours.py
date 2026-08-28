@@ -26,3 +26,27 @@ def response_data(**overrides):
 
     data.update(overrides)
     return data
+
+
+def operating_hours_create_factory(**overrides):
+    payload = {
+        "day_of_week":6,
+        "slot_index":0,
+        "opens_at": None,
+        "closes_at": None,
+        "is_closed":True,
+    }
+
+    payload.update(overrides)
+
+    return payload
+
+
+def operating_hours_update_factory(**overrides):
+    payload = {
+        "closes_at":"18:00:00",
+    }
+
+    payload.update(overrides)
+
+    return payload
