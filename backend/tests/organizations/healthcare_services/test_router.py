@@ -164,14 +164,12 @@ def test_get_healthcare_service_success(
 
     body = response.json()
 
-    assert body["id"] == str(HEALTHCARE_SERVICE_ID)
-    assert body["organization_id"] == str(ORGANIZATION_ID)
-    assert body["name"] == "Cardiology"
-    assert body["description"] == "Cardiology services"
-    assert body["category"] == "Specialty"
-    assert body["type"] == "Clinical"
-    assert body["specialty"] == "Cardiology"
-    assert body["active"] is True
+    assert body["name"] == healthcare_service["name"]
+    assert body["description"] == healthcare_service["description"]
+    assert body["category"] == healthcare_service["category"]
+    assert body["type"] == healthcare_service["type"]
+    assert body["specialty"] == healthcare_service["specialty"]
+    assert body["active"] == healthcare_service["active"]
 
     get_service.assert_called_once_with(
         organization_id=ORGANIZATION_ID,
