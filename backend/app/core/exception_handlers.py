@@ -21,6 +21,10 @@ from app.modules.organizations.operating_hours.exceptions import (
     OperatingHoursConflictError,
     OperatingHoursNotFoundError,
 )
+from app.modules.organizations.departments.exceptions import (
+    DepartmentAlreadyExistsError,
+    DepartmentHasChildrenError,
+)
 
 # ----------------------------
 # Generic Organization Handler
@@ -220,6 +224,13 @@ async def operating_hours_conflict_handler(
     return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
+async def department_conflict_handler(
+    request: Request,
+    exc: DepartmentAlreadyExistsError | DepartmentHasChildrenError,
+):
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
+
+
 
 # -------------------------------------
 # Register Exception Handlers
@@ -294,6 +305,14 @@ def register_exception_handlers(
     app.add_exception_handler(
         DepartmentNotFoundError,
         department_not_found_handler,
+    )
+    app.add_exception_handler(
+        DepartmentAlreadyExistsError,
+        department_conflict_handler,
+    )
+    app.add_exception_handler(
+        DepartmentHasChildrenError,
+        department_conflict_handler,
     )
 
     # ======================================

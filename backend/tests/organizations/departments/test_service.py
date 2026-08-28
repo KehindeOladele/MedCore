@@ -100,8 +100,10 @@ def test_create_department_service_success(
 
     event.assert_called_once_with(
         event_type=EventTypes.DEPARTMENT_CREATED,
-        actor_id=ACTOR_ID,
-        department=department_data,
+        payload=service._build_department_event_payload(
+            department=department_data,
+            actor_id=ACTOR_ID,
+        ),
     )
 
     assert isinstance(result, DepartmentResponse)
@@ -245,8 +247,10 @@ def test_create_department_service_emits_event(
 
     event.assert_called_once_with(
         event_type=EventTypes.DEPARTMENT_CREATED,
-        actor_id=ACTOR_ID,
-        department=department_data,
+        payload=service._build_department_event_payload(
+            department=department_data,
+            actor_id=ACTOR_ID,
+        ),
     )
 
 
@@ -413,8 +417,10 @@ def test_update_department_service_success(
 
     event.assert_called_once_with(
         event_type=EventTypes.DEPARTMENT_UPDATED,
-        actor_id=ACTOR_ID,
-        department=updated_department_data,
+        payload=service._build_department_event_payload(
+            department=updated_department_data,
+            actor_id=ACTOR_ID,
+        ),
     )
 
     assert isinstance(result, DepartmentResponse)
@@ -656,8 +662,10 @@ def test_update_department_service_emits_event(
 
     event.assert_called_once_with(
         event_type=EventTypes.DEPARTMENT_UPDATED,
-        actor_id=ACTOR_ID,
-        department=updated_department_data,
+        payload=service._build_department_event_payload(
+            department=updated_department_data,
+            actor_id=ACTOR_ID,
+        ),
     )
 
 
@@ -717,8 +725,10 @@ def test_delete_department_service_success(
 
     event.assert_called_once_with(
         event_type=EventTypes.DEPARTMENT_DELETED,
-        actor_id=ACTOR_ID,
-        department=deleted_department,
+        payload=service._build_department_event_payload(
+            department=deleted_department,
+            actor_id=ACTOR_ID,
+        ),
     )
 
 
