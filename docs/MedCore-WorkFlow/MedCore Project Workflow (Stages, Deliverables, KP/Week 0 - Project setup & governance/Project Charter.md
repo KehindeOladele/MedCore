@@ -1,0 +1,52 @@
+﻿# Project Charter
+### Purpose
+- **What this document is:** The single source of truth for what we are building and why.
+- **How it will be used:** Align stakeholders, guide decisions, and define success.
+### Project Summary (MedCore)
+MedCore is a patient-centric, offline-first Electronic History Record (EHR) system for Nigeria and similar low?resource settings. It prioritizes continuity of care across clinics, labs, pharmacies, and hospitals while preserving patient control over data access.
+### Charter
+- **Project name:** MedCore
+- **Owner:** Kehinde Olukosi, Ozioma Chukwuemeka, Jeffrey Esedo, Israel Ayomide
+- **Problem statement (1?2 sentences):** Patient health history is fragmented across paper files and siloed systems, leading to repeat tests, errors, and delays?especially in low?connectivity settings. MedCore provides a unified, patient?controlled record that works offline and syncs safely.
+- **Target users:** Patients, clinics/hospitals, labs, pharmacies
+- **Goals (3?5):**
+    - Deliver a working MVP prototype for the DTC demo timeline.
+    - Enable patient?controlled sharing of health records (QR/OTP).
+    - Support offline-first data capture and safe sync.
+    - Provide a clinic?friendly dashboard for basic record capture.
+    - Demonstrate interoperability readiness (FHIR-aligned data model).
+- **Non-goals (3?5):**
+    - Full national-scale deployment.
+    - Real-time integrations with all existing EMR systems.
+    - Comprehensive hospital billing/finance modules.
+    - Advanced clinical decision support beyond MVP scope.
+- **Scope (in):**
+    - Patient profile and record history
+    - Basic visit notes, vitals, and attachments
+    - QR/OTP-based record sharing
+    - Offline capture + sync strategy
+    - Minimal analytics/usage tracking
+- **Scope (out):**
+    - Claims processing and insurance workflows
+    - Full hospital ERP functionality
+    - Extensive AI automation beyond OCR/summary prototypes
+- **Assumptions:**
+    - Clinics can use basic Android devices or web access.
+    - Patients will accept QR/OTP sharing for access control.
+    - Offline-first approach reduces dependency on constant power/internet.
+- **Constraints (time/budget/tech/regulatory):**
+    - Hackathon timeline (Jan?Feb 2026 milestones)
+    - Free-tier cloud services for 1-year demo
+    - Limited in-person user testing access
+    - Regulatory compliance awareness without formal certification in MVP
+- **Success metrics (top 3):**
+    - MVP demo readiness by target demo date
+    - Successful offline data capture and sync in a controlled test
+    - Positive stakeholder feedback (score >= 4/5) on clarity and usefulness
+- **High-level milestones:**
+    - Week 0: Governance and planning complete (March 8, 2026)
+    - Stage 1?2: Research and user insights completed (March 11, 2026 initial research submission)
+    - Stage 3?4: Problem framing and MVP scope finalized
+    - Stage 5?6: Architecture and MVP build completed
+    - Stage 7?8: Testing and launch readiness
+- **Approval (name + date):** Jeffrey Esedo ? March 8, 2026 (provisional)
