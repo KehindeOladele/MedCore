@@ -11,7 +11,7 @@ from uuid import UUID
 #       Organization Models 
 # ----------------------------------------
 class OrganizationBase(BaseModel):
-    name: str = Field(
+    name: Optional[str] = Field(
         description= "Organization Name"
         )
     type: Optional[str] = Field(
@@ -53,6 +53,7 @@ class OrganizationCreate(OrganizationBase):
 # ------------------------------------------
 class OrganizationUpdate(BaseModel):
     name: Optional[str] = Field(
+        default=None,
         description= "Organization Name"
         )
     type: Optional[str] = Field(
