@@ -144,8 +144,8 @@ def assign_user_role(
         supabase
         .table("roles")
         .select("id")
-        .eq("name", role_data["role_name"])
-        .eq("organization_id", role_data["org_id"])
+        .eq("name", role_data.role_name)
+        .eq("organization_id", role_data.org_id)
         .single()
         .execute()
     )
@@ -160,9 +160,9 @@ def assign_user_role(
         supabase
         .table("user_roles")
         .upsert({
-            "user_id": role_data["user_id"],
+            "user_id": role_data.user_id,
             "role_id": role_id,
-            "organization_id": role_data["org_id"]
+            "organization_id": role_data.org_id
         })
         .execute()
     )
@@ -220,7 +220,7 @@ def accept_invitation(
         supabase
         .table("invitations")
         .select("*")
-        .eq("token", payload["token"])
+        .eq("token", payload.token)
         .eq("status", "pending")
         .single()
         .execute()
@@ -237,7 +237,7 @@ def accept_invitation(
     # ---- Create user in Supabase Auth ----
     res = supabase.auth.sign_up({
         "email": invite["email"],
-        "password": payload["password"]
+        "password": payload.password
     })
 
     user = res.user
