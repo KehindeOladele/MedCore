@@ -1,2 +1,0 @@
--- Add profile_image_url to partients table
--- alter table patients add column if not exists profile_image_url text;
