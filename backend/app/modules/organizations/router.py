@@ -152,7 +152,8 @@ async def upload_logo(
 @router.put("/update")
 def update_my_organization(
     payload: OrganizationUpdate,
-    current_user=Depends(require_permission("manage_organization"))
+    current_user=Depends(get_current_user),
+    _=Depends(require_permission("manage_organization"))
 ):
 
     # get user org_id
@@ -168,7 +169,8 @@ def update_my_organization(
 def assign_role_to_user(
     org_id: str,
     role_data: RoleAssignment,
-    current_user=Depends(require_permission("manage_organization"))
+    current_user=Depends(get_current_user),
+    _=Depends(require_permission("manage_organization"))
 ):
     if str(role_data.org_id) != org_id:
         raise HTTPException(400, "Organization mismatch")
@@ -186,7 +188,8 @@ def assign_role_to_user(
 def invite_user(
     org_id: str,
     invite_data: OnboardingInvite,
-    current_user=Depends(require_permission("manage_organization"))
+    current_user=Depends(get_current_user),
+    _=Depends(require_permission("manage_organization"))
 ):
     
     current_org = get_user_organization_id(current_user["id"])
