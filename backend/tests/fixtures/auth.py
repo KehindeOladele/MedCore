@@ -80,3 +80,17 @@ def authenticated_client(current_user):
 @pytest.fixture
 def authenticated_user(current_user):
     return current_user
+
+
+
+# --------------------------------------
+# CLEAR DEPENDENCY
+# --------------------------------------
+
+@pytest.fixture(autouse=True)
+def clear_dependency_overrides():
+    app.dependency_overrides.clear()
+
+    yield
+
+    app.dependency_overrides.clear()
