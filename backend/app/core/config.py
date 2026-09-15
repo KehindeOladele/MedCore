@@ -36,6 +36,11 @@ class Settings:
 
     # ----- Security -----
     JWT_AUDIENCE: str = os.getenv("JWT_AUDIENCE", "authenticated")
+    
+    # ----- FHIR Configuration -----
+    FHIR_VERSION: str = os.getenv("FHIR_VERSION", "R4")
+    FHIR_BASE_URL: Optional[str] = os.getenv("FHIR_BASE_URL")
+
 
     # ---- Validating Required Settings ----
     def validate(self):
@@ -61,6 +66,7 @@ class Settings:
                 f"Missing required environment variables: "
                 f"{', '.join(missing)}"
             )
+
 
 # ----- Instantiate and Validate Settings -----
 settings = Settings()
