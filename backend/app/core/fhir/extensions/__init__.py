@@ -14,6 +14,9 @@ from app.core.fhir.extensions.catalog import (
     organization_secondary_color_extension,
     organization_timezone_extension,
 )
+from app.core.fhir.extensions.registered import (
+    build_fhir_extension_registry,
+)
 
 __all__ = [
     "FHIRPrimitiveExtensionDefinition",
