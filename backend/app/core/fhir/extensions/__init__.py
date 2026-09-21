@@ -29,4 +29,5 @@ __all__ = [
     "organization_timezone_extension",
     "organization_primary_color_extension",
     "organization_secondary_color_extension",
+    "build_fhir_extension_registry",
 ]
