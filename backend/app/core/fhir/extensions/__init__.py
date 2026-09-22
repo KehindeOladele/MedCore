@@ -17,6 +17,9 @@ from app.core.fhir.extensions.catalog import (
 from app.core.fhir.extensions.registered import (
     build_fhir_extension_registry,
 )
+from app.core.fhir.extensions.structure_definition import (
+    FHIRStructureDefinition,
+)
 
 __all__ = [
     "FHIRPrimitiveExtensionDefinition",
@@ -30,4 +33,5 @@ __all__ = [
     "organization_primary_color_extension",
     "organization_secondary_color_extension",
     "build_fhir_extension_registry",
+    "FHIRStructureDefinition",
 ]
