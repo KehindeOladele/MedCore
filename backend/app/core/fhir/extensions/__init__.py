@@ -23,6 +23,11 @@ from app.core.fhir.extensions.structure_definition import (
 from app.core.fhir.extensions.generator import (
     generate_structure_definition,
 )
+from app.core.fhir.extensions.generator import (
+    generate_registered_structure_definitions,
+    generate_structure_definition,
+)
+
 
 __all__ = [
     "FHIRPrimitiveExtensionDefinition",
@@ -38,4 +43,5 @@ __all__ = [
     "build_fhir_extension_registry",
     "FHIRStructureDefinition",
     "generate_structure_definition",
+    "generate_registered_structure_definitions",
 ]
