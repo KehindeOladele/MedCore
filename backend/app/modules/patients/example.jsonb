@@ -1,0 +1,25 @@
+{
+    "resourceType": "Patient",
+    "identifier": [
+    {
+        "system": "https://medcore.health/patient-id",
+        "value": "MC-000123"
+    }
+    ],
+    "address": [
+    {
+        "line": ["12 Allen Avenue"],
+        "city": "Ikeja",
+        "state": "Lagos",
+        "country": "NG"
+    }
+    ],
+    "maritalStatus": {
+    "coding": [
+        {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+        "code": "M"
+        }
+    ]
+    }
+}

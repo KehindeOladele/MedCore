@@ -1,0 +1,13 @@
+FHIR_STRUCTURE_DEFINITION_RESOURCE_TYPE = "StructureDefinition"
+
+FHIR_STRUCTURE_DEFINITION_KIND = "complex-type"
+
+FHIR_STRUCTURE_DEFINITION_TYPE = "Extension"
+
+FHIR_STRUCTURE_DEFINITION_BASE_URL = (
+    "http://hl7.org/fhir/StructureDefinition/Extension"
+)
+
+FHIR_STRUCTURE_DEFINITION_DERIVATION = "constraint"
+
+FHIR_EXTENSION_CONTEXT_TYPE = "element"
