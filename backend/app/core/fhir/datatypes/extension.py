@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
@@ -9,14 +9,35 @@ class FHIRExtension:
     """
 
     url: str
-    value: Any = None
+    value: Any | None = None
+    value_type: str | None = None
+    extension: tuple["FHIRExtension", ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict:
-        data = {
+        """
+        Return the Extension in FHIR JSON-compatible form.
+        """
+        data: dict = {
             "url": self.url,
         }
 
         if self.value is not None:
-            data["value"] = self.value
+            if self.value_type is None:
+                raise ValueError(
+                    "value_type is required when value is provided."
+                )
+
+            if hasattr(self.value, "to_dict"):
+                value = self.value.to_dict()
+            else:
+                value = self.value
+
+            data[f"value{self.value_type}"] = value
+
+        if self.extension:
+            data["extension"] = [
+                extension.to_dict()
+                for extension in self.extension
+            ]
 
         return data

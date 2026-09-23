@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from app.core.fhir.identifier import FHIRIdentifier
+
 
 @dataclass(frozen=True)
 class FHIRReference:
@@ -9,11 +11,14 @@ class FHIRReference:
 
     reference: str | None = None
     type: str | None = None
-    identifier: object | None = None
+    identifier: FHIRIdentifier | None = None
     display: str | None = None
 
     def to_dict(self) -> dict:
-        data = {}
+        """
+        Return the Reference in FHIR JSON-compatible form.
+        """
+        data: dict = {}
 
         if self.reference is not None:
             data["reference"] = self.reference
