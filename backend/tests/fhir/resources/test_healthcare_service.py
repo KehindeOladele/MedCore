@@ -8,6 +8,9 @@ from app.core.fhir.resource import FHIRResource
 from app.core.fhir.resources.healthcare_service import (
     FHIRHealthcareService,
 )
+from app.core.fhir.datatypes.available_time import FHIRAvailableTime
+from app.core.fhir.datatypes.not_available import FHIRNotAvailable
+from app.core.fhir.datatypes.period import FHIRPeriod
 
 
 def test_healthcare_service_has_correct_resource_type():
@@ -451,3 +454,103 @@ def test_healthcare_service_omits_empty_collections():
     assert service.to_dict() == {
         "resourceType": "HealthcareService",
     }
+
+
+def test_healthcare_service_serializes_available_time():
+    available_time = FHIRAvailableTime(
+        days_of_week=("mon", "tue", "wed", "thu", "fri"),
+        all_day=False,
+        available_start_time="08:00:00",
+        available_end_time="17:00:00",
+    )
+
+    service = FHIRHealthcareService(
+        available_time=(available_time,),
+    )
+
+    assert service.to_dict()["availableTime"] == [
+        {
+            "daysOfWeek": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+            ],
+            "allDay": False,
+            "availableStartTime": "08:00:00",
+            "availableEndTime": "17:00:00",
+        }
+    ]
+
+
+def test_healthcare_service_serializes_not_available():
+    not_available = FHIRNotAvailable(
+        description="Closed on public holidays.",
+        during=FHIRPeriod(
+            start="2026-12-25T00:00:00Z",
+            end="2026-12-26T23:59:59Z",
+        ),
+    )
+
+    service = FHIRHealthcareService(
+        not_available=(not_available,),
+    )
+
+    assert service.to_dict()["notAvailable"] == [
+        {
+            "description": "Closed on public holidays.",
+            "during": {
+                "start": "2026-12-25T00:00:00Z",
+                "end": "2026-12-26T23:59:59Z",
+            },
+        }
+    ]
+
+
+def test_healthcare_service_serializes_availability_components():
+    available_time = FHIRAvailableTime(
+        days_of_week=("mon", "fri"),
+        available_start_time="09:00:00",
+        available_end_time="17:00:00",
+    )
+
+    not_available = FHIRNotAvailable(
+        description="Public holiday closure.",
+        during=FHIRPeriod(
+            start="2026-12-25T00:00:00Z",
+            end="2026-12-25T23:59:59Z",
+        ),
+    )
+
+    service = FHIRHealthcareService(
+        available_time=(available_time,),
+        not_available=(not_available,),
+    )
+
+    assert service.to_dict()["availableTime"] == [
+        {
+            "daysOfWeek": ["mon", "fri"],
+            "availableStartTime": "09:00:00",
+            "availableEndTime": "17:00:00",
+        }
+    ]
+
+    assert service.to_dict()["notAvailable"] == [
+        {
+            "description": "Public holiday closure.",
+            "during": {
+                "start": "2026-12-25T00:00:00Z",
+                "end": "2026-12-25T23:59:59Z",
+            },
+        }
+    ]
+
+
+def test_healthcare_service_omits_empty_availability_components():
+    service = FHIRHealthcareService()
+
+    data = service.to_dict()
+
+    assert "availableTime" not in data
+    assert "notAvailable" not in data
