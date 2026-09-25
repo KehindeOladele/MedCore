@@ -13,4 +13,5 @@ __all__ = [
     "FHIRContactPoint",
     "FHIRExtension",
     "FHIRReference",
+    "FHIRPeriod",
 ]
