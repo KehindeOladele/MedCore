@@ -5,6 +5,8 @@ from app.core.fhir.datatypes.extension import FHIRExtension
 from app.core.fhir.datatypes.reference import FHIRReference
 from app.core.fhir.identifier import FHIRIdentifier
 from app.core.fhir.resource import FHIRResource
+from app.core.fhir.datatypes.available_time import FHIRAvailableTime
+from app.core.fhir.datatypes.not_available import FHIRNotAvailable
 
 
 class FHIRHealthcareService(FHIRResource):
@@ -38,6 +40,8 @@ class FHIRHealthcareService(FHIRResource):
         appointment_required: bool | None = None,
         availability_exceptions: str | None = None,
         endpoint: tuple[FHIRReference, ...] = (),
+        available_time: tuple[FHIRAvailableTime, ...] = (),
+        not_available: tuple[FHIRNotAvailable, ...] = (),
         extension: tuple[FHIRExtension, ...] = (),
     ):
         super().__init__(
@@ -65,6 +69,8 @@ class FHIRHealthcareService(FHIRResource):
         self.availability_exceptions = availability_exceptions
         self.endpoint = endpoint
         self.extension = extension
+        self.available_time = available_time
+        self.not_available = not_available
 
     def to_dict(self) -> dict:
         data = super().to_dict()
@@ -161,7 +167,17 @@ class FHIRHealthcareService(FHIRResource):
                 endpoint.to_dict()
                 for endpoint in self.endpoint
             ]
+        if self.available_time:
+            data["availableTime"] = [
+                available_time.to_dict()
+                for available_time in self.available_time
+            ]
 
+        if self.not_available:
+            data["notAvailable"] = [
+                not_available.to_dict()
+                for not_available in self.not_available
+            ]
         if self.extension:
             data["extension"] = [
                 extension.to_dict()
