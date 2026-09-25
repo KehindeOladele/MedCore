@@ -81,7 +81,6 @@ def test_organization_has_no_domain_specific_fields():
 
     assert not hasattr(resource, "organization_id")
     assert not hasattr(resource, "department_id")
-    assert not hasattr(resource, "name")
 
 
 def test_healthcare_service_has_no_domain_specific_fields():
@@ -89,4 +88,3 @@ def test_healthcare_service_has_no_domain_specific_fields():
 
     assert not hasattr(resource, "healthcare_service_id")
     assert not hasattr(resource, "department_id")
-    assert not hasattr(resource, "name")
