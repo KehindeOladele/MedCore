@@ -4,6 +4,7 @@ from app.core.fhir.datatypes.coding import FHIRCoding
 from app.core.fhir.datatypes.contact_point import FHIRContactPoint
 from app.core.fhir.datatypes.extension import FHIRExtension
 from app.core.fhir.datatypes.reference import FHIRReference
+from app.core.fhir.datatypes.period import FHIRPeriod
 
 __all__ = [
     "FHIRAddress",
