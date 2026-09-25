@@ -1,3 +1,6 @@
+"""
+FHIR components that are reusable across resource models, especailly components that will eventually support the richer parts of Healthcare_service.
+"""
 from dataclasses import dataclass, field
 
 

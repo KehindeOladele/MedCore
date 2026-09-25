@@ -1,3 +1,7 @@
+"""
+FHIR components that are reusable across resource models.
+"""
+
 from dataclasses import dataclass
 
 
