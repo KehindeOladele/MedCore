@@ -12,19 +12,16 @@ def serialize_resource(resource: FHIRResource) -> str:
     Raises:
         FHIRSerializationError: If the resource cannot be serialized.
     """
-    if not isinstance(resource, FHIRResource):
-        raise FHIRSerializationError(
-            "Object must be a FHIRResource."
-        )
-
     try:
         return json.dumps(
-            resource.to_dict(),
+            resource_to_dict(resource),
             separators=(",", ":"),
         )
-    except (TypeError, ValueError) as exc:
+    except FHIRSerializationError:
+        raise
+    except Exception as exc:
         raise FHIRSerializationError(
-            "Failed to serialize FHIR resource."
+            "Failed to serialize FHIR resource"
         ) from exc
 
 
@@ -35,14 +32,17 @@ def resource_to_dict(resource: FHIRResource) -> dict[str, Any]:
     Raises:
         FHIRSerializationError: If the resource is not a FHIRResource.
     """
+    
     if not isinstance(resource, FHIRResource):
         raise FHIRSerializationError(
-            "Object must be a FHIRResource."
+            "Object must be an instance of FHIRResource"
         )
 
     try:
         return resource.to_dict()
-    except (TypeError, ValueError) as exc:
+    except FHIRSerializationError:
+        raise
+    except Exception as exc:
         raise FHIRSerializationError(
-            "Failed to convert FHIR resource to dictionary."
+            "Failed to serialize FHIR resource"
         ) from exc
