@@ -21,7 +21,7 @@ def serialize_resource(resource: FHIRResource) -> str:
         raise
     except Exception as exc:
         raise FHIRSerializationError(
-            "Failed to serialize FHIR resource"
+            "Failed to serialize FHIR resource."
         ) from exc
 
 
@@ -44,5 +44,5 @@ def resource_to_dict(resource: FHIRResource) -> dict[str, Any]:
         raise
     except Exception as exc:
         raise FHIRSerializationError(
-            "Failed to serialize FHIR resource"
+            "Failed to serialize FHIR resource."
         ) from exc
