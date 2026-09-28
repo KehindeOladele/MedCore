@@ -17,12 +17,12 @@ from app.core.fhir.datatypes.period import FHIRPeriod
 # ----------------------------------------------------------------
 # VALIDATOR RESOURCE BEHAVIOURS TEST 
 # ----------------------------------------------------------------
-class TestResource(FHIRResource):
+class DummyFHIRResource(FHIRResource):
     resource_type = "TestResource"
 
 
 def test_validate_resource_accepts_valid_base_resource():
-    resource = TestResource(id="test-123")
+    resource = DummyFHIRResource(id="test-123")
 
     validate_resource(resource)
 
@@ -41,7 +41,7 @@ def test_validate_resource_rejects_empty_resource_type():
 
 
 def test_validate_resource_rejects_non_string_id():
-    resource = TestResource()
+    resource = DummyFHIRResource()
     resource.id = 123
 
     with pytest.raises(FHIRValidationError):
@@ -49,7 +49,7 @@ def test_validate_resource_rejects_non_string_id():
 
 
 def test_validate_resource_rejects_non_dict_meta():
-    resource = TestResource()
+    resource = DummyFHIRResource()
     resource.meta = "invalid"
 
     with pytest.raises(FHIRValidationError):
@@ -133,7 +133,7 @@ def test_validate_resource_rejects_missing_serialized_resource_type():
 # MALFORMED RESOURCE
 # ----------------------------------------------------------------
 class MismatchedResource(FHIRResource):
-    resource_type = "TestResource"
+    resource_type = "DummyFHIRResource"
 
     def to_dict(self) -> dict:
         return {

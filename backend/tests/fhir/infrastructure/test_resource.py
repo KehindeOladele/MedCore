@@ -1,18 +1,18 @@
 from app.core.fhir.resource import FHIRResource
 
 
-class TestResource(FHIRResource):
+class DummyFHIRResource(FHIRResource):
     resource_type = "TestResource"
 
 
 def test_fhir_resource_contains_resource_type():
-    resource = TestResource()
+    resource = DummyFHIRResource()
 
     assert resource.resource_type == "TestResource"
 
 
 def test_fhir_resource_to_dict_contains_resource_type():
-    resource = TestResource()
+    resource = DummyFHIRResource()
 
     assert resource.to_dict() == {
         "resourceType": "TestResource",
@@ -20,7 +20,7 @@ def test_fhir_resource_to_dict_contains_resource_type():
 
 
 def test_fhir_resource_to_dict_includes_id():
-    resource = TestResource(id="resource-123")
+    resource = DummyFHIRResource(id="resource-123")
 
     assert resource.to_dict() == {
         "resourceType": "TestResource",
@@ -34,7 +34,7 @@ def test_fhir_resource_to_dict_includes_meta():
         "lastUpdated": "2026-09-15T12:00:00Z",
     }
 
-    resource = TestResource(meta=meta)
+    resource = DummyFHIRResource(meta=meta)
 
     assert resource.to_dict() == {
         "resourceType": "TestResource",
@@ -47,7 +47,7 @@ def test_fhir_resource_to_dict_includes_id_and_meta():
         "versionId": "1",
     }
 
-    resource = TestResource(
+    resource = DummyFHIRResource(
         id="resource-123",
         meta=meta,
     )
