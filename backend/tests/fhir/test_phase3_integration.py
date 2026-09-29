@@ -22,6 +22,7 @@ from app.core.fhir.serializer import (
     serialize_resource,
 )
 from app.core.fhir.validator import validate_resource
+from app.core.config import settings
 
 
 # ------------------------------------------------------------------
@@ -165,7 +166,16 @@ def test_healthcare_service_full_pipeline():
 # ------------------------------------------------------------------
 #  REGISTERED EXTENSION STRUCTURE TEST 
 # ------------------------------------------------------------------
-def test_registered_extensions_generate_structure_definitions():
+def test_registered_extensions_generate_structure_definitions(
+        monkeypatch,
+    ):
+        
+    monkeypatch.setattr(
+        settings,
+        "FHIR_CANONICAL_BASE_URL",
+        "https://medcore.example/fhir",
+    )
+    
     structure_definitions = generate_registered_structure_definitions()
 
     assert structure_definitions
