@@ -5,12 +5,12 @@ from app.core.fhir.resource import FHIRResource
 from app.core.fhir.validator import validate_resource
 
 
-class TestResource(FHIRResource):
+class DummyFHIRResource(FHIRResource):
     resource_type = "TestResource"
 
 
 def test_valid_resource_passes_validation():
-    resource = TestResource(
+    resource = DummyFHIRResource(
         id="resource-123",
         meta={"versionId": "1"},
     )
@@ -19,7 +19,7 @@ def test_valid_resource_passes_validation():
 
 
 def test_resource_without_id_passes_validation():
-    resource = TestResource()
+    resource = DummyFHIRResource()
 
     validate_resource(resource)
 
@@ -59,7 +59,7 @@ def test_resource_with_non_string_resource_type_fails_validation():
 
 
 def test_resource_with_non_string_id_fails_validation():
-    resource = TestResource(id=123)
+    resource = DummyFHIRResource(id=123)
 
     with pytest.raises(
         FHIRValidationError,
@@ -69,7 +69,7 @@ def test_resource_with_non_string_id_fails_validation():
 
 
 def test_resource_with_non_dictionary_meta_fails_validation():
-    resource = TestResource(meta="invalid")
+    resource = DummyFHIRResource(meta="invalid")
 
     with pytest.raises(
         FHIRValidationError,

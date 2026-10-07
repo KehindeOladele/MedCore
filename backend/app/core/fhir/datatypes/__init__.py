@@ -4,6 +4,9 @@ from app.core.fhir.datatypes.coding import FHIRCoding
 from app.core.fhir.datatypes.contact_point import FHIRContactPoint
 from app.core.fhir.datatypes.extension import FHIRExtension
 from app.core.fhir.datatypes.reference import FHIRReference
+from app.core.fhir.datatypes.period import FHIRPeriod
+from app.core.fhir.datatypes.available_time import FHIRAvailableTime
+from app.core.fhir.datatypes.not_available import FHIRNotAvailable
 
 __all__ = [
     "FHIRAddress",
@@ -12,4 +15,7 @@ __all__ = [
     "FHIRContactPoint",
     "FHIRExtension",
     "FHIRReference",
+    "FHIRPeriod",
+    "FHIRAvailableTime",
+    "FHIRNotAvailable"
 ]

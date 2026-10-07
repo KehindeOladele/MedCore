@@ -10,12 +10,12 @@ from app.core.fhir.serializer import (
 )
 
 
-class TestResource(FHIRResource):
+class DummyFHIRResource(FHIRResource):
     resource_type = "TestResource"
 
 
 def test_resource_to_dict_returns_resource_dictionary():
-    resource = TestResource(id="resource-123")
+    resource = DummyFHIRResource(id="resource-123")
 
     result = resource_to_dict(resource)
 
@@ -26,7 +26,7 @@ def test_resource_to_dict_returns_resource_dictionary():
 
 
 def test_serialize_resource_returns_json_string():
-    resource = TestResource(id="resource-123")
+    resource = DummyFHIRResource(id="resource-123")
 
     result = serialize_resource(resource)
 
@@ -39,7 +39,7 @@ def test_serialize_resource_returns_json_string():
 
 
 def test_serialize_resource_uses_compact_json():
-    resource = TestResource(id="resource-123")
+    resource = DummyFHIRResource(id="resource-123")
 
     result = serialize_resource(resource)
 
