@@ -1,3 +1,6 @@
+import pytest
+
+from app.core.fhir.mappings.exceptions import FHIRMappingInputError
 from app.core.fhir.mappings.organization import OrganizationMapper
 from app.core.fhir.resources.organization import FHIROrganization
 from app.core.fhir.mappings.base import FHIRMapper
@@ -182,3 +185,35 @@ def test_organization_mapper_serializes_address_to_fhir_shape():
             "country": "Nigeria",
         }
     ]
+
+
+def test_organization_mapper_omits_optional_null_fields():
+    mapper = OrganizationMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "org-123",
+            "name": "MedCore General Hospital",
+            "type": None,
+            "email": None,
+            "phone": None,
+            "address": None,
+            "city": None,
+            "state": None,
+            "postal_code": None,
+            "country": None,
+        }
+    )
+
+    assert result.to_dict() == {
+        "resourceType": "Organization",
+        "id": "org-123",
+        "name": "MedCore General Hospital",
+    }
+
+
+def test_organization_mapper_rejects_non_dict_input():
+    mapper = OrganizationMapper()
+
+    with pytest.raises(FHIRMappingInputError):
+        mapper.to_fhir("not an organization")
