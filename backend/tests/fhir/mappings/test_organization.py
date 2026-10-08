@@ -106,3 +106,27 @@ def test_organization_mapper_maps_email_to_telecom():
     assert len(result.telecom) == 1
     assert result.telecom[0].system == "email"
     assert result.telecom[0].value == "info@medcore.example"
+
+
+def test_organization_mapper_maps_phone_and_email_to_telecom():
+    mapper = OrganizationMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "org-123",
+            "name": "MedCore General Hospital",
+            "phone": "+2348000000000",
+            "email": "info@medcore.example",
+        }
+    )
+
+    assert result.to_dict()["telecom"] == [
+        {
+            "system": "phone",
+            "value": "+2348000000000",
+        },
+        {
+            "system": "email",
+            "value": "info@medcore.example",
+        },
+    ]
