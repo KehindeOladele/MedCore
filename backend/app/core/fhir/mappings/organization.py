@@ -50,9 +50,38 @@ class OrganizationMapper:
                 )
             )
 
+        address_fields = (
+            value.get("address"),
+            value.get("city"),
+            value.get("state"),
+            value.get("postal_code"),
+            value.get("country"),
+        )
+
+        has_address = any(
+            field is not None
+            for field in address_fields
+        )
+
+        if has_address:
+            addresses = (
+                FHIRAddress(
+                    line=(value["address"],)
+                    if value.get("address") is not None
+                    else (),
+                    city=value.get("city"),
+                    state=value.get("state"),
+                    postal_code=value.get("postal_code"),
+                    country=value.get("country"),
+                ),
+            )
+        else:
+            addresses = ()
+
         return FHIROrganization(
             id=str(value["id"]) if value.get("id") is not None else None,
             name=value.get("name"),
             organization_type=organization_type,
             telecom=tuple(telecom),
+            address=tuple(addresses)
         )
