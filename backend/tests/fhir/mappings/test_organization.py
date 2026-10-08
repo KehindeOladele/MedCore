@@ -130,3 +130,55 @@ def test_organization_mapper_maps_phone_and_email_to_telecom():
             "value": "info@medcore.example",
         },
     ]
+
+
+def test_organization_mapper_maps_address():
+    mapper = OrganizationMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "org-123",
+            "name": "MedCore General Hospital",
+            "address": "123 Healthcare Avenue",
+            "city": "Abuja",
+            "state": "FCT",
+            "postal_code": "900001",
+            "country": "Nigeria",
+        }
+    )
+
+    assert len(result.address) == 1
+
+    address = result.address[0]
+
+    assert address.line == ("123 Healthcare Avenue",)
+    assert address.city == "Abuja"
+    assert address.state == "FCT"
+    assert address.postal_code == "900001"
+    assert address.country == "Nigeria"
+
+
+def test_organization_mapper_serializes_address_to_fhir_shape():
+    mapper = OrganizationMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "org-123",
+            "name": "MedCore General Hospital",
+            "address": "123 Healthcare Avenue",
+            "city": "Abuja",
+            "state": "FCT",
+            "postal_code": "900001",
+            "country": "Nigeria",
+        }
+    )
+
+    assert result.to_dict()["address"] == [
+        {
+            "line": ["123 Healthcare Avenue"],
+            "city": "Abuja",
+            "state": "FCT",
+            "postalCode": "900001",
+            "country": "Nigeria",
+        }
+    ]
