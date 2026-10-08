@@ -23,7 +23,17 @@ class OrganizationMapper:
                 "OrganizationMapper requires an organization dictionary."
             )
 
+        if value.get("type") is not None:
+            organization_type = (
+                FHIRCodeableConcept(
+                    text=value["type"],
+                ),
+            )
+        else:
+            organization_type = ()
+
         return FHIROrganization(
             id=str(value["id"]) if value.get("id") is not None else None,
             name=value.get("name"),
+            organization_type=organization_type,
         )
