@@ -32,8 +32,27 @@ class OrganizationMapper:
         else:
             organization_type = ()
 
+        telecom = []
+
+        if value.get("phone") is not None:
+            telecom.append(
+                FHIRContactPoint(
+                    system="phone",
+                    value=value["phone"],
+                )
+            )
+
+        if value.get("email") is not None:
+            telecom.append(
+                FHIRContactPoint(
+                    system="email",
+                    value=value["email"],
+                )
+            )
+
         return FHIROrganization(
             id=str(value["id"]) if value.get("id") is not None else None,
             name=value.get("name"),
             organization_type=organization_type,
+            telecom=tuple(telecom),
         )
