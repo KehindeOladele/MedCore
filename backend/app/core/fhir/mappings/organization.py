@@ -23,14 +23,14 @@ class OrganizationMapper:
                 "OrganizationMapper requires an organization dictionary."
             )
 
+        organization_type = ()
+
         if value.get("type") is not None:
             organization_type = (
                 FHIRCodeableConcept(
                     text=value["type"],
                 ),
             )
-        else:
-            organization_type = ()
 
         telecom = []
 
@@ -58,30 +58,31 @@ class OrganizationMapper:
             value.get("country"),
         )
 
-        has_address = any(
-            field is not None
-            for field in address_fields
-        )
+        addresses = ()
 
-        if has_address:
+        if any(field is not None for field in address_fields):
             addresses = (
                 FHIRAddress(
-                    line=(value["address"],)
-                    if value.get("address") is not None
-                    else (),
+                    line=(
+                        (value["address"],)
+                        if value.get("address") is not None
+                        else ()
+                    ),
                     city=value.get("city"),
                     state=value.get("state"),
                     postal_code=value.get("postal_code"),
                     country=value.get("country"),
                 ),
             )
-        else:
-            addresses = ()
 
         return FHIROrganization(
-            id=str(value["id"]) if value.get("id") is not None else None,
+            id=(
+                str(value["id"])
+                if value.get("id") is not None
+                else None
+            ),
             name=value.get("name"),
             organization_type=organization_type,
             telecom=tuple(telecom),
-            address=tuple(addresses)
+            address=addresses,
         )
