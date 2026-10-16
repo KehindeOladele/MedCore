@@ -25,7 +25,12 @@ class HealthcareServiceMapper(
                 "healthcare service dictionary."
             )
 
-        raise NotImplementedError(
-            "HealthcareServiceMapper field mappings "
-            "will be implemented incrementally."
+        return FHIRHealthcareService(
+            id=(
+                str(value["id"])
+                if value.get("id") is not None
+                else None
+            ),
+            name=value.get("name"),
+            active=value.get("active"),
         )
