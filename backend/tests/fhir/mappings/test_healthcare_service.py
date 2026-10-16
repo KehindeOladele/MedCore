@@ -1,7 +1,7 @@
 import pytest
 
 from uuid import UUID
-
+from app.core.fhir.datatypes.codeable_concept import FHIRCodeableConcept
 from app.core.fhir.mappings.base import FHIRMapper
 from app.core.fhir.mappings.exceptions import (
     FHIRMappingInputError,
@@ -205,3 +205,115 @@ def test_healthcare_service_mapper_omits_missing_organization_reference():
 
     assert result.provided_by is None
     assert "providedBy" not in result.to_dict()
+
+
+def test_healthcare_service_mapper_maps_category():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "category": "Outpatient",
+        }
+    )
+
+    assert result.category == (
+        FHIRCodeableConcept(text="Outpatient"),
+    )
+    
+
+def test_healthcare_service_mapper_maps_type():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "type": "Consultation",
+        }
+    )
+
+    assert result.service_type == (
+        FHIRCodeableConcept(text="Consultation"),
+    )
+    
+
+def test_healthcare_service_mapper_maps_specialty():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "specialty": "Cardiology",
+        }
+    )
+
+    assert result.specialty == (
+        FHIRCodeableConcept(text="Cardiology"),
+    )
+
+
+def test_healthcare_service_mapper_maps_all_classification_fields():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "category": "Outpatient",
+            "type": "Consultation",
+            "specialty": "Cardiology",
+        }
+    )
+
+    assert result.to_dict()["category"] == [
+        {"text": "Outpatient"},
+    ]
+    assert result.to_dict()["type"] == [
+        {"text": "Consultation"},
+    ]
+    assert result.to_dict()["specialty"] == [
+        {"text": "Cardiology"},
+    ]
+    
+
+def test_healthcare_service_mapper_omits_missing_classification_fields():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "name": "Outpatient Services",
+        }
+    )
+
+    resource = result.to_dict()
+
+    assert result.category == ()
+    assert result.service_type == ()
+    assert result.specialty == ()
+
+    assert "category" not in resource
+    assert "type" not in resource
+    assert "specialty" not in resource
+    
+
+def test_healthcare_service_mapper_omits_empty_classification_strings():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "category": "",
+            "type": "",
+            "specialty": "",
+        }
+    )
+
+    resource = result.to_dict()
+
+    assert result.category == ()
+    assert result.service_type == ()
+    assert result.specialty == ()
+
+    assert "category" not in resource
+    assert "type" not in resource
+    assert "specialty" not in resource
