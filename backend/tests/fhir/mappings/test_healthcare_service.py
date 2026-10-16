@@ -135,3 +135,73 @@ def test_healthcare_service_mapper_serializes_id_name_and_active():
         "active": True,
         "name": "Outpatient Services",
     }
+
+
+def test_healthcare_service_mapper_maps_organization_reference():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "organization_id": "org-456",
+            "name": "Outpatient Services",
+            "active": True,
+        }
+    )
+
+    assert result.provided_by is not None
+    assert result.provided_by.reference == "Organization/org-456"
+
+
+def test_healthcare_service_mapper_serializes_provided_by():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "organization_id": "org-456",
+            "name": "Outpatient Services",
+            "active": True,
+        }
+    )
+
+    assert result.to_dict()["providedBy"] == {
+        "reference": "Organization/org-456",
+    }
+
+
+def test_healthcare_service_mapper_converts_organization_uuid_to_reference():
+    mapper = HealthcareServiceMapper()
+
+    organization_id = UUID(
+        "12345678-1234-5678-1234-567812345678"
+    )
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "organization_id": organization_id,
+            "name": "Outpatient Services",
+            "active": True,
+        }
+    )
+
+    assert result.provided_by is not None
+    assert result.provided_by.reference == (
+        f"Organization/{organization_id}"
+    )
+
+
+def test_healthcare_service_mapper_omits_missing_organization_reference():
+    mapper = HealthcareServiceMapper()
+
+    result = mapper.to_fhir(
+        {
+            "id": "service-123",
+            "name": "Outpatient Services",
+            "active": True,
+        }
+    )
+
+    assert result.provided_by is None
+    assert "providedBy" not in result.to_dict()
