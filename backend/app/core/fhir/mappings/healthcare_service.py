@@ -2,6 +2,7 @@ from typing import Any
 
 from app.core.fhir.mappings.base import FHIRMapper
 from app.core.fhir.mappings.exceptions import FHIRMappingInputError
+from app.core.fhir.datatypes.reference import FHIRReference
 from app.core.fhir.resources.healthcare_service import (
     FHIRHealthcareService,
 )
@@ -33,4 +34,11 @@ class HealthcareServiceMapper(
             ),
             name=value.get("name"),
             active=value.get("active"),
+            provided_by=(
+                FHIRReference(
+                    reference=f"Organization/{value['organization_id']}",
+                )
+                if value.get("organization_id") is not None
+                else None
+            ),
         )
